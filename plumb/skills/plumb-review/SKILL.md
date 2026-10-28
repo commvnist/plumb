@@ -17,7 +17,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 1. **Learn the intent** from the description and any linked issue. If nothing states it, infer it from the diff and state your reading in the verdict line; only a change that is itself ambiguous about its intent makes that the first finding.
 2. **Read the whole diff, then what it touches:** callers, callees, the tests, and the data it reads and writes. Bugs live in the connections, not only in the changed lines.
-3. **Run the checks** where you can, without disturbing the user's working tree (use a temporary worktree for another branch or the base, and remove it when done). Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
+3. **Run the checks** where you can, without disturbing the user's working tree (use a temporary worktree for another branch or the base, and remove it when done). Don't run code from an author you can't vouch for, such as an outside contributor's pull request, without a yes; review it read only and say so under Verified. Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
 4. **Judge in this order:**
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
@@ -48,7 +48,7 @@ Should:
 1. …
 Nits:
 - …
-Delete: <code or tests that can go, with line counts>
+Delete: <code or tests this change adds or leaves dead that can go, with line counts>
 Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
