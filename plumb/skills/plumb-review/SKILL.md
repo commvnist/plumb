@@ -17,8 +17,8 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 1. **Learn the intent** from the description and any linked issue. If the intent is unclear, that is the first finding.
 2. **Read the whole diff, then what it touches:** callers, callees, the tests, and the data it reads and writes. Bugs live in the connections, not only in the changed lines.
-3. **Run the checks** where you can. Treat claims in the description as unverified until you've run them.
-4. **Judge in this order** and stop to report anything blocking:
+3. **Run the checks** where you can. Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
+4. **Judge in this order:**
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
    - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
@@ -29,11 +29,11 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 ## Findings
 
-- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet.
+- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet, too large or mixed to review safely.
 - **Should:** a real improvement with a concrete benefit; the author decides.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
-Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding.
+Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should means approve with suggestions; otherwise approve.
 
@@ -49,6 +49,7 @@ Should:
 Nits:
 - …
 Delete: <code or tests that can go, with line counts>
+Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 
