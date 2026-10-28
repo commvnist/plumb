@@ -21,7 +21,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 4. **Judge in this order** and stop to report anything blocking:
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
-   - **Proof:** is the test floor met? Would the tests fail if the change were wrong? Are any tests useless by the plumb-test standard?
+   - **Proof:** is the test floor met, and is nothing above it unrequested? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard?
    - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Scope:** unrelated changes or mixed purposes. If it's too large for one sitting, ask for a split and propose one.

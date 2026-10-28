@@ -53,8 +53,8 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 
 ### Tests
 
-16. **A test earns its place** by catching a realistic break in behaviour someone relies on, while surviving every change that preserves that behaviour. The full standard is in plumb-test.
-17. **The test floor.** A bug fix ships with one test that fails without the fix, where the project can test that layer. New logic that makes real decisions (branching, calculation, parsing, state changes) ships with one test per behaviour a caller relies on. Wiring, configuration, plain data, delegation and trivial accessors get none. Every other test is a suggestion.
+16. **A test earns its place** by catching a realistic break in behaviour someone relies on, while surviving every change that preserves that behaviour. Every test you add has been seen to fail, before the code existed or with the code briefly broken; a test never seen red is unproven, and the report says so. The full standard is in plumb-test.
+17. **The test floor.** A bug fix ships with one test that fails without the fix, where the project can test that layer. New or changed logic that makes real decisions (branching, calculation, parsing, state changes) ships with one test per outcome a caller would notice, unless an existing test already pins it; cases that differ only by input share one table-driven test. Wiring, configuration, plain data, delegation and trivial accessors get none. Every other test is a suggestion.
 18. **Never write tests that break on harmless changes or pass on real bugs:** assertions on source text, layout, log wording or internals; expected values computed the way the code computes them; fakes of the thing under test; snapshots nobody reads; locked-in repository state; tests of the language or a library. The full list is in plumb-test.
 
 ### Observability

@@ -13,8 +13,12 @@ A test suite is code that holds the rest of the code still. Every test costs run
 
 Write one only when all three hold:
 1. Someone relies on the behaviour: a user, a caller, another system.
-2. It can break in a realistic way: logic, edge cases, integration, a past bug.
+2. You can name the break: a plausible edit by a future maintainer, or a real input, that would get this behaviour wrong. If you can't say it in one line, the test isn't worth its cost.
 3. No existing test, type check or compiler check would already catch that break.
+
+If catching that break needs heavy setup, many fakes or a slow resource, test it at a different level or not at all.
+
+A request to "add tests" asks for the tests that meet this bar, not for coverage. Write those, and list in one line what you deliberately left untested and why, so the user can override.
 
 Highest value: regressions of real bugs, business rules and calculations, parsing and validation of untrusted input, state transitions, concurrency and repeat-delivery contracts, security boundaries, public interfaces others build on.
 
@@ -24,7 +28,7 @@ No test: wiring and configuration, plain data, pass-through and delegation, triv
 
 - **Behavioural.** It goes through the surface a real caller uses and asserts on outcomes the caller can observe. It checks an interaction only when the interaction is the contract, such as "a message is sent".
 - **Sensitive.** It fails when the behaviour breaks. Prove it: watch it fail before the fix exists, or briefly break the code and see it go red.
-- **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals.
+- **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals. It asserts only what the behaviour promises; comparing whole objects or exact order locks in what callers don't rely on.
 - **Focused.** It has one reason to fail, and its name states the behaviour ("rejects an expired coupon"), not the function it calls.
 - **Readable alone.** Setup, action and assertion are visible in the test. Data is inline and minimal. A reader understands it without opening other files.
 - **Deterministic and fast.** It controls time, randomness, ordering and concurrency, and touches no real network.
