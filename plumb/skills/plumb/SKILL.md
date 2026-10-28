@@ -78,7 +78,7 @@ Risks:      <anything a caller or user will notice — or "none">
 
 Suggestions:
 1. <what> — <the failure story it prevents, in one line> — ~<n> lines — if skipped: low | medium | high risk
-Noticed: <problems outside the touched code, one line each — or omit>
+Noticed: <problems this change didn't cause and doesn't fix, one line each — or omit>
 ```
 
 Omit Suggestions and Noticed when empty; the other lines always appear.
@@ -91,7 +91,7 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 - Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change. If there are more, end with "N more on request".
-- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and any defect in what this change itself does, is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
 - Never apply one the user didn't pick. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
 
 ## Asking
