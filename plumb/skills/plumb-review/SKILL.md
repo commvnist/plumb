@@ -22,14 +22,14 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
    - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard, judged as plumb-audit's Delete judges them? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
-   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff, its beyond-the-floor test item only as Proof allows.
+   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Scope:** unrelated changes or mixed purposes within one diff (in a stack meant to be read commit by commit, each commit is a diff; otherwise the whole pull request is). If it's too large for one sitting (charter rule 4), ask for a split and propose one.
-   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
+   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's written rules, otherwise Should.
 
 ## Findings
 
-- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet, too large or mixed to review safely.
+- **Blocking:** wrong behaviour, unsafe, breaks a contract or the project's written rules, fakes success, the test floor unmet, too large or mixed to review safely.
 - **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
@@ -51,7 +51,7 @@ Should:
 Nits:
 - …
 Delete: <code or tests this change adds or leaves dead that can go, with line counts>
-Noticed: <problems the change didn't cause, one line each>
+Noticed: <problems the change didn't cause and doesn't worsen, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 

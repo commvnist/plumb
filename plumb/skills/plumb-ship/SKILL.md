@@ -21,7 +21,7 @@ Before you commit or push, read everything you'll commit or push, new files incl
 
 ## Splitting
 
-When a change is too big for one sitting (charter rule 4), or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first, then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split, as commits in one pull request whose description says to review it commit by commit, or as separate pull requests, and wait for a yes before making it.
+When a change is too big for one sitting (charter rule 4), or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first (among them any test deletion that charter rule 12 says lands before the change), then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split, as commits in one pull request whose description says to review it commit by commit, or as separate pull requests, and wait for a yes before making it.
 
 ## Pull request description
 
@@ -51,5 +51,5 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 - Changelog entries are written for the people affected, describing what changes for them, in the project's changelog format (with none, grouped as Added, Changed, Fixed, Removed and Security). They are not a list of commits.
 - Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change always gets the scheme's breaking bump, however small it is.
 - State the rollback before rolling out; if there isn't one, say so and ask first. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
-- Persisted data changes go expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
+- A breaking change to persisted data, or to a contract consumers outside the repository depend on, goes expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
 - After a deploy, and after each stage of one, check the signals that would show it failing and report what you saw; if they do, stop the rollout and propose the rollback, taking it only on a yes.
