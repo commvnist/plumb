@@ -29,7 +29,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 ## Findings
 
-- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, risky logic with no proof.
+- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet.
 - **Should:** a real improvement with a concrete benefit; the author decides.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
