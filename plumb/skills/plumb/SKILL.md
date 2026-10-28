@@ -26,12 +26,12 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 1. **Do exactly what was asked, completely.** Complete includes anything the change breaks or makes untrue: callers, types, config, docs. *A half-done change costs the reviewer more than no change.*
 2. **Nothing else lands without a yes.** Cleanups, extra tests, refactors and features you'd like are all offered as suggestions (see below). *Unrequested lines are the main reason agent diffs are hard to review.*
 3. **One purpose per diff.** Behaviour changes, refactors, formatting and moves never share a diff. A new dependency lands with its first use. *Mixed diffs hide the line that matters.*
-4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a tool-driven rename goes in a diff of its own. *Review quality collapses as diffs grow.*
+4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a tool-driven rename goes in a diff of its own. Land a sequence one diff at a time: after each report, stop until the user commits that diff or says to go on; if they go on without committing, say once that the diffs will share one. *Review quality collapses as diffs grow.*
 
 ### Reach for what exists
 
 5. **Take the first rung that works:** (a) does anything need to change at all; (b) something the project already has; (c) what the language or platform provides; (d) a dependency the project already has; (e) new code, the least that reads clearly. A new dependency needs an explicit yes; when proposing one, state its maintenance health, licence and what it pulls in. *Every new line is a liability someone maintains forever.*
-6. **Match the surrounding code's conventions, not its defects.** Use its naming, structure, error style and test style, even where you'd choose differently. Rules 7–19 override local habit: don't copy a swallowed error, a needless guard or a brittle test; note the pattern under Noticed. *Consistency is what lets a reader skim.*
+6. **Match the surrounding code's conventions, not its defects.** Use its naming, structure, error style and test style, even where you'd choose differently. Rules 7–20 override local habit: don't copy a swallowed error, a needless guard or a brittle test; note the pattern under Noticed. *Consistency is what lets a reader skim.*
 
 ### Simplicity
 
@@ -43,7 +43,10 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 ### Failure
 
 11. **Fail loudly, early, with context.** Never swallow an error, return a made-up default, or catch broadly to make something "work". Handle an error only where you can do something useful about it. *A silent failure is a bug report you'll never receive.*
-12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is re-pointing, at the same behaviour through the public surface, a test that broke only because it reached into internals the change moved, once the re-pointed test has been seen red; so is deleting, in a diff of its own that lands before the change, a test the change broke or the user chose to prune, whose behaviour fails any of plumb-test's three conditions, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so. *A faked green hides exactly the break the check exists to report.*
+12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. If a check fails and you can't fix it properly, stop and say so. *A faked green hides exactly the break the check exists to report.* These are part of the change, not a weakening:
+    - updating or removing a test whose behaviour the task deliberately changes or deletes;
+    - re-pointing at the same behaviour, through the public surface, a test that broke only because it reached into internals the change moved, once the re-pointed test has been seen red;
+    - deleting a test the change broke, or the user chose to prune, whose behaviour fails any of plumb-test's three conditions, in a diff of its own landed before the change; never one that is failing because of a change a caller would notice.
 
 ### Evidence
 
@@ -60,6 +63,10 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 ### Observability
 
 19. **Failures must be findable.** When a change adds a new unit of work (a request handler, a job, a consumer) and the project logs such units, log it the same way: one event per unit with its outcome, not a trail of progress lines. Never log secrets or personal data. Anything more is a suggestion.
+
+### Side effects
+
+20. **Touch nothing outside the diff without a yes.** Anything that writes to, sends from or loads a shared or production system needs the user's yes first. Leave the user's working tree as it is: work on another branch or the base in a temporary worktree you then remove, and never stash their changes. Cite a secret by its location, never its value. *The reviewer can only vouch for what the diff shows.*
 
 ## Output
 
