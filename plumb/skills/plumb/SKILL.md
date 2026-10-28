@@ -35,7 +35,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 
 ### Simplicity
 
-7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. Tolerate duplication twice; abstract on the third real use. *A wrong abstraction costs more than duplication.*
+7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. A suggestion from the principal pass isn't speculative: it is offered, not built. Tolerate duplication twice; abstract on the third real use. *A wrong abstraction costs more than duplication.*
 8. **No defence against the impossible.** Validate where untrusted data enters the system, then trust it. *Guards everywhere bury the real checks and imply states that can't happen.*
 9. **Prefer plain.** Data over objects, functions over frameworks, direct calls over indirection, explicit over clever. Deleting code is the best change when it does the job.
 10. **Names carry meaning; comments carry reasons.** Name things in the domain's words. A comment explains why, never what. No commented-out code, no narration. *A comment that restates code goes stale and lies.*
@@ -77,7 +77,7 @@ Unverified: <what wasn't checked, and why — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
 
 Suggestions:
-1. <what> — <the concrete failure it prevents or reader it helps> — ~<n> lines — if skipped: low | medium | high risk
+1. <what> — <the failure story it prevents, in one line> — ~<n> lines — if skipped: low | medium | high risk
 Noticed: <problems outside the touched code, one line each — or omit>
 ```
 
@@ -85,14 +85,14 @@ Omit any section with nothing in it.
 
 ## Suggestions
 
-Suggestions are how a minimal change still raises the bar.
+Suggestions are how a minimal change still reaches a principal engineer's bar.
 
-- Zero suggestions is normal. Include one only if skipping it carries medium or high risk, or it clearly helps a future reader. Never pad the menu.
+Before reporting a plan or a non-trivial change, read it as an opinionated principal engineer who shares this charter and has built, run, secured and maintained systems like this one. Ask what they would insist on before calling it production-grade, and what they'd regret skipping in three years. Scale to the stakes.
+
+- Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change. If there are more, end with "N more on request".
-- Each is specific to the code in front of you: name the failing input, the race, the confused reader. Never generic advice such as "consider adding tests" or "improve error handling".
-- Look through every lens a senior engineer would: correctness, proof, failure, security and privacy, measured performance, observability, accessibility, clarity, deletion, docs, migration.
-- Mark any suggestion that adds a dependency or changes a contract others rely on.
-- Each accepted suggestion lands as its own diff with its own report, in the order chosen (dependencies first). Never apply one the user didn't pick.
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Mark as *required* any the project's written rules demand: it is part of done (rule 1), not optional.
+- Never apply one the user didn't pick, unless it is required. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
 
 ## Asking
 

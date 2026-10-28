@@ -18,7 +18,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 7. **Prove it.** Run the done-check: it fails or is absent before, and passes after. Add tests only to the floor (charter rule 17). A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept.
 8. **Run the project's checks again.** Fix what you broke. Leave failures that predate you alone and name them.
 9. **Review your own diff as its reviewer.** Read every hunk against the checklist below. Delete every line the task doesn't need.
-10. **Report** with the charter's template and suggestions menu. For a non-trivial change, offer an independent review by the plumb-reviewer agent.
+10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent.
 
 ## Self-review checklist
 
@@ -40,4 +40,4 @@ Each item is a known failure of generated code. Any "yes" gets fixed before the 
 
 ## Applying accepted suggestions
 
-Apply them in the order chosen, dependencies first, each as its own diff at its smallest. After each one, run the checks and give its own report in the charter's template. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.
+Apply them in the order chosen, dependencies first, each at its smallest: in this change's diff if it completes code this change adds, otherwise as its own diff. After each one, run the checks and give its own report in the charter's template. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.
