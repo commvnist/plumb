@@ -9,7 +9,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 
 An audit changes nothing in the repository, not even briefly, and adds no files to it; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
-**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges.
+**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges, and any gap another area's tests already catch.
 
 ## Code mode
 
@@ -25,7 +25,7 @@ Look for:
 
 ## Tests mode
 
-**Prune.** Load plumb-test if it isn't loaded; its standard decides each class. Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; for one worth keeping, the action removes the cause at its source: nondeterminism in the test itself (plumb-test, as Rewrite), or the code bug it caught, a race in the code included (plumb-debug, ranked as a correctness finding). Never delete it just for being flaky.
+**Prune.** Load plumb-test if it isn't loaded; its standard decides each class. Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (failing, skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; for one worth keeping, the action removes the cause at its source: nondeterminism in the test itself (plumb-test, as Rewrite), or the code bug it caught, a race in the code included (plumb-debug, ranked as a correctness finding). Never delete it just for being flaky.
 - **Keep:** none of the below applies. Style flaws alone are not a finding.
 - **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
