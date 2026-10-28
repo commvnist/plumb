@@ -22,7 +22,7 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
    - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard, judged as plumb-audit's Delete judges them? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
-   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
+   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff, its beyond-the-floor test item only as Proof allows.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Scope:** unrelated changes or mixed purposes within one diff (in a stack meant to be read commit by commit, each commit is a diff; otherwise the whole pull request is). If it's too large for one sitting, ask for a split and propose one.
    - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
@@ -30,14 +30,14 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 ## Findings
 
 - **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet, too large or mixed to review safely.
-- **Should:** a real improvement with a concrete benefit; the author decides. At most five, ranked as the charter ranks suggestions.
+- **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 
-On a re-review, confirm each earlier finding is resolved, shown wrong, or, if it wasn't Blocking, declined by the author and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
+On a re-review, confirm each earlier finding is resolved, shown wrong, or, if it wasn't Blocking, declined by whoever decides it (see Should) and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
 
 ## Output
 
