@@ -25,7 +25,7 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
    - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff, its beyond-the-floor test item only as Proof allows.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Scope:** unrelated changes or mixed purposes within one diff (in a stack meant to be read commit by commit, each commit is a diff; otherwise the whole pull request is). If it's too large for one sitting (charter rule 4), ask for a split and propose one.
-   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
+   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's written rules, otherwise Should.
 
 ## Findings
 

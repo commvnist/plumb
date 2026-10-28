@@ -18,7 +18,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 7. **Prove it.** Run the done-check: seen failing without the change (before it, or with it briefly reverted) and passing with it. Add tests to the floor (charter rule 17), plus any the user asked for, by plumb-test's bar. A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept.
 8. **Run the project's checks again.** Fix what you broke. Leave failures that predate you alone and name them; one in a test of code you changed leaves that behaviour under Unverified.
 9. **Review your own diff as its reviewer.** Read every hunk against the checklist below. Delete every line the task doesn't need. If the review changed anything, repeat steps 7–8.
-10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent; a Blocking finding you confirm is part of done: fix it, repeat steps 7–9 and report again.
+10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent; a Blocking finding you confirm, or a confirmed Delete entry or checklist hit in lines this change adds, is part of done: fix it, repeat steps 7–9 and report again.
 
 ## Self-review checklist
 
