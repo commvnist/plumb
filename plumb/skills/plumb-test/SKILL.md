@@ -31,8 +31,8 @@ No test of its own: wiring and configuration, plain data, pass-through and deleg
 - **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals. It asserts only what the behaviour promises; comparing whole objects or exact order locks in what callers don't rely on.
 - **Focused.** It has one reason to fail, and its name states the behaviour ("rejects an expired coupon"), not the function it calls.
 - **Readable alone.** Setup, action and assertion are visible in the test, and the data that decides the outcome is inline and minimal; build the rest with the project's own fixtures.
-- **Deterministic and fast.** It controls time, randomness, ordering and concurrency, and touches no real network.
-- **Honest about boundaries.** Fake only what the code doesn't own: networks, clocks, outside services. Use real collaborators inside the boundary.
+- **Deterministic and fast.** It controls time, randomness, ordering and concurrency, and depends on no service it can't run locally.
+- **Honest about boundaries.** Fake only what the code doesn't own: clocks, third-party and remote services. Use real collaborators inside the boundary.
 - **Pitched at the right level.** Test at the lowest level that exercises the real behaviour with real collaborators. When the risk is in the wiring, one integration test beats five unit tests full of fakes.
 
 Cases that differ only by data share one table-driven test, with one row per distinct break. Coverage shows what nothing tests; it never shows what is tested well. Never chase a coverage number.
@@ -55,7 +55,7 @@ The delivered diff holds tests that meet this standard, not a record of every st
 
 ## When a test fails
 
-- Decide whether the test or the code is wrong from the requirement, not from which is easier to change.
+- Decide whether the test or the code is wrong from the requirement, not from which is easier to change. When a new test exposes a bug the task didn't cause, neither fix it here nor assert the wrong output: report it, and offer the fix as a suggestion, with that test landing alongside it as its regression test.
 - Never weaken an assertion, widen a tolerance, skip or delete a test to go green, except as charter rule 12 allows.
 - A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence) and remove it. Never add retries or sleeps to hide it.
 
