@@ -16,13 +16,13 @@ Write one only when all three hold:
 2. You can name the break: a plausible edit by a future maintainer, or a real input, that would get this behaviour wrong. If you can't say it in one line, the test isn't worth its cost.
 3. No existing test, type check or compiler check would already catch that break.
 
-If catching that break needs heavy setup, many fakes or a slow resource, test it at the level where it is cheap and real; if no such level exists, write no test and say so in the report.
+If catching that break needs heavy setup, many fakes or a slow resource, test it at the level where it is cheap and real; if no such level exists, write no test unless the floor (charter rule 17) requires one, and say so in the report.
 
 A request to "add tests" asks for the tests that meet this bar, not for coverage. Write those, and list in one line what you deliberately left untested and why, so the user can override.
 
 Highest value: regressions of real bugs, business rules and calculations, parsing and validation of untrusted input, state transitions, concurrency and repeat-delivery contracts, security boundaries, public interfaces others build on.
 
-No test: wiring and configuration, plain data, pass-through and delegation, trivial accessors, constants, what the type system already proves, the behaviour of the language or a library, private helpers whose breaks tests of public behaviour already catch.
+No test of its own: wiring and configuration, plain data, pass-through and delegation, trivial accessors, constants, what the type system already proves, the behaviour of the language or a library, private helpers whose breaks tests of public behaviour already catch.
 
 ## What a good test is
 

@@ -43,7 +43,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 ### Failure
 
 11. **Fail loudly, early, with context.** Never swallow an error, return a made-up default, or catch broadly to make something "work". Handle an error only where you can do something useful about it. *A silent failure is a bug report you'll never receive.*
-12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening. If a check fails and you can't fix it properly, stop and say so.
+12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is deleting, in a diff of its own, a test that guards nothing by plumb-test's standard. If a check fails and you can't fix it properly, stop and say so.
 
 ### Evidence
 
@@ -54,7 +54,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 ### Tests
 
 16. **A test earns its place** by catching a realistic break in behaviour someone relies on, while surviving every change that preserves that behaviour. Every test you add has been seen to fail, before the code existed or with the code briefly broken; a test that runs but was never seen red doesn't ship, and one you couldn't run goes under Unverified. The full standard is in plumb-test.
-17. **The test floor.** A bug fix ships with one test that fails without the fix, deterministically, where the project can test that layer; tighten an existing test that aims at the behaviour rather than adding a near-duplicate, and when the bug was in a test, the corrected test is the proof. New logic, or logic whose behaviour changes, that makes real decisions (branching, calculation, parsing, state changes) ships with one test per outcome a caller would notice, unless an existing test already pins it; cases that differ only by input share one table-driven test. Wiring, configuration, plain data, delegation and trivial accessors get none. Every other test is a suggestion.
+17. **The test floor.** A bug fix ships with one test that fails without the fix, deterministically, where the project can test that layer; tighten an existing test that aims at the behaviour rather than adding a near-duplicate, and when the bug was in a test, the corrected test is the proof. New logic, or logic whose behaviour changes, that makes real decisions (branching, calculation, parsing, state changes) ships with one test per outcome a caller would notice, unless an existing test already pins it; cases that differ only by input share one table-driven test. Wiring, configuration, plain data, delegation and trivial accessors get no test of their own; a break in them that matters is caught by a test of the behaviour that runs through them. Every other test is a suggestion.
 18. **Never write tests that break on harmless changes or pass on real bugs:** assertions on source text, layout, log wording or internals; expected values computed the way the code computes them; fakes of the thing under test; snapshots nobody reads; locked-in repository state; tests of the language or a library. The full list is in plumb-test.
 
 ### Observability
