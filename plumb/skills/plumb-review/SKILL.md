@@ -33,7 +33,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 - **Should:** a real improvement with a concrete benefit; the author decides. At most five, ranked as the charter ranks suggestions.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
-Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
+Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 
@@ -53,4 +53,4 @@ Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 
-An empty section is omitted. A clean change gets two lines: `Verdict: approve — <reason>` and `Verified:`. Change no code unless asked; if asked, apply fixes as plumb-build applies accepted suggestions.
+An empty section is omitted. A clean change gets two lines: `Verdict: approve — <reason>` and `Verified:`. Change no code and post nothing to the pull request unless asked; if asked, apply fixes as plumb-build applies accepted suggestions.
