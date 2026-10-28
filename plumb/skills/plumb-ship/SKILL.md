@@ -21,7 +21,7 @@ Before you commit or push, read everything you'll commit or push, new files incl
 
 ## Splitting
 
-When a change is too big for one sitting (charter rule 4), or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first (any test deletion charter rule 12 allows among them), then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split, as commits in one pull request whose description says to review it commit by commit, or as separate pull requests, and wait for a yes before making it.
+When a change is too big for one sitting (charter rule 4), or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first (among them any test deletion that charter rule 12 says lands before the change), then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split, as commits in one pull request whose description says to review it commit by commit, or as separate pull requests, and wait for a yes before making it.
 
 ## Pull request description
 
