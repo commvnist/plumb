@@ -20,7 +20,7 @@ Debugging is finding out, not trying things. No fix is written until the cause i
 7. **Clean up**, also when you stopped at step 4 or 5. Remove every piece of temporary instrumentation and every scratch file, including the reproduction unless it became the regression test, and end any bisect, checkout or stash so the branch is as you found it apart from the fix.
 8. **Report.** Under Noticed, list other places where the same fault pattern appears; don't fix them unasked. If the fault already wrote bad data or sent wrong output, say what it damaged under Risks and offer the repair.
 
-For flaky failures, reproduce by forcing the nondeterminism as plumb-test's "When a test fails" describes; every other step still applies.
+For a failing test, decide whether the test or the code is wrong as plumb-test's "When a test fails" describes; for a flaky one, reproduce by forcing the nondeterminism as it describes. Every other step still applies.
 
 ## Production incidents
 
