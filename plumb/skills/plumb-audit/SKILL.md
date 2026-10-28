@@ -14,7 +14,7 @@ An audit edits nothing, not even briefly; mark a test you suspect can't fail, bu
 ## Code mode
 
 Look for:
-1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it; say so in the finding if you couldn't confirm it.
+1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it or touching a shared or production system; say so in the finding if you couldn't confirm it.
 2. **Safety:** security holes, data loss, leaked secrets or personal data (cite the location, never the value; a live secret's action is rotate, then remove), unsafe handling of untrusted input.
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
@@ -25,7 +25,7 @@ Look for:
 
 ## Tests mode
 
-**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; one worth keeping is Rewrite, with fixing its nondeterminism at its source (plumb-test) as the action. Never delete it just for being flaky.
+**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; for one worth keeping, the action removes the cause at its source: its nondeterminism (plumb-test, as Rewrite), or the code bug it caught (plumb-debug, ranked as a correctness finding). Never delete it just for being flaky.
 - **Keep:** none of the below applies. Style flaws alone are not a finding.
 - **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
