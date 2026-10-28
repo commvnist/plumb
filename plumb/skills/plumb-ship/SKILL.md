@@ -7,15 +7,15 @@ description: Packages finished work for review and release, covering commit spli
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing; an instruction to open a pull request covers committing the change, on a new branch if you're on the default one, and pushing it.
+Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing; an instruction to open a pull request covers committing the change, on a new branch if you're on the default one, and pushing it. Rewriting history that's already pushed (amend, rebase, force push) needs a yes that names it.
 
 ## Before anything leaves
 
-Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. If the user asked to commit the work as it stands, commit it and say in the message what fails. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent, without holding up an explicit instruction to ship, unless one was already offered or run on this diff.
+Read the full diff, untracked files included, once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. If the user asked to commit the work as it stands, commit it and say in the message what fails. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent, without holding up an explicit instruction to ship, unless one was already offered or run on this diff.
 
 ## Commits
 
-- One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's hunks; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit, in a temporary worktree you remove afterwards, never by stashing the user's changes.
+- One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's hunks and new files; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit, in a temporary worktree you remove afterwards, never by stashing the user's changes.
 - Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what changes in behaviour; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
 - Never write subjects like "update files", "fix stuff" or "address feedback", and never list the changed files; the diff already shows them.
 
@@ -50,6 +50,6 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 
 - Changelog entries are written for the people affected, describing what changes for them, in the project's changelog format (with none, grouped as Added, Changed, Fixed, Removed and Security). They are not a list of commits.
 - Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change always gets the scheme's breaking bump, however small it is.
-- Know the rollback before rolling out. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
+- State the rollback before rolling out; if there isn't one, say so and ask first. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
 - Persisted data changes go expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
 - After a deploy, check the signals that would show it failing, and report what you saw.
