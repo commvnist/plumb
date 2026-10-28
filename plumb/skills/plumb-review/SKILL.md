@@ -37,7 +37,7 @@ Each finding gives the location, a concrete scenario that goes wrong (input, seq
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 
-On a re-review, confirm each earlier finding is resolved and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
+On a re-review, confirm each earlier finding is resolved or, if it wasn't Blocking, declined by the author and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
 
 ## Output
 
