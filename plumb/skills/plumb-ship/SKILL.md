@@ -11,7 +11,7 @@ Never commit, push, open or update a pull request, merge, tag, publish or deploy
 
 ## Before anything leaves
 
-Before you commit or push, read the full diff, untracked files included, once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. If the user asked to commit the work as it stands, commit it and say in the message what fails. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent, without holding up an explicit instruction to ship, unless one was already offered or run on this diff.
+Before you commit or push, read everything you'll commit or push, new files included, once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. If the user asked to commit the work as it stands, commit it and say in the message what fails. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent, without holding up an explicit instruction to ship, unless one was already offered or run on this diff.
 
 ## Commits
 
