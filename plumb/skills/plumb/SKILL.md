@@ -43,7 +43,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 ### Failure
 
 11. **Fail loudly, early, with context.** Never swallow an error, return a made-up default, or catch broadly to make something "work". Handle an error only where you can do something useful about it. *A silent failure is a bug report you'll never receive.*
-12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is deleting, in a diff of its own, a test that guards nothing by plumb-test's standard, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so.
+12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is deleting, in a diff of its own, a test whose behaviour fails plumb-test's three conditions, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so.
 
 ### Evidence
 
