@@ -7,15 +7,15 @@ description: Packages finished work for review and release, covering commit spli
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-Never push, merge, tag, publish or deploy without an explicit instruction to do that specific thing.
+Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing; an instruction to open a pull request covers pushing its branch.
 
 ## Before anything leaves
 
-Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Remove debug leftovers. Run the project's checks and quote the result. For anything non-trivial, offer a review by the plumb-reviewer agent first.
+Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Remove debug leftovers. Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem, stop and report it; in work you didn't write this session, ask before changing a line. Name failures that predate the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent first.
 
 ## Commits
 
-- One logical change per commit, and each commit builds and passes the checks on its own.
+- One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's files; name any other working-tree changes instead of committing them.
 - Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what changes in behaviour; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
 - Never write subjects like "update files", "fix stuff" or "address feedback", and never list the changed files; the diff already shows them.
 
@@ -24,6 +24,8 @@ Read the full diff once more as its reviewer, using the plumb-build self-review 
 When a change is too big for one sitting, or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first, then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split and wait for a yes before rewriting history.
 
 ## Pull request description
+
+Use the project's pull request template if it has one; otherwise:
 
 ```
 ## What
@@ -46,7 +48,7 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 
 ## Releases
 
-- Changelog entries are written for the people affected, describing what changes for them, grouped as Added, Changed, Fixed, Removed and Security. They are not a list of commits.
+- Changelog entries are written for the people affected, describing what changes for them, in the project's changelog format (with none, grouped as Added, Changed, Fixed, Removed and Security). They are not a list of commits.
 - Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change is never hidden in a minor release, however small it is.
 - Know the rollback before rolling out. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
 - Persisted data changes go expand, migrate, contract, in separate releases, so every step can be rolled back.
