@@ -7,7 +7,7 @@ description: Packages finished work for review and release, covering commit spli
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing; an instruction to open a pull request covers committing the change, on a new branch if you're on the default one, and pushing it. Rewriting history that's already pushed (amend, rebase, force push) needs a yes that names it.
+Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing; an instruction to open a pull request covers committing the change, on a new branch if you're on the default one, and pushing it. Rewriting history that's already pushed (amend, rebase, force push) needs a yes that names it. When a push makes an open pull request's description untrue, say which part and offer the update.
 
 ## Before anything leaves
 
@@ -16,7 +16,7 @@ Before you commit or push, read everything you'll commit or push, new files incl
 ## Commits
 
 - One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's hunks and new files; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit, in a temporary worktree you remove afterwards, never by stashing the user's changes.
-- Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what changes in behaviour; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
+- Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what the commit changes, in behaviour where it changes any; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
 - Never write subjects like "update files", "fix stuff" or "address feedback", and never list the changed files; the diff already shows them.
 
 ## Splitting
