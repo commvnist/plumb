@@ -23,5 +23,5 @@ A refactor changes structure and never behaviour. If behaviour must change too, 
 - If the moves need more than one diff, propose the sequence and wait for a go-ahead before the first, as plumb-plan does.
 - Refactor only what the user pointed at. Opportunistic refactors elsewhere are suggestions.
 - Interfaces with consumers outside the repository are never broken in one step: add the new one, migrate the users, remove the old one, each as its own diff.
-- If behaviour changed by accident (a check differs, an output changed), revert that step; don't adjust the test to match.
+- If behaviour changed by accident (a check differs, an output changed), revert that step; don't adjust the test to match. A test that fails only because it reached into internals you moved guards nothing a caller sees: re-point it at the same behaviour through the public surface, see it go red once, and name it in the report.
 - Stop when the goal is met. Don't polish further.
