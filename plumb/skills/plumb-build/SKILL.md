@@ -15,7 +15,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 4. **Baseline.** Run the project's checks relevant to that code (charter rule 15). Note what already fails; it isn't yours.
 5. **Climb the ladder** (charter rule 5) and stop at the first rung that works.
 6. **Make the change.** Edit in place. Keep every contract others rely on unless changing it is the task; if it is, update every dependent in the same diff. A change to persisted data or to consumers outside the repository has to be staged across diffs: go to plumb-plan.
-7. **Prove it.** Run the done-check: it fails or is absent before, and passes after. Add tests only to the floor (charter rule 17). A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept.
+7. **Prove it.** Run the done-check: seen failing without the change (before it, or with it briefly reverted) and passing with it. Add tests only to the floor (charter rule 17). A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept.
 8. **Run the project's checks again.** Fix what you broke. Leave failures that predate you alone and name them.
 9. **Review your own diff as its reviewer.** Read every hunk against the checklist below. Delete every line the task doesn't need. If the review changed anything, repeat steps 7–8.
 10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent.
@@ -34,10 +34,10 @@ Each item is a known failure of generated code. Any "yes" gets fixed before the 
 - A rewrite where an edit would do? A new file where an existing one fits?
 - A new dependency without a yes?
 - A call to something you haven't confirmed exists?
-- A test beyond the floor, or one that would still pass with the bug present?
+- A test beyond the floor that nobody asked for, or one that would still pass with the bug present?
 - Leftover debug output, scratch files or commented-out code?
 - Anything sensitive logged, exposed or trusted without validation at the boundary?
 
 ## Applying accepted suggestions
 
-Apply them in the order chosen, dependencies first, each at its smallest: in this change's diff if it completes code this change adds, otherwise as its own diff, started only once the work before it is committed; if the user says to go on without committing, say once that they will share one diff. Take each one through steps 7–9 and give its own report in the charter's template. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.
+Apply them in the order chosen, dependencies first, each at its smallest: in this change's diff if it completes code this change adds, otherwise as its own diff, started only once the work before it is committed; if the user says to go on without committing, say once that they will share one diff. Take each one through steps 2–9 and give its own report in the charter's template. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.
