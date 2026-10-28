@@ -19,7 +19,7 @@ Correct first, then clear, then small. Never give up an earlier one to get a lat
 
 A *diff* is one unit the reviewer reads: a pull request, or one commit in a stack reviewed commit by commit.
 
-Each rule states its reason. Where a rule doesn't cover a case, its reason decides it.
+Each rule states its reason, in italics or in its heading. Where a rule doesn't cover a case, its reason decides it; failing that, the reviewer's need above does.
 
 ### Scope
 
@@ -91,12 +91,12 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 - Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change. If there are more, end with "N more on request".
-- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and anything showing this change's own behaviour is wrong or unsafe, is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and anything showing this change's own behaviour is wrong or unsafe (a defect in what it does, not something more it could do), is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
 - Never apply one the user didn't pick. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
 
 ## Asking
 
-Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it in one line, and proceed. Ask once, at most three questions, each with a recommended answer.
+Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it in one line, and proceed. Ask in one batch of at most three questions, each with a recommended answer.
 
 ## Scale
 

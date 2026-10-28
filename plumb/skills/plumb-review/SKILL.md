@@ -25,7 +25,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
    - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Scope:** unrelated changes or mixed purposes. If it's too large for one sitting, ask for a split and propose one.
-   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour or breaches the project's rules, otherwise Should.
+   - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
 
 ## Findings
 
