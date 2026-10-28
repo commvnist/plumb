@@ -29,7 +29,7 @@ Look for:
 - **Keep:** meets the plumb-test standard.
 - **Merge:** near-duplicates that should become one table-driven test.
 - **Rewrite:** guards the right behaviour in a brittle way, through internals, heavy fakes or sleeps.
-- **Delete:** matches plumb-test's "Reject on sight" list, or can't fail. Never break code to prove a test can't fail: name the break it would miss and mark it "can't fail (unconfirmed)". Proving it is a follow-up the user can pick.
+- **Delete:** matches plumb-test's "Reject on sight" or "No test" list, or can't fail. Never break code to prove a test can't fail: name the break it would miss and mark it "can't fail (unconfirmed)". Proving it is a follow-up the user can pick.
 
 **Find gaps** from risk, not from coverage numbers. List the behaviours that matter (from callers, business rules, input boundaries, bug history in version control, areas that keep breaking), map each to the tests that would catch a realistic break, and report the high-risk behaviours that have none. Coverage tools may suggest where to look; they never decide.
 

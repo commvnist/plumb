@@ -35,7 +35,7 @@ Cases that differ only by data share one table-driven test. Coverage shows what 
 
 ## Reject on sight
 
-Assertions on source text, file layout, log wording or private internals. Expected values computed the way the code computes them. Fakes of the unit under test. Snapshots nobody reads. Tests that lock in incidental repository state, such as counts or lists of registered items. Tests with no assertion, or that catch an error in order to pass. Sleep-based waiting. Near-duplicates.
+Assertions on source text, file layout, log wording or private internals. Expected values computed the way the code computes them. Fakes of the unit under test. Snapshots nobody reads. Tests of the language or a library. Tests that lock in incidental repository state, such as counts or lists of registered items. Tests with no assertion, or that catch an error in order to pass. Sleep-based waiting. Near-duplicates.
 
 ## Test-driven loop
 
