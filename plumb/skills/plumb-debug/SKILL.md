@@ -11,7 +11,7 @@ Debugging is finding out, not trying things. No fix is written until the cause i
 
 ## Steps
 
-1. **Reproduce.** Build the smallest reliable reproduction and capture the exact error or output. If you can't reproduce it, gather evidence (inputs, logs, versions, environment), trace from that, and say what's missing; no fix until step 4 names a cause.
+1. **Reproduce.** Build the smallest reliable reproduction and capture the exact error or output. Reproduce and probe where it affects nothing real; anything that writes to, sends from or loads a shared or production system needs the user's yes first. If you can't reproduce it, gather evidence (inputs, logs, versions, environment), trace from that, and say what's missing; no fix until step 4 names a cause.
 2. **Trace.** Follow the data and control flow backward from the symptom toward its origin. Read the code; don't assume it.
 3. **Hypothesise and test.** Write down the candidate causes, most likely first. Test each with the cheapest observation that tells them apart: temporary instrumentation, a debugger, halving the input, bisecting through version history. Change one thing at a time.
 4. **Name the cause** in one sentence that explains every symptom. If it doesn't explain all of them, you haven't found it, or there is more than one bug: name each cause and fix each in its own diff, starting the next only once the user has committed the one before or asked you to. Keep asking why until you reach the fault, not the place it surfaced. If only the cause was asked for, or nothing is broken and the report asks for different behaviour, stop here: report the cause and offer the change.
