@@ -7,7 +7,7 @@ description: One-shot, read-only health report on a codebase or its test suite, 
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-An audit leaves the code exactly as it found it. It returns a ranked list the user can act on one diff at a time.
+An audit edits nothing, not even briefly; mark a test you'd have to break code to judge as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
 **Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings.
 
@@ -25,7 +25,7 @@ Look for:
 
 ## Tests mode
 
-**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test, and if it is worth keeping, find and remove its nondeterminism (plumb-test). Never keep it as it is, and never delete it just for being flaky.
+**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; one worth keeping is Rewrite, with fixing its nondeterminism at its source (plumb-test) as the action. Never delete it just for being flaky.
 - **Keep:** none of the below applies. Style flaws alone are not a finding.
 - **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
@@ -44,7 +44,7 @@ Fix first:
 3. …
 
 Then:
-4. …   (at most 15 findings in total, ranked)
+4. …   (at most 15 findings in total, ranked; if there are more, end with "N more on request")
 
 Delete: <items> — ~<lines removed in total>
 Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests mode)
