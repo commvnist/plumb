@@ -49,7 +49,7 @@ Use it when the user asks for it, or when the behaviour is well specified up fro
 2. **Red.** Write one test and run it. Confirm it fails for the reason you expect, not because of a typo, a missing import or a setup error.
 3. **Green.** Write the simplest honest code that passes. Never special-case the test's inputs.
 4. **Refactor.** With everything green, simplify the code and the tests you just wrote without changing behaviour. Run again.
-5. **Repeat** until the list is done. Then delete tests that later tests have made redundant.
+5. **Repeat** until the list is done. Then delete the tests from this loop that later ones have made redundant.
 
 The delivered diff holds tests that meet this standard, not a record of every step.
 
