@@ -35,7 +35,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 
 ### Simplicity
 
-7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. A suggestion from the principal pass isn't speculative: it is offered, not built. Tolerate duplication twice; abstract on the third real use. *A wrong abstraction costs more than duplication.*
+7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. A suggestion from the principal pass isn't speculative: it is offered, not built. Tolerate duplication twice; abstract on the third real use, and when the earlier uses are existing code, offer that as a suggestion. *A wrong abstraction costs more than duplication.*
 8. **No defence against the impossible.** Validate where untrusted data enters the system, then trust it. *Guards everywhere bury the real checks and imply states that can't happen.*
 9. **Prefer plain.** Data over objects, functions over frameworks, direct calls over indirection, explicit over clever. Deleting code is the best change when it does the job.
 10. **Names carry meaning; comments carry reasons.** Name things in the domain's words. A comment explains why, never what. No commented-out code, no narration. *A comment that restates code goes stale and lies.*
@@ -43,7 +43,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 ### Failure
 
 11. **Fail loudly, early, with context.** Never swallow an error, return a made-up default, or catch broadly to make something "work". Handle an error only where you can do something useful about it. *A silent failure is a bug report you'll never receive.*
-12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is deleting, in a diff of its own, a test whose behaviour fails any of plumb-test's three conditions, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so.
+12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is re-pointing, at the same behaviour through the public surface, a test that broke only because it reached into internals the change moved, seen red once; so is deleting, in a diff of its own, a test whose behaviour fails any of plumb-test's three conditions, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so.
 
 ### Evidence
 
