@@ -17,20 +17,20 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 1. **Learn the intent** from the description and any linked issue. If nothing states it, infer it from the diff and state your reading in the verdict line; only a change that is itself ambiguous about its intent makes that the first finding.
 2. **Read the whole diff, then what it touches:** callers, callees, the tests, and the data it reads and writes. Bugs live in the connections, not only in the changed lines.
-3. **Run the checks** where you can, without disturbing the user's working tree (use a separate worktree for another branch or the base). Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
+3. **Run the checks** where you can, without disturbing the user's working tree (use a temporary worktree for another branch or the base, and remove it when done). Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
 4. **Judge in this order:**
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
    - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
    - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
-   - **Scope:** unrelated changes or mixed purposes. If it's too large for one sitting, ask for a split and propose one.
+   - **Scope:** unrelated changes or mixed purposes within one diff (in a stack read commit by commit, each commit is a diff). If it's too large for one sitting, ask for a split and propose one.
    - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
 
 ## Findings
 
 - **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet, too large or mixed to review safely.
-- **Should:** a real improvement with a concrete benefit; the author decides.
+- **Should:** a real improvement with a concrete benefit; the author decides. At most five, ranked as the charter ranks suggestions.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
@@ -53,4 +53,4 @@ Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 
-An empty section is omitted. A clean change gets one line: `Verdict: approve — <reason>`. Change no code unless asked; if asked, apply fixes as plumb-build applies accepted suggestions.
+An empty section is omitted. A clean change gets two lines: `Verdict: approve — <reason>` and `Verified:`. Change no code unless asked; if asked, apply fixes as plumb-build applies accepted suggestions.
