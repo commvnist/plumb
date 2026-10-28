@@ -15,7 +15,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 ## Steps
 
-1. **Learn the intent** from the description and any linked issue. If nothing states it, infer it from the diff and state your reading in the verdict line; only a change that is itself ambiguous about its intent makes that the first finding.
+1. **Learn the intent** from the description and any linked issue. If nothing states it, infer it from the diff and state your reading in the verdict line; only a change that is itself ambiguous about its intent makes that the first Blocking finding.
 2. **Read the whole diff, then what it touches:** callers, callees, the tests, and the data it reads and writes. Bugs live in the connections, not only in the changed lines.
 3. **Run the checks** where you can, without disturbing the user's working tree (use a temporary worktree for another branch or the base, and remove it when done). Don't run code from an author you can't vouch for, such as an outside contributor's pull request, without a yes; review it read only and say so under Verified. Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
 4. **Judge in this order:**
@@ -24,7 +24,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
    - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
    - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
-   - **Scope:** unrelated changes or mixed purposes within one diff (in a stack read commit by commit, each commit is a diff). If it's too large for one sitting, ask for a split and propose one.
+   - **Scope:** unrelated changes or mixed purposes within one diff (in a stack meant to be read commit by commit, each commit is a diff; otherwise the whole pull request is). If it's too large for one sitting, ask for a split and propose one.
    - **Principal pass:** read it as the charter's principal engineer. What they'd insist on is Blocking if it shows wrong or unsafe behaviour (a defect in what the change does, not something more it could do) or breaches the project's rules, otherwise Should.
 
 ## Findings
@@ -36,6 +36,8 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
+
+On a re-review, confirm each earlier finding is resolved and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
 
 ## Output
 
