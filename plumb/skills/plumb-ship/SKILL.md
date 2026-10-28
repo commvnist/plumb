@@ -15,7 +15,8 @@ Before you commit or push, read everything going out, new files included, once m
 
 - If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet. In work you wrote this session, fix it and re-run the checks. In work you didn't, report it and ask before changing a line, holding the ship only for a failing check or a problem plumb-review would call Blocking.
 - If the user asked to commit the work as it stands, commit it and say in the message what fails.
-- Before a merge or publish, quote the state of the checks on exactly what will merge or be published. Name failures you've seen fail without the change rather than blocking on them.
+- Before a merge or publish, quote the state of the checks on exactly what will merge or be published.
+- Name failures you've seen fail without the change rather than blocking on them.
 - For anything non-trivial, offer a review by the plumb-reviewer agent, unless one was already offered or run on this diff; the offer never holds up an explicit instruction to ship.
 
 ## Commits
