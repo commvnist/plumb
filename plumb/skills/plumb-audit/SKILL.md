@@ -7,9 +7,9 @@ description: One-shot, read-only health report on a codebase or its test suite, 
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-An audit edits nothing, not even briefly; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
+An audit changes nothing in the repository, not even briefly, and adds no files to it; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
-**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings.
+**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges.
 
 ## Code mode
 
@@ -19,7 +19,7 @@ Look for:
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
 5. **Risky code with no proof:** important logic that nothing tests.
-6. **Deletion:** dead code and unused options (anything outside consumers can reach is an interface change, not dead), abstractions with a single use, duplicated helpers, needless dependencies.
+6. **Deletion:** dead code and unused options (check indirect users as plumb-refactor step 2 does; anything outside consumers can reach is an interface change, not dead), abstractions with a single use, duplicated helpers, needless dependencies.
 7. **Inconsistency:** several ways of doing the same thing, where one should win.
 8. **Docs that lie:** comments and documentation the code contradicts.
 
