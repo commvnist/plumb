@@ -52,7 +52,7 @@ The delivered diff holds tests that meet this standard, not a record of every st
 ## When a test fails
 
 - Decide whether the test or the code is wrong from the requirement, not from which is easier to change.
-- Never weaken an assertion, widen a tolerance, skip or delete a test to go green without the user's explicit yes and a stated reason.
+- Never weaken an assertion, widen a tolerance, skip or delete a test to go green (charter rule 12). Updating or removing a test whose behaviour the task deliberately changes is part of the change, not a weakening.
 - A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence) and remove it. Never add retries or sleeps to hide it.
 
 For pruning or finding gaps across a whole suite, use plumb-audit in tests mode.

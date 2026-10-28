@@ -11,10 +11,10 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 
 1. **Size it.** If it won't fit one reviewable diff, or expensive-to-reverse decisions are open, go to plumb-plan first.
 2. **Define done.** Name the observable check that proves the task works: a command, a test, a visible result. If you can't name one, the task isn't clear yet.
-3. **Baseline.** Run the project's own checks. Note what already fails; it isn't yours.
-4. **Read before writing.** Read the code you'll change, everything that calls it, its tests, and one nearby example of the same kind of thing. Copy that example's conventions. In a large or unfamiliar codebase, send the plumb-scout agent and work from its map.
+3. **Read before writing.** Read the code you'll change, everything that calls it, its tests, and one nearby example of the same kind of thing. Copy that example's conventions. In a large or unfamiliar codebase, send the plumb-scout agent and work from its map.
+4. **Baseline.** Run the project's checks relevant to that code (charter rule 15). Note what already fails; it isn't yours.
 5. **Climb the ladder** (charter rule 5) and stop at the first rung that works.
-6. **Make the change.** Edit in place. Keep every contract others rely on unless changing it is the task; if it is, update every dependent in the same diff.
+6. **Make the change.** Edit in place. Keep every contract others rely on unless changing it is the task; if it is, update every dependent in the same diff. For consumers outside the repository or persisted data, stage it instead: add the new form, migrate the users, remove the old, each as its own diff.
 7. **Prove it.** Run the done-check: it fails or is absent before, and passes after. Add tests only to the floor (charter rule 17). A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept.
 8. **Run the project's checks again.** Fix what you broke. Leave failures that predate you alone and name them.
 9. **Review your own diff as its reviewer.** Read every hunk against the checklist below. Delete every line the task doesn't need.
@@ -40,4 +40,4 @@ Each item is a known failure of generated code. Any "yes" gets fixed before the 
 
 ## Applying accepted suggestions
 
-Apply them in the order chosen, dependencies first, each as its own diff at its smallest. After each one, run the checks and give a short report. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.
+Apply them in the order chosen, dependencies first, each as its own diff at its smallest. After each one, run the checks and give its own report in the charter's template. Show the remaining menu only if it changed or items are still open; don't invent new items to refill it.

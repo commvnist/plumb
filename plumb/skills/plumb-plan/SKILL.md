@@ -28,7 +28,8 @@ Decisions:     <decision — choice — reason>, one per line
 Steps:
 1. <diff title> — <what it delivers or proves> — ~<n> lines — after: <step>
 Unknowns:      <risks and how each step retires them>
-Questions:     <only those that change the plan, each with a recommended answer>
+Questions:     <only those that change the plan, at most three, each with a recommended answer>
+Suggestions:   <real but unrequested work, by the charter's menu rules>
 ```
 
 ## Rules

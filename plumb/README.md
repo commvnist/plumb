@@ -23,7 +23,7 @@ One engineering philosophy across the whole development lifecycle.
 | Agent | Used by | Why a separate agent |
 |---|---|---|
 | `plumb-scout` | plan, build | Maps what a change touches without flooding the main context |
-| `plumb-reviewer` | review, ship | Fresh eyes: never sees the author's reasoning |
+| `plumb-reviewer` | build, review, ship | Fresh eyes: never sees the author's reasoning |
 | `plumb-auditor` | audit | One per area, run in parallel |
 
 ## Flow
@@ -33,4 +33,4 @@ plan → build → (test · debug · refactor as needed) → review → ship
                       audit any time
 ```
 
-Every phase ends with the same report: what changed, what was verified, what wasn't, risks, and the suggestions menu.
+Every phase that changes code ends with the same report: what changed, what was verified, what wasn't, risks, and the suggestions menu. Plan, review and audit return their own formats.

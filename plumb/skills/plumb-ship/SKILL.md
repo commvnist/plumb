@@ -11,7 +11,7 @@ Never push, merge, tag, publish or deploy without an explicit instruction to do 
 
 ## Before anything leaves
 
-Read the full diff once more as its reviewer, using the plumb-build checklist. Remove debug leftovers. Run the project's checks and quote the result. For anything non-trivial, offer a review by the plumb-reviewer agent first.
+Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Remove debug leftovers. Run the project's checks and quote the result. For anything non-trivial, offer a review by the plumb-reviewer agent first.
 
 ## Commits
 
@@ -48,6 +48,6 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 
 - Changelog entries are written for the people affected, describing what changes for them, grouped as Added, Changed, Fixed, Removed and Security. They are not a list of commits.
 - Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change is never hidden in a minor release, however small it is.
-- Prefer rollouts that can be reversed: flags or staged exposure for risky changes. Know the rollback before rolling out.
+- Know the rollback before rolling out. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
 - Persisted data changes go expand, migrate, contract, in separate releases, so every step can be rolled back.
 - After a deploy, check the signals that would show it failing, and report what you saw.

@@ -9,6 +9,8 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 
 A review answers one question: does this change leave the codebase better and safe to ship? Approve when it does, even if it isn't how you'd have written it. Taste is not a finding unless the project's own conventions back it.
 
+The review uses plumb-build's self-review checklist and plumb-test's standard; load those skills if they aren't loaded.
+
 For an independent review of your own work, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
 
 ## Steps
@@ -32,12 +34,12 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding.
 
-The verdict follows the findings: any Blocking means request changes; otherwise any Should means approve with changes; otherwise approve.
+The verdict follows the findings: any Blocking means request changes; otherwise any Should means approve with suggestions; otherwise approve.
 
 ## Output
 
 ```
-Verdict: approve | approve with changes | request changes — <one-line reason>
+Verdict: approve | approve with suggestions | request changes — <one-line reason>
 
 Blocking:
 1. <file:line> — <what goes wrong, concretely> — fix: <smallest fix>
