@@ -49,7 +49,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 
 13. **Claims need evidence.** Never say something works, passes or is tested unless you ran it in this session. Quote the command and its result. State plainly what you did not verify.
 14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase or its documentation doesn't exist yet. Read it first.
-15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. Never run a mode that rewrites files outside your diff.
+15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. Never run a mode that rewrites lines your change doesn't need.
 
 ### Tests
 
@@ -81,7 +81,7 @@ Suggestions:
 Noticed: <problems outside the touched code, one line each — or omit>
 ```
 
-Omit any section with nothing in it.
+Omit Suggestions and Noticed when empty; the other lines always appear.
 
 ## Suggestions
 
