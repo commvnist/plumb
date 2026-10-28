@@ -18,7 +18,7 @@ Write one only when all three hold:
 
 If catching that break needs heavy setup, many fakes or a slow resource, test it at the level where it is cheap and real; if no such level exists, write no test unless the floor (charter rule 17) requires one, and say so in the report.
 
-A request to "add tests" asks for the tests that meet this bar, not for coverage. Write those, and list in one line what you deliberately left untested and why, so the user can override.
+A general request to "add tests" asks for the tests that meet this bar, not for coverage. Write those, and list in one line what you deliberately left untested and why, so the user can override. A test the user names specifically gets written; if it fails the bar, say so once.
 
 Highest value: regressions of real bugs, business rules and calculations, parsing and validation of untrusted input, state transitions, concurrency and repeat-delivery contracts, security boundaries, public interfaces others build on.
 
@@ -30,7 +30,7 @@ No test of its own: wiring and configuration, plain data, pass-through and deleg
 - **Sensitive.** It fails when the behaviour breaks. Prove it: watch it fail before the fix exists, or briefly break the code and see it go red.
 - **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals. It asserts only what the behaviour promises; comparing whole objects or exact order locks in what callers don't rely on.
 - **Focused.** It has one reason to fail, and its name states the behaviour ("rejects an expired coupon"), not the function it calls.
-- **Readable alone.** Setup, action and assertion are visible in the test. Data is inline and minimal. A reader understands it without opening other files.
+- **Readable alone.** Setup, action and assertion are visible in the test, and the data that decides the outcome is inline and minimal; build the rest with the project's own fixtures.
 - **Deterministic and fast.** It controls time, randomness, ordering and concurrency, and touches no real network.
 - **Honest about boundaries.** Fake only what the code doesn't own: networks, clocks, outside services. Use real collaborators inside the boundary.
 - **Pitched at the right level.** Test at the lowest level that exercises the real behaviour with real collaborators. When the risk is in the wiring, one integration test beats five unit tests full of fakes.
