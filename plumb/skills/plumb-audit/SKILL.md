@@ -7,15 +7,15 @@ description: One-shot, read-only health report on a codebase or its test suite, 
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-An audit edits nothing, not even briefly; mark a test you'd have to break code to judge as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
+An audit edits nothing, not even briefly; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
 **Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings.
 
 ## Code mode
 
 Look for:
-1. **Correctness:** bugs with a concrete failing scenario.
-2. **Safety:** security holes, data loss, leaked secrets or personal data, unsafe handling of untrusted input.
+1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it; say so in the finding if you couldn't confirm it.
+2. **Safety:** security holes, data loss, leaked secrets or personal data (cite the location, never the value; a live secret's action is rotate, then remove), unsafe handling of untrusted input.
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
 5. **Risky code with no proof:** important logic that nothing tests.
