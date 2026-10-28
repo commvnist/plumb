@@ -2,7 +2,7 @@
 
 One engineering philosophy across the whole development lifecycle.
 
-**The reviewer is the customer.** Every change is the smallest complete diff that does the job, proven by evidence rather than claims, with one purpose per diff. Everything else (cleanups, extra tests, refactors, hardening) is offered as a ranked, numbered menu. Each accepted item lands as its own diff.
+**The reviewer is the customer.** Every change is the smallest complete diff that does the job, proven by evidence rather than claims, with one purpose per diff. Everything else (cleanups, extra tests, refactors, hardening) is offered as a ranked, numbered menu. An accepted item lands as its own diff unless it completes code the change itself adds.
 
 ## Skills
 
