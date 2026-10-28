@@ -25,7 +25,7 @@ Look for:
 
 ## Tests mode
 
-**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; for one worth keeping, the action removes the cause at its source: its nondeterminism (plumb-test, as Rewrite), or the code bug it caught (plumb-debug, ranked as a correctness finding). Never delete it just for being flaky.
+**Prune.** Load plumb-test if it isn't loaded; its standard decides each class. Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test; for one worth keeping, the action removes the cause at its source: its nondeterminism (plumb-test, as Rewrite), or the code bug it caught (plumb-debug, ranked as a correctness finding). Never delete it just for being flaky.
 - **Keep:** none of the below applies. Style flaws alone are not a finding.
 - **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
