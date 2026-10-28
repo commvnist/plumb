@@ -29,7 +29,7 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 
 ## Findings
 
-- **Blocking:** wrong behaviour, unsafe, breaks a contract, fakes success, the test floor unmet, too large or mixed to review safely.
+- **Blocking:** wrong behaviour, unsafe, breaks a contract or the project's written rules, fakes success, the test floor unmet, too large or mixed to review safely.
 - **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
@@ -51,7 +51,7 @@ Should:
 Nits:
 - …
 Delete: <code or tests this change adds or leaves dead that can go, with line counts>
-Noticed: <problems the change didn't cause, one line each>
+Noticed: <problems the change didn't cause and doesn't worsen, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 

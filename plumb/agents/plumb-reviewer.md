@@ -49,7 +49,7 @@ Should:
 Nits:
 - …
 Delete: <code or tests this change adds or leaves dead that can go, with line counts>
-Noticed: <problems the change didn't cause, one line each>
+Noticed: <problems the change didn't cause and doesn't worsen, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 Any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve. Omit empty sections. A clean change gets two lines: the verdict and Verified.
