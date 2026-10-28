@@ -35,7 +35,7 @@ No test of its own: wiring and configuration, plain data, pass-through and deleg
 - **Honest about boundaries.** Fake only what the code doesn't own: networks, clocks, outside services. Use real collaborators inside the boundary.
 - **Pitched at the right level.** Test at the lowest level that exercises the real behaviour with real collaborators. When the risk is in the wiring, one integration test beats five unit tests full of fakes.
 
-Cases that differ only by data share one table-driven test. Coverage shows what nothing tests; it never shows what is tested well. Never chase a coverage number.
+Cases that differ only by data share one table-driven test, with one row per distinct break. Coverage shows what nothing tests; it never shows what is tested well. Never chase a coverage number.
 
 ## Reject on sight
 

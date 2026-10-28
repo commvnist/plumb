@@ -27,7 +27,7 @@ Look for:
 
 **Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped or quarantined because it failed, retried, or flaky) as a finding: classify it like any other test, and if it is worth keeping, find and remove its nondeterminism (plumb-test). Never keep it as it is, and never delete it just for being flaky.
 - **Keep:** none of the below applies. Style flaws alone are not a finding.
-- **Merge:** near-duplicates that should become one table-driven test, or a cluster of fake-heavy tests that one test at the right level would replace.
+- **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
 - **Delete:** guards no behaviour worth keeping: the behaviour behind it, judged apart from what the test happens to assert, fails any of plumb-test's three conditions (nobody relies on it, no nameable break, or other tests or checks already catch every realistic break in it; of overlapping tests, keep the one that best meets the standard). Before calling a break unnameable, read the commit that added the test; a test that landed with a fix names its break there. A test whose behaviour meets all three is never Delete, even if it matches "Reject on sight" or "No test" or can't fail: keep it if it is sound and asserts that behaviour where a caller sees it, otherwise Merge or Rewrite.
 
