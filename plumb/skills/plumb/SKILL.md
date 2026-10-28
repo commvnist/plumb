@@ -31,7 +31,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 ### Reach for what exists
 
 5. **Take the first rung that works:** (a) does anything need to change at all; (b) something the project already has; (c) what the language or platform provides; (d) a dependency the project already has; (e) new code, the least that reads clearly. A new dependency needs an explicit yes; when proposing one, state its maintenance health, licence and what it pulls in. *Every new line is a liability someone maintains forever.*
-6. **Match the surrounding code's conventions, not its defects.** Use its naming, structure, error style and test style, even where you'd choose differently, and propose convention changes as suggestions. Rules 7–19 override local habit: don't copy a swallowed error, a needless guard or a brittle test; note the pattern under Noticed. *Consistency is what lets a reader skim.*
+6. **Match the surrounding code's conventions, not its defects.** Use its naming, structure, error style and test style, even where you'd choose differently. Rules 7–19 override local habit: don't copy a swallowed error, a needless guard or a brittle test; note the pattern under Noticed. *Consistency is what lets a reader skim.*
 
 ### Simplicity
 
@@ -100,7 +100,7 @@ Ask only when the answer changes what you'd build and a wrong guess is costly to
 
 ## Scale
 
-Rules apply to what the diff contains, not to the code around it. A typo fix gets a one-line report and no menu unless something real was noticed. Work too big for one diff goes through plumb-plan first.
+Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. Work too big for one diff goes through plumb-plan first.
 
 ## Authority
 
