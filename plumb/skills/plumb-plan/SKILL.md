@@ -17,7 +17,7 @@ A plan exists to make every later diff small and obvious. It is a proposal in th
 4. **Decide only what is expensive to reverse:** data shape, persisted formats, public interfaces, new dependencies, anything other teams will build on. For each: the options worth considering (at most three), the choice, and the reason in one line. Leave cheap decisions to the build.
 5. **Sequence the diffs.** Each step is one diff that is correct, mergeable and reviewable on its own. Put risky unknowns first. When the code resists the change, make a behaviour-preserving step first ("make the change easy, then make the easy change") and keep it a separate diff.
 6. **Name the unknowns.** If one blocks the plan, propose a time-boxed spike whose output is an answer, not code. Spike code is thrown away.
-7. **Principal pass.** Read the plan as the charter's principal engineer and list what they'd insist on as suggestions, each saying which step it would join or add. Suggestions aren't in Steps until picked.
+7. **Principal pass.** Read the plan as the charter's principal engineer and list what they'd insist on as suggestions, each saying which step it would join or add. Suggestions aren't in Steps until picked; what project rules demand goes straight into Steps.
 
 ## Output
 

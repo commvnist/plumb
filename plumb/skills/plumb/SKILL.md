@@ -91,8 +91,8 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 - Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change. If there are more, end with "N more on request".
-- Mark any suggestion that adds a dependency or changes a contract others rely on. Mark as *required* any the project's written rules demand: it is part of done (rule 1), not optional.
-- Never apply one the user didn't pick, unless it is required. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand is not a suggestion: it is part of done (rule 1). Build it before proving the change, or put it in the plan's Steps.
+- Never apply one the user didn't pick. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
 
 ## Asking
 
