@@ -51,5 +51,5 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 - Changelog entries are written for the people affected, describing what changes for them, in the project's changelog format (with none, grouped as Added, Changed, Fixed, Removed and Security). They are not a list of commits.
 - Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change always gets the scheme's breaking bump, however small it is.
 - State the rollback before rolling out; if there isn't one, say so and ask first. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
-- A breaking or irreversible change to persisted data goes expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
+- A breaking change to persisted data goes expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
 - After a deploy, and after each stage of one, check the signals that would show it failing and report what you saw; if they do, stop the rollout and propose the rollback, taking it only on a yes.
