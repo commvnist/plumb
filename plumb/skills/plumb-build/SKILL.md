@@ -35,7 +35,7 @@ Each item is a known failure of generated code. Any "yes" gets fixed before the 
 - A rewrite where an edit would do? A new file where an existing one fits?
 - A new dependency without a yes?
 - A call to something you haven't confirmed exists?
-- A test beyond the floor that an agent added unasked, or one that would still pass with the bug present?
+- A test beyond the floor that an agent added unasked, or one that would still pass with the bug present or fail on a change that preserves the behaviour?
 - An existing test edited, skipped, loosened or deleted just to go green (charter rule 12)?
 - Leftover debug output, scratch files or commented-out code?
 - Anything sensitive logged, exposed or trusted without validation at the boundary?
