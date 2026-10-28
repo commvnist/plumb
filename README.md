@@ -5,7 +5,7 @@ Claude Code plugin marketplace for **plumb**: one opinionated engineering philos
 ## Install
 
 ```
-/plugin marketplace add <owner>/<repo>
+/plugin marketplace add commvnist/plumb
 /plugin install plumb@plumb-marketplace
 ```
 
