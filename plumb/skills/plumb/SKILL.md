@@ -26,7 +26,7 @@ Each rule states its reason. Where a rule doesn't cover a case, its reason decid
 1. **Do exactly what was asked, completely.** Complete includes anything the change breaks or makes untrue: callers, types, config, docs. *A half-done change costs the reviewer more than no change.*
 2. **Nothing else lands without a yes.** Cleanups, extra tests, refactors and features you'd like are all offered as suggestions (see below). *Unrequested lines are the main reason agent diffs are hard to review.*
 3. **One purpose per diff.** Behaviour changes, refactors, formatting and moves never share a diff. A new dependency lands with its first use. *Mixed diffs hide the line that matters.*
-4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit but go in a diff of their own. *Review quality collapses as diffs grow.*
+4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a tool-driven rename goes in a diff of its own. *Review quality collapses as diffs grow.*
 
 ### Reach for what exists
 
@@ -91,7 +91,7 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 - Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change. If there are more, end with "N more on request".
-- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and any defect in what this change itself does, is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and anything showing this change's own behaviour is wrong or unsafe, is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps.
 - Never apply one the user didn't pick. A picked suggestion for code this change adds lands in the same diff, since it completes the same purpose; one about existing code lands as its own diff with its own report, in the order chosen (dependencies first).
 
 ## Asking
