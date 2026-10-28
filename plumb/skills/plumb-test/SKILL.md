@@ -55,8 +55,8 @@ The delivered diff holds tests that meet this standard, not a record of every st
 
 ## When a test fails
 
-- Decide whether the test or the code is wrong from the requirement, not from which is easier to change. When a new test exposes a bug the task didn't cause, neither fix it here nor assert the wrong output: report it, and offer the fix as a suggestion, with that test landing alongside it as its regression test.
+- Decide whether the test or the code is wrong from the requirement, not from which is easier to change. When a new test exposes an existing bug, never assert the wrong output. If the task's behaviour depends on it, stop and propose fixing it first, in its own diff with plumb-debug; otherwise report it and offer the fix as a suggestion, with that test landing alongside it as its regression test.
 - Never weaken an assertion, widen a tolerance, skip or delete a test to go green, except as charter rule 12 allows.
-- A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence) and remove it. Never add retries or sleeps to hide it.
+- A flaky test is a real bug. When fixing it is the task, or your change made it flaky, find the nondeterminism (time, ordering, shared state, concurrency, outside dependence) and remove it; otherwise name it under Noticed. Never add retries or sleeps to hide it.
 
 For pruning or finding gaps across a whole suite, use plumb-audit in tests mode.
