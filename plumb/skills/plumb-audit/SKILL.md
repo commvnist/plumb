@@ -25,11 +25,11 @@ Look for:
 
 ## Tests mode
 
-**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped, quarantined, retried or flaky) as a finding: fix it or delete it, never keep it as it is. Weigh slow tests by what they catch per second.
-- **Keep:** meets the plumb-test standard and you can name the break it catches.
+**Prune.** Classify each test, or each cluster of similar tests. Treat any test the suite has stopped trusting (skipped, quarantined, retried or flaky) as a finding: classify it like any other test, and if it is worth keeping, find and remove its nondeterminism (plumb-test). Never keep it as it is, and never delete it just for being flaky. Weigh slow tests by what they catch per second.
+- **Keep:** you can name the break it catches, nothing else catches it, and it isn't brittle. Style flaws alone are not a finding.
 - **Merge:** near-duplicates that should become one table-driven test, or a cluster of fake-heavy tests that one test at the right level would replace.
 - **Rewrite:** guards the right behaviour in a brittle way, through internals, heavy fakes or sleeps.
-- **Delete:** guards no behaviour worth keeping: it fails any of plumb-test's three conditions (nobody relies on it, no nameable break, or other tests already catch every break it would), matches "Reject on sight" or "No test", or can't fail. A test that guards real behaviour in a rejected way is Merge or Rewrite instead. Never break code to prove a test can't fail: name the break it would miss and mark it "can't fail (unconfirmed)". Proving it is a follow-up the user can pick.
+- **Delete:** guards no behaviour worth keeping: it fails any of plumb-test's three conditions (nobody relies on it, no nameable break, or other tests already catch every break it would; of overlapping tests, keep the one that best meets the standard), matches "Reject on sight" or "No test", or can't fail. A test that guards real behaviour in a rejected way is Merge or Rewrite instead. Never break code to prove a test can't fail: name the break it would miss and mark it "can't fail (unconfirmed)". Before a diff deletes it, break the code briefly; if the test goes red, it stays.
 
 **Find gaps** from risk, not from coverage numbers. List the behaviours that matter (from callers, business rules, input boundaries, bug history in version control, areas that keep breaking), map each to the tests that would catch a realistic break, and report the high-risk behaviours that have none. Coverage tools may suggest where to look; they never decide.
 
