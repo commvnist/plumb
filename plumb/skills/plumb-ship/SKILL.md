@@ -25,7 +25,7 @@ Before you commit or push, read everything going out, new files included, once m
 
 ## Splitting
 
-When a change is too big for one sitting, or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first, then the behaviour change, then cleanup. Propose the split, as commits in one pull request or as separate pull requests, and wait for a yes before making it.
+When a change is too big for one sitting, or mixes purposes, split it into a stack: preparatory behaviour-preserving changes first, then the behaviour change, then cleanup. Each piece is correct and mergeable on its own. Propose the split, as commits in one pull request or as separate pull requests, and wait for a yes before making it.
 
 ## Pull request description
 

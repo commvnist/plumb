@@ -23,5 +23,5 @@ A refactor changes structure and never behaviour. If behaviour must change too, 
 - If the moves need more than one diff, propose the sequence and wait for a go-ahead before the first; then land them one at a time (charter rule 4).
 - Refactor only what the user pointed at. Opportunistic refactors elsewhere are suggestions.
 - Interfaces with consumers outside the repository, and persisted names, are never broken in one step: stage them as plumb-plan step 5 does.
-- If behaviour changed by accident (a check differs, an output changed), revert that step; don't adjust the test to match. A test that fails only because it reached into internals you moved is re-pointed if the behaviour behind it meets plumb-test's three conditions, otherwise deleted, both as charter rule 12 says; name a re-pointed test in the report.
+- If behaviour changed by accident (a check differs, an output changed), revert that step; don't adjust the test to match. A test that fails only because it reached into internals you moved is re-pointed if the behaviour behind it meets plumb-test's three conditions, otherwise deleted, both as charter rule 12 says, the deletion landing before the step that broke it; name a re-pointed test in the report.
 - Stop when the goal is met. Don't polish further.
