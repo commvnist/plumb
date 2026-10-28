@@ -16,7 +16,7 @@ Debugging is finding out, not trying things. No fix is written until the cause i
 3. **Hypothesise and test.** Write down the candidate causes, most likely first. Test each with the cheapest observation that tells them apart: temporary instrumentation, a debugger, halving the input, bisecting through version history. Change one thing at a time.
 4. **Name the cause** in one sentence that explains every symptom. If it doesn't explain all of them, you haven't found it. Keep asking why until you reach the fault, not the place it surfaced.
 5. **Fix at the origin.** If the origin fix needs a diff of its own, stop and offer both options with their sizes. Never ship a suppression as the "safe" fix: a catch that ignores, a guard over a deeper fault, a retry around a bug, a sleep around a race.
-6. **Lock it.** Add the regression test (charter rule 17) and watch it fail without the fix and pass with it.
+6. **Lock it.** Meet the bug-fix floor (charter rule 17) and watch the test fail without the fix and pass with it.
 7. **Clean up.** Remove every piece of temporary instrumentation.
 8. **Report.** The Why line states the cause. Under Noticed, list other places where the same fault pattern appears; don't fix them unasked.
 
