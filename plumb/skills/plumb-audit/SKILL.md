@@ -47,7 +47,7 @@ Then:
 4. …   (at most 15 findings in total, ranked; if there are more, end with "N more on request")
 
 Delete: <items> — ~<lines removed in total>
-Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests mode)
+Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests or both)
 Not examined: <areas skipped, and why>
 ```
 
