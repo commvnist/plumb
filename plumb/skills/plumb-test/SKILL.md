@@ -48,15 +48,16 @@ Use it when the user asks for it, or when the behaviour is well specified up fro
 1. **List** the behaviours the test floor requires (charter rule 17), briefly. Pick the simplest one that teaches something.
 2. **Red.** Write one test and run it. Confirm it fails for the reason you expect, not because of a typo, a missing import or a setup error.
 3. **Green.** Write the simplest honest code that passes. Never special-case the test's inputs.
-4. **Refactor.** With everything green, simplify the code and the tests you just wrote without changing behaviour. Run again.
+4. **Refactor.** With everything green, simplify the code and tests you just wrote without changing behaviour; reshaping existing code is a suggestion (plumb-refactor). Run again.
 5. **Repeat** until the list is done. Then delete the tests from this loop that later ones have made redundant.
 
 The delivered diff holds tests that meet this standard, not a record of every step.
 
 ## When a test fails
 
+- Fix a failure only when fixing it is the task or your change caused it; otherwise name it under Noticed.
 - Decide whether the test or the code is wrong from the requirement, not from which is easier to change. When it is the code, find the cause with plumb-debug rather than patching until green; in a refactor, revert the step instead. When a new test exposes an existing bug, never assert the wrong output. If the task's behaviour depends on it, stop and propose fixing it first, in its own diff with plumb-debug; otherwise report it and offer the fix as a suggestion, with that test landing alongside it as its regression test.
 - Never weaken an assertion, widen a tolerance, skip or delete a test to go green, except as charter rule 12 allows.
-- A flaky test is a real bug. When fixing it is the task, or your change made it flaky, find the nondeterminism (time, ordering, shared state, concurrency, outside dependence), force it so the test fails every time, then remove the nondeterminism and see the test pass under that same forcing; a streak of passes is not proof. Otherwise name it under Noticed. Never add retries or sleeps to hide it.
+- A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence), force it so the test fails every time, then remove it at its source (in the code, not the test, when the code is what races) and see the test pass under that same forcing; a streak of passes is not proof. Never add retries or sleeps to hide it.
 
 For pruning or finding gaps across a whole suite, use plumb-audit in tests mode.
