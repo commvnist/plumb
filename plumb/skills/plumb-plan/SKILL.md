@@ -15,9 +15,9 @@ A plan exists to make every later diff small and obvious. It is a proposal in th
 2. **Map the ground.** Read the entry points, the code that will change, its dependents, its tests, and one existing example of the same kind of thing to copy. In a large codebase, send the plumb-scout agent and work from its map. List what already exists that does part of the job.
 3. **Find the thinnest end-to-end slice.** The first step should work from input to output, however narrow, rather than building one layer at a time. *A slice that runs exposes wrong assumptions while they're still cheap.*
 4. **Decide only what is expensive to reverse:** data shape, persisted formats, public interfaces, new dependencies, anything other teams will build on. For each: the options worth considering (at most three), the choice, and the reason in one line. Leave cheap decisions to the build.
-5. **Sequence the diffs.** Each step is one diff that is correct, mergeable and reviewable on its own. Put risky unknowns first. When the code resists the change, make a behaviour-preserving step first ("make the change easy, then make the easy change") and keep it a separate diff.
+5. **Sequence the diffs.** Each step is one diff that is correct, mergeable and reviewable on its own. Put risky unknowns first. When the code resists the change, make a behaviour-preserving step first ("make the change easy, then make the easy change") and keep it a separate diff. Stage a change to persisted data or to consumers outside the repository as plumb-build does: add the new form, migrate, remove the old, each its own step.
 6. **Name the unknowns.** If one blocks the plan, propose a time-boxed spike whose output is an answer, not code. Spike code is thrown away.
-7. **Principal pass.** Read the plan as the charter's principal engineer and list what they'd insist on as suggestions, each saying which step it would join or add. Suggestions aren't in Steps until picked; what project rules demand goes straight into Steps.
+7. **Principal pass.** Read the plan as the charter's principal engineer and list what they'd insist on as suggestions, each saying which step it would join or add. Suggestions aren't in Steps until picked; what project rules demand, and any defect in the plan itself (something it would get wrong or make unsafe), goes straight into Steps.
 
 ## Output
 
@@ -38,5 +38,4 @@ Suggestions:   <from the principal pass, by the charter's menu rules; ask which 
 - No speculative steps: nothing for scale, extensibility or features nobody asked for. Put those under suggestions if they're real.
 - No time estimates; size in changed lines.
 - A one-step plan with no open expensive decisions is just a build: say so and proceed with plumb-build.
-- For more than one step, wait for a go-ahead before building, then build one step at a time with plumb-build. Re-plan when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
-- Never write the plan to a file unless asked.
+- For more than one step, or any open expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build. Re-plan when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
