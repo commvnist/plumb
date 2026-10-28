@@ -51,4 +51,4 @@ Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests 
 Not examined: <areas skipped, and why>
 ```
 
-Rank by consequence per line of fix. Every finding is concrete and specific to this code. No generic advice. End with: "Pick any number and each lands as its own diff."
+Rank by consequence per line of fix. Every finding is concrete and specific to this code. No generic advice. End with: "Pick any number and each lands as its own diff." Land picks as plumb-build applies accepted suggestions (plumb-debug for a bug).
