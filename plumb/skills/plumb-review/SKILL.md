@@ -15,9 +15,9 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 ## Steps
 
-1. **Learn the intent** from the description and any linked issue. If the intent is unclear, that is the first finding.
+1. **Learn the intent** from the description and any linked issue. If nothing states it, infer it from the diff and state your reading in the verdict line; only a change that is itself ambiguous about its intent makes that the first finding.
 2. **Read the whole diff, then what it touches:** callers, callees, the tests, and the data it reads and writes. Bugs live in the connections, not only in the changed lines.
-3. **Run the checks** where you can. Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
+3. **Run the checks** where you can, without disturbing the user's working tree (use a separate worktree for another branch or the base). Treat claims in the description as unverified until you've run them. A failing check counts against the change only if it passes without it.
 4. **Judge in this order:**
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
@@ -35,7 +35,7 @@ For an independent review of your own work, use the plumb-reviewer agent. It has
 
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
 
-The verdict follows the findings: any Blocking means request changes; otherwise any Should means approve with suggestions; otherwise approve.
+The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 
 ## Output
 
@@ -53,4 +53,4 @@ Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
 
-An empty section is omitted. A clean change gets one line: `Verdict: approve — <reason>`. Change no code unless asked; if asked, each fix is its own diff.
+An empty section is omitted. A clean change gets one line: `Verdict: approve — <reason>`. Change no code unless asked; if asked, apply fixes as plumb-build applies accepted suggestions.

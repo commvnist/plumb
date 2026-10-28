@@ -52,4 +52,4 @@ Delete: <code or tests that can go, with line counts>
 Noticed: <problems the change didn't cause, one line each>
 Verified: <what you ran → result, or "read only">
 ```
-Any Blocking means request changes; otherwise any Should means approve with suggestions; otherwise approve. Omit empty sections. A clean change gets one line.
+Any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve. Omit empty sections. A clean change gets one line.
