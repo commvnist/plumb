@@ -13,11 +13,11 @@ description: |
   </example>
 
   <example>
-  Context: The user wants a pull request checked before merging.
+  Context: The assistant wrote this branch earlier in the session; the user wants it checked before merging.
   user: "Review my branch before I merge it."
   assistant: "Launching the plumb-reviewer agent on the branch, so the review isn't anchored on my own reasoning."
   <commentary>
-  A pre-merge review is this agent's core use.
+  A pre-merge review of the assistant's own work is this agent's core use.
   </commentary>
   </example>
 model: inherit
