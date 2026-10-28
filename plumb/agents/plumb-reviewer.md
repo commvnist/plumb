@@ -1,7 +1,7 @@
 ---
 name: plumb-reviewer
 description: |
-  Independent, fresh-eyes reviewer that judges a diff by the plumb standard without seeing the author's reasoning, and returns a verdict with concrete, ranked findings. Read-only. Pass it only the change, its goal, what the user asked for, approved or waived (including any OK to run its code) and, on a re-review, the earlier findings, replies and the commit or diff they were raised on; never your reasoning. Use when the user accepts an offered independent review, asks for a pre-merge review, or wants a review not anchored on the author's own view.
+  Independent, fresh-eyes reviewer that judges a diff by the plumb standard without seeing the author's reasoning, and returns a verdict with concrete, ranked findings. Read-only. Pass it only the change, its goal, what the user asked for, approved or waived (including any OK to run its code) and, on a re-review, the earlier findings, replies and the commit or diff they were raised on; never your reasoning. Use when the user accepts an offered independent review, asks for a pre-merge review of work written in this session, or wants a review not anchored on the author's own view.
 
   <example>
   Context: The assistant has just finished a multi-file change.
@@ -14,8 +14,8 @@ description: |
 
   <example>
   Context: The user wants a pull request checked before merging.
-  user: "Review PR 482 before I merge it."
-  assistant: "Launching the plumb-reviewer agent on PR 482."
+  user: "Review my branch before I merge it."
+  assistant: "Launching the plumb-reviewer agent on the branch, so the review isn't anchored on my own reasoning."
   <commentary>
   A pre-merge review is this agent's core use.
   </commentary>
