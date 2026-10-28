@@ -11,11 +11,11 @@ Never commit, push, open or update a pull request, merge, tag, publish or deploy
 
 ## Before anything leaves
 
-Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent unless one was already offered or run on this diff.
+Read the full diff once more as its reviewer, using the plumb-build self-review checklist (load plumb-build if it isn't loaded). Run the project's checks and quote the result. If a check fails because of this change, or the review finds a problem (debug leftovers included), don't ship yet: in work you wrote this session, fix it and re-run the checks; in work you didn't, report it and ask before changing a line. If the user asked to commit the work as it stands, commit it and say in the message what fails. Name failures you've seen fail without the change rather than blocking on them. For anything non-trivial, offer a review by the plumb-reviewer agent, without holding up an explicit instruction to ship, unless one was already offered or run on this diff.
 
 ## Commits
 
-- One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's hunks; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit.
+- One logical change per commit, and each commit builds and passes the checks on its own. Stage only this change's hunks; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit, in a temporary worktree you remove afterwards, never by stashing the user's changes.
 - Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what changes in behaviour; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
 - Never write subjects like "update files", "fix stuff" or "address feedback", and never list the changed files; the diff already shows them.
 
