@@ -25,10 +25,10 @@ A plan exists to make every later diff small and obvious. It is a proposal in th
 Goal:          <outcomes>
 Out of scope:  <what this deliberately won't do>
 Reuse:         <existing pieces this builds on>
-Decisions:     <decision — choice — reason>, one per line
+Decisions:     <decision — options — choice — reason>, one per line
 Steps:
 1. <diff title> — <what it delivers or proves> — ~<n> lines — after: <step>
-Unknowns:      <risks and how each step retires them>
+Unknowns:      <risks, and the step or throwaway spike that retires each>
 Questions:     <only those that change the plan, at most three, each with a recommended answer>
 Suggestions:   <from the principal pass, by the charter's menu rules; ask which to include, with a recommendation>
 ```
@@ -38,4 +38,4 @@ Suggestions:   <from the principal pass, by the charter's menu rules; ask which 
 - No speculative steps: nothing for scale, extensibility or features nobody asked for. Put those under suggestions if they're real.
 - No time estimates; size in changed lines.
 - A one-step plan with no expensive decisions is just a build: say so, and proceed with plumb-build unless the user asked only for a plan.
-- For more than one step, or any expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build. Re-plan, and get a new go-ahead, when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
+- For more than one step, or any expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build, stopping after each step's report until it is committed or the user says to go on. Re-plan, and get a new go-ahead, when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
