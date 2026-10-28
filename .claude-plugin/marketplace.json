@@ -1,0 +1,16 @@
+{
+  "name": "plumb-marketplace",
+  "owner": {
+    "name": "commvnist"
+  },
+  "plugins": [
+    {
+      "name": "plumb",
+      "source": "./plumb",
+      "description": "One opinionated engineering philosophy across the whole development lifecycle."
+    }
+  ],
+  "metadata": {
+    "description": "plumb: one opinionated engineering philosophy across the whole development lifecycle."
+  }
+}

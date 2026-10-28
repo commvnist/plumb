@@ -1,0 +1,40 @@
+---
+name: plumb-plan
+description: Turns a feature request, spec or larger change into a short plan of small, independently mergeable diffs before any code is written. Use for "plan this", "design", "how should we build", "break this down", new features, cross-cutting changes, or any task too big for one reviewable diff.
+---
+
+# Plumb: plan
+
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+
+A plan exists to make every later diff small and obvious. It is a proposal in the reply, not a document, and it is only as long as the decisions in it.
+
+## Steps
+
+1. **State the goal as outcomes.** One to three lines on what a user or caller can do afterwards that they can't now. Add a line on what is explicitly out of scope.
+2. **Map the ground.** Read the entry points, the code that will change, its dependents, its tests, and one existing example of the same kind of thing to copy. In a large codebase, send the plumb-scout agent and work from its map. List what already exists that does part of the job.
+3. **Find the thinnest end-to-end slice.** The first step should work from input to output, however narrow, rather than building one layer at a time. *A slice that runs exposes wrong assumptions while they're still cheap.*
+4. **Decide only what is expensive to reverse:** data shape, persisted formats, public interfaces, new dependencies, anything other teams will build on. For each: the options worth considering (at most three), the choice, and the reason in one line. Leave cheap decisions to the build.
+5. **Sequence the diffs.** Each step is one diff that is correct, mergeable and reviewable on its own. Put risky unknowns first. When the code resists the change, make a behaviour-preserving step first ("make the change easy, then make the easy change") and keep it a separate diff.
+6. **Name the unknowns.** If one blocks the plan, propose a time-boxed spike whose output is an answer, not code. Spike code is thrown away.
+
+## Output
+
+```
+Goal:          <outcomes>
+Out of scope:  <what this deliberately won't do>
+Reuse:         <existing pieces this builds on>
+Decisions:     <decision — choice — reason>, one per line
+Steps:
+1. <diff title> — <what it delivers or proves> — ~<n> lines — after: <step>
+Unknowns:      <risks and how each step retires them>
+Questions:     <only those that change the plan, each with a recommended answer>
+```
+
+## Rules
+
+- No speculative steps: nothing for scale, extensibility or features nobody asked for. Put those under suggestions if they're real.
+- No time estimates; size in changed lines.
+- A one-step plan with no open expensive decisions is just a build: say so and proceed with plumb-build.
+- For more than one step, wait for a go-ahead before building, then build one step at a time with plumb-build. Re-plan when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
+- Never write the plan to a file unless asked.
