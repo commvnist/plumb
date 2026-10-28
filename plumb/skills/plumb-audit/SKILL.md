@@ -7,14 +7,14 @@ description: One-shot, read-only health report on a codebase or its test suite, 
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
 
-An audit changes nothing in the repository, not even briefly, and adds no files to it beyond the ignored output of running its checks; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
+An audit changes nothing in the repository or in any shared or production system, not even briefly, and adds no files to it beyond the ignored output of running its checks; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
 **Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges, and any gap another area's tests already catch.
 
 ## Code mode
 
 Look for:
-1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it or touching a shared or production system; say so in the finding if you couldn't confirm it.
+1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it; say so in the finding if you couldn't confirm it.
 2. **Safety:** security holes, data loss, leaked secrets or personal data (cite the location, never the value; a live secret's action is rotate, then remove), unsafe handling of untrusted input.
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
