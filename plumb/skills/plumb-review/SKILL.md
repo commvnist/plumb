@@ -11,7 +11,7 @@ A review answers one question: does this change leave the codebase better and sa
 
 The review uses plumb-build's self-review checklist and plumb-test's standard; load those skills if they aren't loaded.
 
-For an independent review of your own work, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
+To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
 
 ## Steps
 
