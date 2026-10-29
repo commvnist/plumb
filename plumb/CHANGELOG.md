@@ -25,6 +25,11 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - The report's Verified line names the exact command or manual check that was run.
 - The cost of reversing a decision is judged by what will come to depend on it, not by how little code it is today, so foundational choices in new projects get decision records too.
 - A commit convention means one the project states or its history visibly follows; otherwise commits use Conventional Commits.
+- Rules are worded as a principle with its reason (see CONTRIBUTING.md). Pacing between diffs, staging of breaking changes, staying off shared systems and leaving the user's working tree alone are each stated once in the charter, and the other skills point to them.
+- Committing work with a failing check "as it stands" needs the user to know what fails first; a plain "commit this" isn't that consent.
+- A plan's first slice runs the path the request exists for, through its least certain part.
+- A plan asks whether to start decision records when the project keeps none and a step will write one.
+- Work that is part of done stays off the suggestions menu, so the menu holds only what the operator is choosing.
 
 ## 0.2.0
 
