@@ -219,11 +219,14 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
             "skill-build": skill("plumb-build"),
             "reuses-throttle": regex_file("services/billing/api.py", r"common\.throttle"),
             "no-new-deps": regex_file("requirements.txt", r"^[A-Za-z]", "not_contains", "m"),
+            "limiter": llm("""
+                Pass if the billing API reuses common.throttle.RateLimiter rather than a new limiter, applies it
+                to every public billing handler, and on the limit returns 429 and logs a rate_limited outcome.""",
+                path="services/billing/api.py"),
             "quality": llm(f"""
                 Pass only if all hold:
-                - It reuses common.throttle.RateLimiter rather than writing a new limiter, and follows the search API's pattern (429 response, a rate_limited log outcome).
-                - Both billing handlers are limited, and a test proves the limit (seen failing when the limit is wrong); tests were run and passed.
-                - Nothing outside the billing service was changed.
+                - The reply says a test proves the limit and was seen failing when the limit is wrong, and that the tests were run and passed.
+                - It reports changing only the billing service and its tests.
                 - {REPORT}"""),
         }),
     "bf-large-audit": dict(
