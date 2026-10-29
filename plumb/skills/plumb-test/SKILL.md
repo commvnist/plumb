@@ -14,7 +14,7 @@ A test suite is code that holds the rest of the code still. Every test costs run
 Write one only when all three hold:
 1. Someone relies on the behaviour: a user, a caller, another system.
 2. You can name the break: a plausible edit by a future maintainer, or a real input, that would get this behaviour wrong. If you can't say it in one line, the test isn't worth its cost.
-3. No other test, type check or compiler check would already catch that break; for a test that already exists, it fails this only if those catch every realistic break in its behaviour, and of overlapping tests the one that best meets this standard stays.
+3. No other test or check the project runs (a type check, the compiler, a linter) would already catch that break; for a test that already exists, it fails this only if those catch every realistic break in its behaviour, and of overlapping tests the one that best meets this standard stays.
 
 If catching that break needs heavy setup, many fakes or a slow resource, test it at the level where it is cheap and real; if no such level exists, write no test unless the floor (charter rule 17) requires one, and say so in the report.
 
