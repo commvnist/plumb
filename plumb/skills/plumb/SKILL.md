@@ -5,7 +5,7 @@ description: The engineering charter shared by every plumb skill. Smallest compl
 
 # Plumb
 
-A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task alongside this charter (plumb-build for any change that isn't mainly a plan, bug, refactor or test task). None of them relaxes a rule here.
+A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task alongside this charter (plumb-build for any change that isn't mainly a plan, bug, refactor or test task), and load any other plumb skill a step relies on when you reach that step. None of them relaxes a rule here.
 
 ## Who the work is for
 

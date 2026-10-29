@@ -14,7 +14,7 @@ A test suite is code that holds the rest of the code still. Every test costs run
 Write one only when all three hold:
 1. Someone relies on the behaviour: a user, a caller, another system.
 2. You can name the break: a plausible edit by a future maintainer, or a real input, that would get this behaviour wrong. If you can't say it in one line, the test isn't worth its cost.
-3. No existing test, type check or compiler check would already catch that break.
+3. No other test, type check or compiler check would already catch that break; for a test that already exists, it fails this only if those catch every realistic break in its behaviour.
 
 If catching that break needs heavy setup, many fakes or a slow resource, test it at the level where it is cheap and real; if no such level exists, write no test unless the floor (charter rule 17) requires one, and say so in the report.
 
@@ -56,7 +56,7 @@ The delivered diff holds tests that meet this standard, not a record of every st
 ## When a test fails
 
 - Fix a failure only when fixing it is the task or your change caused it; otherwise name it under Noticed.
-- Decide whether the test or the code is wrong from the requirement, not from which is easier to change; a test your change broke is wrong only in one of the three cases charter rule 12 lists, and each is handled as that list says; judge its behaviour by the three conditions above first, condition 3 only if other tests or checks catch every realistic break in it, and re-point only a test whose behaviour fails none of them. When it is the code, find the cause with plumb-debug rather than patching until green; in a refactor, revert the step instead. When a new test exposes an existing bug, never assert the wrong output. If the task's behaviour depends on it, stop and propose fixing it first, in its own diff with plumb-debug; otherwise report it and offer the fix as a suggestion, with that test landing alongside it as its regression test.
+- Decide whether the test or the code is wrong from the requirement, not from which is easier to change; a test your change broke is wrong only in one of the three cases charter rule 12 lists, and each is handled as that list says; judge its behaviour by the three conditions above first, and re-point only a test whose behaviour fails none of them. When it is the code, find the cause with plumb-debug rather than patching until green; in a refactor, revert the step instead. When a new test exposes an existing bug, never assert the wrong output. If the task's behaviour depends on it, stop and propose fixing it first, in its own diff with plumb-debug; otherwise report it and offer the fix as a suggestion, with that test landing alongside it as its regression test.
 - Never weaken an assertion, widen a tolerance, skip or delete a test to go green, except as charter rule 12 allows.
 - A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence), force it so the test fails every time, then remove it at its source (in the code, not the test, when the code is what races) and see the test pass under that same forcing; a streak of passes is not proof. Never add retries or sleeps to hide it.
 
