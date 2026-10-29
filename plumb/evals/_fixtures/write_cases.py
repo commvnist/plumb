@@ -131,11 +131,14 @@ PY
         graders={
             "skill-build": skill("plumb-build"),
             "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "handler": llm("""
+                Pass if the new single-invoice handler checks that the invoice belongs to the caller,
+                returns not-found for a missing id, and logs an event the way the neighbouring handlers do.""",
+                path="app/handlers/invoices.py"),
             "quality": llm(f"""
                 Pass only if all hold:
-                - The new handler checks that the invoice belongs to the caller (require_owner), returns not-found for a missing id, and logs one event like its neighbours.
-                - A test shows another user is refused; tests were run and passed.
-                - The diff is limited to the handler and its tests.
+                - The reply says a test shows another user is refused, and that the tests were run and passed.
+                - It reports changing only the handler and its tests.
                 - {REPORT}"""),
         }),
     "bf-medium-consumer": dict(
