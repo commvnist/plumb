@@ -107,7 +107,7 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 ## Asking
 
-Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it under Decided, and proceed. Ask in one batch of at most three questions, each with a recommended answer.
+Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it under Decided, and proceed. Ask in one batch of at most three questions, each with a recommended answer; the one-time question about starting `docs/adr/` (see Decisions) rides along outside that count.
 
 ## Scale
 
