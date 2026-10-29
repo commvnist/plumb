@@ -12,6 +12,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - Debug and refactor offer the independent reviewer for non-trivial work.
 - README sections on behaviour that surprises people and on tuning plumb per project.
 - Licensed under GPL-3.0-or-later.
+- A reference checker (`scripts/check_refs.py`, run in CI) fails when a numbered rule, step or section reference stops pointing at its target.
 - A session-start hook tells the agent to load the charter and the fitting phase skill for any coding request. In evals, phase skills went from firing in about half the cases to all of them.
 - An eval suite (`evals/`): 14 seeded tasks across greenfield and brownfield work on small, medium and large codebases, run with `claude plugin eval`.
 
@@ -20,6 +21,8 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - Standing instructions in the environment the user set up (such as "commit and push when done") count as the user's request.
 - The charter itself stages breaking changes to persisted data through plumb-plan, and the charter routes to the fitting phase skill.
 - Suggestions are strictly opt-in: never "I'll include it unless you object".
+- Charter rule 12 states its three allowed test edits once, as a list; plumb-test and plumb-refactor point to it.
+- The report's Verified line names the exact command or manual check that was run.
 - A commit convention means one the project states or its history visibly follows; otherwise commits use Conventional Commits.
 
 ## 0.2.0
