@@ -15,7 +15,7 @@ Run from `plumb/`:
 
 ```
 claude plugin eval . --ablation with-without --runs 1 -j 8 --scaffold --trust-plugin \
-  --allow-tools Bash Read Write Edit Glob Grep Skill --threshold 0
+  --allow-tools Bash Read Write Edit Glob Grep Skill --threshold 0 --judge-model claude-sonnet-5-5
 ```
 
 A change to plumb's skill text should land with the case that shows the failure it fixes.

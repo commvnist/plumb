@@ -27,7 +27,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 1. **Do exactly what was asked, completely.** Complete includes anything the change breaks or makes untrue: callers, types, config, docs. *A half-done change costs the reviewer more than no change.*
 2. **Nothing else lands without a yes.** Cleanups, extra tests, refactors and features you'd like are all offered as suggestions (see below). *Unrequested lines are the main reason agent diffs are hard to review.*
-3. **One purpose per diff.** Behaviour changes, refactors, formatting and moves never share a diff. A new dependency lands with its first use. *Mixed diffs hide the line that matters.*
+3. **One purpose per diff.** Behaviour changes, refactors, formatting and moves never share a diff. A new dependency lands with its first use. A breaking change to persisted data (a renamed or dropped column, a changed format), or to a contract consumers outside the repository depend on, never lands in one diff: plan its stages with plumb-plan first. *Mixed diffs hide the line that matters.*
 4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a tool-driven rename goes in a diff of its own. *Review quality collapses as diffs grow.*
 
 ### Reach for what exists

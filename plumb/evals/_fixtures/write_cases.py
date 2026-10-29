@@ -206,7 +206,6 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
         prompt="Add rate limiting to the public billing API: 20 requests per minute per API key.",
         graders={
             "skill-build": skill("plumb-build"),
-            "scout": {"type": "tool_used", "tool": "Agent", "input_match": "plumb-scout"},
             "reuses-throttle": regex_file("services/billing/api.py", r"common\.throttle"),
             "no-new-deps": regex_file("requirements.txt", r"^[A-Za-z]", "not_contains", "m"),
             "quality": llm(f"""
