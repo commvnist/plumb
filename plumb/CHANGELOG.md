@@ -11,10 +11,15 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - A multi-step plan is carried in each step's pull request description, so a new session can pick it up and check what the next step waits for.
 - Debug and refactor offer the independent reviewer for non-trivial work.
 - README sections on behaviour that surprises people and on tuning plumb per project.
+- A session-start hook tells the agent to load the charter and the fitting phase skill for any coding request. In evals, phase skills went from firing in about half the cases to all of them.
+- An eval suite (`evals/`): 14 seeded tasks across greenfield and brownfield work on small, medium and large codebases, run with `claude plugin eval`.
 
 ### Changed
 - The suggestions menu shows only medium and high-risk items; low-risk ones are counted under "N more on request". Each suggestion names the principle it serves.
 - Standing instructions in the environment the user set up (such as "commit and push when done") count as the user's request.
+- The charter itself stages breaking changes to persisted data through plumb-plan, and the charter routes to the fitting phase skill.
+- Suggestions are strictly opt-in: never "I'll include it unless you object".
+- A commit convention means one the project states or its history visibly follows; otherwise commits use Conventional Commits.
 
 ## 0.2.0
 
