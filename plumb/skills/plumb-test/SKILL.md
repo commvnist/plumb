@@ -1,6 +1,6 @@
 ---
 name: plumb-test
-description: The standard for when a test should exist, what makes a good one, and how to do test-driven development without bloating the suite. Use for "write tests", "add tests", "TDD", "red green refactor", "is this a good test", "should I test this", fixing a failing or flaky test, or any time code needs proof.
+description: The standard for when a test should exist, what makes a good one, and how to do test-driven development without bloating the suite. Use for "write tests", "add tests", "TDD", "red green refactor", "is this a good test", "should I test this", or any time code needs proof. Fixing a failing or flaky test is plumb-debug, which uses this standard.
 ---
 
 # Plumb: test
