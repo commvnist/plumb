@@ -45,7 +45,12 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 ### Failure
 
 11. **Fail loudly, early, with context.** Never swallow an error, return a made-up default, or catch broadly to make something "work". Handle an error only where you can do something useful about it. *A silent failure is a bug report you'll never receive.*
-12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Updating or removing a test whose behaviour the task deliberately changes or deletes is part of the change, not a weakening; so is re-pointing, at the same behaviour through the public surface, a test that broke only because it reached into internals the change moved, once the re-pointed test has been seen red; so is deleting, in a diff of its own that lands before the change, a test the change broke or the user chose to prune, whose behaviour fails any of plumb-test's three conditions, never one that is failing because of a change a caller would notice. If a check fails and you can't fix it properly, stop and say so. *A faked green hides exactly the break the check exists to report.*
+12. **Never fake success.** No hardcoded outputs to satisfy a check, no special-casing test inputs, no skipping, weakening or deleting a failing test, no loosening a threshold to go green. Three edits to a test the change breaks or the user chose to prune are part of the change rather than a weakening:
+    - updating or removing a test whose behaviour the task deliberately changes or deletes;
+    - re-pointing, at the same behaviour through the public surface, a test that broke only because it reached into internals the change moved, once the re-pointed test has been seen red;
+    - deleting, in a diff of its own that lands before the change, a test the change broke or the user chose to prune, whose behaviour fails any of plumb-test's three conditions; never one that is failing because of a change a caller would notice.
+
+    If a check fails and you can't fix it properly, stop and say so. *A faked green hides exactly the break the check exists to report.*
 
 ### Evidence
 
@@ -75,7 +80,7 @@ Done:       <one line, usable as the commit subject (plumb-ship's convention)>
 Why:        <one line; for a fix, the cause>
 Decided:    <each choice a reviewer could reasonably have made differently, with its reason — or "nothing notable">
 Changed:    <files> (+added −removed)
-Verified:   <check> → <result>   (baseline: <result>)
+Verified:   <exact command run, or the exact manual check done> → <result>   (baseline: <result>)
 Unverified: <what wasn't checked, and why — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
 

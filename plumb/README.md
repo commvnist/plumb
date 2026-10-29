@@ -61,7 +61,7 @@ The project's written rules (CLAUDE.md, contributing guides, tool configuration)
 
 ## Status
 
-Plumb's rules have been reviewed many times but not yet tested by running them on seeded tasks. See [CHANGELOG.md](CHANGELOG.md) for what changes between versions; a change in wording is a change in behaviour.
+Plumb's behaviour is checked by seeded tasks in [evals/](evals/README.md), and CI checks that every numbered rule and step reference still points at the right target (`python3 scripts/check_refs.py`). See [CHANGELOG.md](CHANGELOG.md) for what changes between versions; a change in wording is a change in behaviour.
 
 ## License
 

@@ -1,0 +1,70 @@
+{
+  "charter rules": {
+    "1": "Do exactly what was asked, completely",
+    "2": "Nothing else lands without a yes",
+    "3": "One purpose per diff",
+    "4": "Keep each diff reviewable in one sitting",
+    "5": "Take the first rung that works",
+    "6": "Match the surrounding code's conventions, not its defects",
+    "7": "No speculative generality",
+    "8": "No defence against the impossible",
+    "9": "Prefer plain",
+    "10": "Names carry meaning; comments carry reasons",
+    "11": "Fail loudly, early, with context",
+    "12": "Never fake success",
+    "13": "Claims need evidence",
+    "14": "Verify before relying",
+    "15": "Use the project's own checks",
+    "16": "A test earns its place",
+    "17": "The test floor",
+    "18": "Never write tests that break on harmless changes or pass on real bugs",
+    "19": "Failures must be findable"
+  },
+  "steps": {
+    "plumb-build": {
+      "1": "Size it",
+      "2": "Define done",
+      "3": "Read before writing",
+      "4": "Baseline",
+      "5": "Climb the ladder",
+      "6": "Make the change",
+      "7": "Prove it",
+      "8": "Run the project's checks again",
+      "9": "Review your own diff as its reviewer",
+      "10": "Report"
+    },
+    "plumb-debug": {
+      "1": "Reproduce",
+      "2": "Trace",
+      "3": "Hypothesise and test",
+      "4": "Name the cause",
+      "5": "Fix at the origin",
+      "6": "Lock it",
+      "7": "Clean up",
+      "8": "Report"
+    },
+    "plumb-plan": {
+      "1": "State the goal as outcomes",
+      "2": "Map the ground",
+      "3": "Find the thinnest end-to-end slice",
+      "4": "Decide only what is expensive to reverse",
+      "5": "Sequence the diffs",
+      "6": "Name the unknowns",
+      "7": "Principal pass"
+    },
+    "plumb-refactor": {
+      "1": "Name the goal",
+      "2": "Know why it's there",
+      "3": "Pin the behaviour",
+      "4": "Plan the moves",
+      "5": "Move in small steps",
+      "6": "Report"
+    },
+    "plumb-review": {
+      "1": "Learn the intent",
+      "2": "Read the whole diff, then what it touches",
+      "3": "Run the checks",
+      "4": "Judge in this order"
+    }
+  }
+}

@@ -30,7 +30,7 @@ def llm(criteria, path=None):
     """An LLM-judged criterion. The judge sees the final reply, or the file at path when given."""
     g = {"type": "llm", "body": criteria}
     if path:
-        g["target"] = f"{{source: file, path: {path}}}"
+        g["focus"] = f"{{source: file, path: {path}}}"
     return g
 
 
