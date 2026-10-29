@@ -9,7 +9,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 
 A review answers one question: does this change leave the codebase better and safe to ship? Approve when it does, even if it isn't how you'd have written it. Taste is not a finding unless the project's own conventions back it.
 
-The review uses plumb-build's self-review checklist, plumb-test's standard and plumb-audit's Delete rule; load those skills if they aren't loaded.
+The review uses plumb-build's self-review checklist, plumb-test's standard and plumb-audit's Delete rule.
 
 To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
 
