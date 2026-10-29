@@ -289,8 +289,9 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
                 or payment state is stored or synced), each with options, a choice and a reason, and proposes
                 decision records for them."""),
             "questions": llm("""
-                Pass if the reply asks at most three questions, each with a recommended answer, and doesn't
-                present any suggestion as something it will do unless told otherwise."""),
+                Pass if the reply asks at most three questions, each with a recommended answer (a question about
+                starting decision records doesn't count toward the three), and doesn't present any suggestion as
+                something it will do unless told otherwise."""),
         }),
 }
 
