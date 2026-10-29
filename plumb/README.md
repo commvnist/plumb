@@ -37,7 +37,7 @@ plan → build → (test · debug · refactor as needed) → review → ship
 
 Every phase that changes code ends with the same report: what changed, what was decided and why, what was verified, what wasn't, risks, and the suggestions menu. Plan, review and audit return their own formats.
 
-Every report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), and commits follow Conventional Commits unless the project has its own convention.
+Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), and commits follow Conventional Commits unless the project has its own convention.
 
 ## What surprises people
 

@@ -25,7 +25,7 @@ A plan exists to make every later diff small and obvious, and to let the operato
 Goal:          <outcomes>
 Out of scope:  <what this deliberately won't do>
 Reuse:         <existing pieces this builds on>
-Decisions:     <decision — options — choice — reason — record: <new, supersedes NNNN, or the project's>>, one per line
+Decisions:     <decision — options — choice — reason — record: <new, supersedes NNNN, the project's, or none>>, one per line
 Steps:
 1. <diff title> — <what it delivers or proves> — ~<n> lines — after: <step, or the event it waits for>
 Unknowns:      <risks, and the step or throwaway spike that retires each>
@@ -39,5 +39,5 @@ Noticed:       <problems this plan didn't cause and doesn't fix, one line each �
 - No speculative steps: nothing for scale, extensibility or features nobody asked for. Put those under suggestions if they're real.
 - No time estimates; size in changed lines.
 - A one-step plan with no expensive decisions is just a build: say so, and proceed with plumb-build unless the user asked only for a plan.
-- A plan of more than one step, or one with a step that waits on a release, lives where the team will see it next week, not only in this conversation: each step's pull request description carries the Steps (plumb-ship's Plan section), marking which are done and what the next one waits for. Before building a later step in a new session, read the latest such list rather than trusting the request alone, and confirm the event the next step waits for has happened, asking if you can't see it.
+- A plan of more than one step, or one with a step that waits on a release, lives where the team will see it next week, not only in this conversation: each step's pull request description carries the Steps (plumb-ship's Plan section), marking which are done and what the next one waits for; when the user writes the pull request, give them that section with the step's report. Before building a later step in a new session, read the latest such list rather than trusting the request alone, and confirm the event the next step waits for has happened, asking if you can't see it.
 - For more than one step, or any expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build (plumb-refactor for a behaviour-preserving step), stopping after each step's report until the user commits it or asks you to; if the user says to go on without committing, say once that the steps will share one diff. Re-plan, and get a new go-ahead, when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
