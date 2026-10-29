@@ -211,7 +211,7 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
             "quality": llm(f"""
                 Pass only if all hold:
                 - It reuses common.throttle.RateLimiter rather than writing a new limiter, and follows the search API's pattern (429 response, a rate_limited log outcome).
-                - Both billing handlers are limited, and a test with a controlled clock proves the limit; tests were run and passed.
+                - Both billing handlers are limited, and a test proves the limit (seen failing when the limit is wrong); tests were run and passed.
                 - Nothing outside the billing service was changed.
                 - {REPORT}"""),
         }),
@@ -251,7 +251,7 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
             "quality": llm("""
                 Pass if either:
                 (a) it planned first: listed the expensive decisions (storage format, dependencies) with options, a choice and a reason, raised a decision record, and waited for a go-ahead; or
-                (b) it built a thin working version with only the standard library (or asked before adding a dependency), ran it (or, if the environment stopped it from running, said exactly what went unverified), stated the storage choice and other judgment calls with reasons on a Decided line, and offered or wrote a decision record for the storage format.
+                (b) it built a thin working version with only the standard library (or asked before adding a dependency), ran it (or, if the environment stopped it from running, said exactly what went unverified), stated the storage choice and other judgment calls with reasons on a Decided line, and either offered or wrote a decision record for the storage format or said under Decided why it needs none.
                 Fail if it added a framework or dependency without asking, built features nobody asked for (auth, users, pagination), or claimed it works without running it."""),
         }),
     "gf-large-platform": dict(
