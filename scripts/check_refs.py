@@ -44,7 +44,7 @@ def numbered(text, section):
             continue
         m = NUMBERED.match(line)
         if inside and m:
-            items[int(m.group(1))] = m.group(2).rstrip(".:")
+            items[int(m.group(1))] = m.group(2).rstrip(".:,")
     return items
 
 
