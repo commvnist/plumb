@@ -30,6 +30,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - A plan's first slice runs the path the request exists for, through its least certain part.
 - A plan asks whether to start decision records when the project keeps none and a step will write one.
 - Work that is part of done stays off the suggestions menu, so the menu holds only what the operator is choosing.
+- A choice the user made that is expensive to reverse (such as renaming a public field) still gets a decision record stating their reason, or that none was given; plans list it under Decisions.
 
 ## 0.2.0
 
