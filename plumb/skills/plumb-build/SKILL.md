@@ -9,7 +9,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it first;
 
 ## Steps
 
-1. **Size it.** If it won't fit one reviewable diff, or expensive-to-reverse decisions are open, go to plumb-plan first.
+1. **Size it.** If it won't fit one reviewable diff, or expensive-to-reverse decisions are open, go to plumb-plan first. If it is a step of an existing plan, read the plan's current state (plumb-plan's Rules) and the decision records it names.
 2. **Define done.** Name the observable check that proves the task works: a command, a test, a visible result. If you can't name one, either the task isn't clear yet (ask, per the charter) or it can't be checked here (name the closest check and put the gap under Unverified).
 3. **Read before writing.** Read the code you'll change, everything that calls it, its tests, and one nearby example of the same kind of thing. Copy that example's conventions. In a large or unfamiliar codebase, send the plumb-scout agent and work from its map, reading each piece before you change or call it (charter rule 14).
 4. **Baseline.** Run the project's checks relevant to that code (charter rule 15). Note what already fails; it isn't yours.
@@ -37,6 +37,7 @@ Each item is a known failure of generated code. Any "yes" gets fixed before the 
 - A call to something you haven't confirmed exists?
 - A test beyond the floor that an agent added unasked, or one that would still pass with the bug present or fail on a change that preserves the behaviour?
 - An existing test edited, skipped, loosened or deleted just to go green (charter rule 12)?
+- A choice a reviewer could have made differently, missing from Decided? An expensive one without its decision record?
 - Leftover debug output, scratch files or commented-out code?
 - Anything sensitive logged, exposed or trusted without validation at the boundary?
 

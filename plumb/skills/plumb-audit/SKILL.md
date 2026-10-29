@@ -19,9 +19,9 @@ Look for:
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
 5. **Risky code with no proof:** important logic that nothing tests.
-6. **Deletion:** dead code and unused options (check history and indirect users: dynamic lookup, configuration, serialised data; anything outside consumers can reach is an interface change, not dead), abstractions with a single use, duplicated helpers, needless dependencies.
+6. **Deletion:** dead code and unused options (check history, decision records and indirect users: dynamic lookup, configuration, serialised data; anything outside consumers can reach is an interface change, not dead; something a record says was chosen on purpose is reported with that record and its reason, not as over-engineering), abstractions with a single use, duplicated helpers, needless dependencies.
 7. **Inconsistency:** several ways of doing the same thing, where one should win.
-8. **Docs that lie:** comments and documentation the code contradicts.
+8. **Docs that lie:** comments, documentation and accepted decision records the code contradicts (a record to supersede, or code to fix).
 
 ## Tests mode
 

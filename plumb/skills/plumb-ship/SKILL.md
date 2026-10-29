@@ -16,7 +16,8 @@ Before you commit or push, read everything you'll commit or push, new files incl
 ## Commits
 
 - One logical change per commit, and each commit builds and passes the checks on its own, failures that predate the change aside. Stage only this change's hunks and new files; name any other working-tree changes instead of committing them, and when you leave any out, run the checks on exactly what you commit, in a temporary worktree you remove afterwards, never by stashing the user's changes; if they can't run there, say what went unverified instead of quoting a working-tree run.
-- Follow the project's message convention if it has one. Otherwise: a subject line in the imperative, about 60 characters, stating what the commit changes, in behaviour where it changes any; a blank line; then a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk.
+- Follow the project's message convention if it has one; never convert its history. Otherwise use Conventional Commits 1.0.0: `<type>(<optional scope>)<! if breaking>: <subject>`, with type `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `build`, `ci`, `chore` or `revert`. The subject is in the imperative, about 60 characters, stating what the commit changes, in behaviour where it changes any. Then a blank line and a body only when there's something the diff can't say, such as why, the cause of a bug, a trade-off or a risk. A breaking change always carries `!` and a `BREAKING CHANGE:` footer saying what callers must do.
+- The type is the commit's one purpose (charter rule 3). A commit that needs two types is two commits; a `refactor` or `test` commit changes no behaviour.
 - Never write subjects like "update files", "fix stuff" or "address feedback", and never list the changed files; the diff already shows them.
 
 ## Splitting
@@ -32,7 +33,10 @@ Use the project's pull request template if it has one; otherwise:
 <one to three lines, at the level of behaviour>
 
 ## Why
-<the problem it solves; link the issue>
+<the problem it solves; link the issue and any decision record this change adds or supersedes>
+
+## Decisions
+<the change's Decided line, for choices the reviewer could have made differently — or omit>
 
 ## How to verify
 <steps the reviewer can run; what you ran and what it showed; what you couldn't verify>
@@ -42,6 +46,9 @@ Use the project's pull request template if it has one; otherwise:
 
 ## Not in this change
 <what was deliberately left out, including suggestions that were declined or deferred>
+
+## Plan
+<for a step of a multi-step plan: every step, which are done, and what the next one waits for — or omit>
 ```
 
 Keep it short. Point the reviewer to the one place to look hardest. No marketing words, no emoji, no restating the diff.
@@ -49,7 +56,7 @@ Keep it short. Point the reviewer to the one place to look hardest. No marketing
 ## Releases
 
 - Changelog entries are written for the people affected, describing what changes for them, in the project's changelog format (with none, grouped as Added, Changed, Fixed, Removed and Security). They are not a list of commits.
-- Choose the version bump from the contracts that changed, by the project's versioning scheme. A breaking change always gets the scheme's breaking bump, however small it is.
+- Choose the version bump from the contracts that changed, by the project's versioning scheme; with Conventional Commits and semantic versioning, a breaking change means major, `feat` minor, anything else patch. A breaking change always gets the scheme's breaking bump, however small it is. Read the commit types to draft the changelog, then rewrite each entry for the people affected.
 - State the rollback before rolling out; if there isn't one, say so and ask first. For a risky change, offer a flag or staged exposure as a suggestion; don't add one unasked.
 - A breaking change to persisted data, or to a contract consumers outside the repository depend on, goes expand, migrate, contract, in separate releases, so every step can be rolled back; if this change doesn't, say so and ask before shipping it.
 - After a deploy, and after each stage of one, check the signals that would show it failing and report what you saw; if they do, stop the rollout and propose the rollback, taking it only on a yes.
