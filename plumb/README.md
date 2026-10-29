@@ -66,3 +66,5 @@ Plumb's behaviour is checked by seeded tasks in [evals/](evals/README.md), and C
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+To change plumb itself, see [CONTRIBUTING.md](../CONTRIBUTING.md): rules are general principles with their reasons, never case-specific patches.
