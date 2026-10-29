@@ -11,6 +11,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - A multi-step plan is carried in each step's pull request description, so a new session can pick it up and check what the next step waits for.
 - Debug and refactor offer the independent reviewer for non-trivial work.
 - README sections on behaviour that surprises people and on tuning plumb per project.
+- Licensed under GPL-3.0-or-later.
 - A session-start hook tells the agent to load the charter and the fitting phase skill for any coding request. In evals, phase skills went from firing in about half the cases to all of them.
 - An eval suite (`evals/`): 14 seeded tasks across greenfield and brownfield work on small, medium and large codebases, run with `claude plugin eval`.
 

@@ -26,8 +26,12 @@ def regex_file(path, pattern, match="contains", flags=""):
             "target": f"{{source: file, path: {path}}}"}
 
 
-def llm(criteria):
-    return {"type": "llm", "body": criteria}
+def llm(criteria, path=None):
+    """An LLM-judged criterion. The judge sees the final reply, or the file at path when given."""
+    g = {"type": "llm", "body": criteria}
+    if path:
+        g["target"] = f"{{source: file, path: {path}}}"
+    return g
 
 
 REPORT = ("The final reply ends with plumb's report or an equivalent receipt that includes a line stating the "
@@ -57,13 +61,17 @@ CASES = {
         graders={
             "skill-test": skill("plumb-test"),
             "test-file": {"type": "file_exists", "path": "tests/test_cart*.py"},
-            "quality": llm("""
-                Pass only if all hold:
-                - The tests cover cart behaviour with real decisions: merging repeated items, rejecting quantity below 1, and the coupon minimum threshold.
-                - There are no tests of trivial accessors or of Python itself, and no near-duplicates; at most about eight tests in total, with same-shape cases sharing one table-driven test.
-                - Tests go through Cart's public methods and assert outcomes, not internal list layout beyond what callers rely on.
-                - The reply names in one line what was deliberately left untested and why.
-                - The reply shows the tests were run and passed."""),
+            "covers-decisions": llm("""
+                This is the test file the agent wrote for shop/cart.py. Pass if its tests cover merging a repeated
+                item, rejecting a quantity below 1, and the coupon minimum threshold, calling Cart's public methods
+                and asserting outcomes.""", "tests/test_cart.py"),
+            "lean": llm("""
+                This is the test file the agent wrote for shop/cart.py. Pass if it has at most about eight tests,
+                with no test of a trivial accessor on its own and no two tests that would catch the same break
+                (table-driven subtests count as one test).""", "tests/test_cart.py"),
+            "report": llm("""
+                Pass if the reply says which cart behaviour was deliberately left untested and why, and shows the
+                tests were run and passed."""),
         }),
     "bf-small-refactor": dict(
         tags=["brownfield", "small", "refactor"], fixture="shop-small",
@@ -233,16 +241,18 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
     # ---------------- greenfield ----------------
     "gf-small-cli": dict(
         tags=["greenfield", "small", "build"], fixture=None,
-        prompt="Write a small Python script that reads CSV on stdin and writes a JSON array of objects to stdout.",
+        prompt="Write a small Python script, csv2json.py, that reads CSV on stdin and writes a JSON array of objects to stdout.",
         graders={
             "skill-build": skill("plumb-build"),
-            "script": {"type": "file_exists", "path": "*.py"},
-            "quality": llm(f"""
-                Pass only if all hold:
-                - One short script using the standard library (csv, json), with no options, flags, config or abstractions nobody asked for.
-                - It was run on sample input and the output shown.
-                - No more than a minimal test or two, and no extra files such as a README or notes unless asked.
-                - {REPORT}"""),
+            "script": {"type": "file_exists", "path": "csv2json.py"},
+            "minimal": llm("""
+                This is the script the agent wrote. Pass if it is short, uses the standard library (csv, json) and
+                has no command-line options, flags, configuration or abstractions beyond reading stdin and writing
+                stdout.""", "csv2json.py"),
+            "report": llm(f"""
+                Pass if the reply shows the script was run on sample input with its output or result, and the reply
+                includes a line stating the choices a reviewer could have made differently, with reasons (a
+                'Decided' line), and a Verified line naming a command that was run with its result."""),
         }),
     "gf-medium-api": dict(
         tags=["greenfield", "medium", "build"], fixture=None,
@@ -261,12 +271,20 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
             "skill-plan": skill("plumb-plan"),
             "no-write": no_tool("Write"),
             "no-edit": no_tool("Edit"),
-            "quality": llm("""
-                Pass only if all hold:
-                - It produced a plan of small, separately mergeable steps instead of writing code, and waits for a go-ahead.
-                - The first behaviour step is a thin end-to-end slice, not a layer.
-                - Expensive decisions (tenancy model, data store, money representation, payment provider integration) are listed with options, a choice and a reason, and decision records are proposed.
-                - It asks at most three questions, each with a recommended answer, and has no time estimates."""),
+            "plan-shape": llm("""
+                Pass if the reply is a plan of separately mergeable steps, each sized in changed lines, with no
+                time estimates, and it waits for a go-ahead instead of writing code."""),
+            "slices": llm("""
+                Pass if the plan's early steps each deliver working behaviour end to end (a request through to
+                storage, or an external call) for a narrow piece, rather than building one layer of the whole
+                system first (for example all models, then all APIs)."""),
+            "decisions": llm("""
+                Pass if the reply lists the expensive-to-reverse decisions (at least the tenancy model and how money
+                or payment state is stored or synced), each with options, a choice and a reason, and proposes
+                decision records for them."""),
+            "questions": llm("""
+                Pass if the reply asks at most three questions, each with a recommended answer, and doesn't
+                present any suggestion as something it will do unless told otherwise."""),
         }),
 }
 

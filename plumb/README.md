@@ -62,3 +62,7 @@ The project's written rules (CLAUDE.md, contributing guides, tool configuration)
 ## Status
 
 Plumb's rules have been reviewed many times but not yet tested by running them on seeded tasks. See [CHANGELOG.md](CHANGELOG.md) for what changes between versions; a change in wording is a change in behaviour.
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE).

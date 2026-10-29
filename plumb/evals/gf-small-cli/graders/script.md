@@ -1,4 +1,4 @@
 ---
 type: file_exists
-path: '*.py'
+path: 'csv2json.py'
 ---

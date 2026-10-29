@@ -10,3 +10,7 @@ Claude Code plugin marketplace for **plumb**: one opinionated engineering philos
 ```
 
 Update later with `/plugin marketplace update plumb-marketplace`.
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE).
