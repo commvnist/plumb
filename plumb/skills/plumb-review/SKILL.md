@@ -31,7 +31,7 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 ## Findings
 
 - **Blocking:** wrong behaviour, unsafe, breaks a contract or the project's written rules, fakes success, the test floor unmet, too large or mixed to review safely.
-- **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions.
+- **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions, each naming the principle it serves.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
 Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.

@@ -25,7 +25,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | Agent | Used by | Why a separate agent |
 |---|---|---|
 | `plumb-scout` | plan, build | Maps what a change touches without flooding the main context |
-| `plumb-reviewer` | build, review, ship | Fresh eyes: never sees the author's reasoning |
+| `plumb-reviewer` | build, debug, refactor, review, ship | Fresh eyes: never sees the author's reasoning |
 | `plumb-auditor` | audit | One per area, run in parallel |
 
 ## Flow
