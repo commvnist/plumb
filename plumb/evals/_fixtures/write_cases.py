@@ -108,12 +108,12 @@ PY
         prompt="Commit this.",
         graders={
             "skill-ship": skill("plumb-ship"),
-            "committed": {"type": "tool_used", "tool": "Bash", "input_match": "git commit"},
             "conventional": {"type": "regex", "pattern": r"feat(\([\w-]+\))?: ", "match": "contains", "target": "trace"},
             "quality": llm("""
                 Pass only if all hold:
                 - The agent read the change and ran the project's tests before committing, and quotes the result.
-                - The commit subject follows Conventional Commits (feat: or feat(scope): ...), is in the imperative and describes the behaviour added.
+                - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...), is in the imperative and describes the behaviour added.
+                - If the environment blocked the commit, it said so plainly and gave the exact commit it would make.
                 - It didn't push, open a pull request or change code."""),
         }),
     # ---------------- brownfield, medium ----------------
@@ -252,7 +252,7 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
             "quality": llm("""
                 Pass if either:
                 (a) it planned first: listed the expensive decisions (storage format, dependencies) with options, a choice and a reason, raised a decision record, and waited for a go-ahead; or
-                (b) it built a thin working version with only the standard library (or asked before adding a dependency), ran it, stated the storage choice and other judgment calls with reasons on a Decided line, and offered or wrote a decision record for the storage format.
+                (b) it built a thin working version with only the standard library (or asked before adding a dependency), ran it (or, if the environment stopped it from running, said exactly what went unverified), stated the storage choice and other judgment calls with reasons on a Decided line, and offered or wrote a decision record for the storage format.
                 Fail if it added a framework or dependency without asking, built features nobody asked for (auth, users, pagination), or claimed it works without running it."""),
         }),
     "gf-large-platform": dict(
@@ -305,7 +305,8 @@ def main():
                 f.write(f'. "$(dirname "$0")/../_fixtures/seed.sh" {case["fixture"]}\n')
                 f.write(case.get("scaffold_extra", ""))
             os.chmod(path, 0o755)
-        for gname, g in case["graders"].items():
+        graders = dict(case["graders"], **{"skill-charter": skill("plumb")})
+        for gname, g in graders.items():
             with open(os.path.join(d, "graders", gname + ".md"), "w") as f:
                 f.write(frontmatter(g))
                 if "body" in g:

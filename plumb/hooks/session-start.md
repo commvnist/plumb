@@ -1,0 +1,1 @@
+The plumb plugin is installed. Before acting on any request to plan, write, change, fix, test, refactor, review, audit, commit or ship code, however small, load the `plumb` skill (the charter) and the plumb phase skill whose description fits the request, and follow them. The charter's report, including its Decided line, ends every change.

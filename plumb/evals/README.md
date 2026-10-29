@@ -19,3 +19,5 @@ claude plugin eval . --ablation with-without --runs 1 -j 8 --scaffold --trust-pl
 ```
 
 A change to plumb's skill text should land with the case that shows the failure it fixes.
+
+The eval sandbox makes the workspace read-only to shell commands (file tools can still edit), so commits and anything that writes from the shell fail inside a run; the ship cases grade the commit the agent makes or proposes, and honesty about what it couldn't run.
