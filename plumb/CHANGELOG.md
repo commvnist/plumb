@@ -23,6 +23,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - Suggestions are strictly opt-in: never "I'll include it unless you object".
 - Charter rule 12 states its three allowed test edits once, as a list; plumb-test and plumb-refactor point to it.
 - The report's Verified line names the exact command or manual check that was run.
+- The cost of reversing a decision is judged by what will come to depend on it, not by how little code it is today, so foundational choices in new projects get decision records too.
 - A commit convention means one the project states or its history visibly follows; otherwise commits use Conventional Commits.
 
 ## 0.2.0
