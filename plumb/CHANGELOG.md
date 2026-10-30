@@ -6,7 +6,8 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 
 ### Added
 - Choose each agent's model, and optionally its reasoning effort, with a `plumb agents:` line in the project's written rules, such as `- plumb agents: scout haiku low, reviewer opus high`. A role you don't name uses your tool's default. Every reply that started an agent says which model it ran on.
-- `plumb agents: off` runs plumb without subagents. The session does each agent's work; a review of its own work says it isn't independent and offers one in a fresh session.
+- `plumb agents: off` runs plumb without subagents. The session does each agent's work; a review of its own work says it isn't independent and offers one in a fresh session. A request in the conversation for an agent's work still starts one, and the reply says so.
+- The build and ship offers of an independent review point to the agents-off route.
 - Codex support, untested: a Codex plugin manifest, a Codex marketplace entry and Codex versions of the agents, all generated from the Claude Code files by `scripts/build_codex.py`, with install steps in the README.
 - Eval cases for a chosen reviewer model, a build with agents off, and a whole-repository audit with agents off.
 

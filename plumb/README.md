@@ -74,7 +74,7 @@ What each role needs, to help you spend where it counts:
 
 Every reply that started an agent says which model each ran on, so you can see what a run cost and spot a setting that didn't take.
 
-To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session. Everything still works, except that a review of the session's own work can't be independent: plumb says so and offers you a review in a fresh session that sees only the change.
+To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session. Everything still works, except that a review of the session's own work can't be independent: plumb says so and offers you a review in a fresh session that sees only the change. If you ask for an agent's work in the conversation anyway, such as an independent review, your request wins and plumb says it started an agent despite the setting.
 
 ## Status
 
