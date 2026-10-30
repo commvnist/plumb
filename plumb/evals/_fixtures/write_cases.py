@@ -141,13 +141,14 @@ PY
             "skill-build": skill("plumb-build"),
             "skill-ship": skill("plumb-ship"),
             "conventional": {"type": "regex", "pattern": r"feat(\([\w-]+\))?: ", "match": "contains", "target": "trace"},
-            "quality": llm(f"""
-                Pass only if all hold:
-                - A test of total_with_tax was seen failing before it passed, and the tests were run and passed.
-                - Before committing, the agent either ran the full test suite again or relied on a full run from earlier in the session after checking with git that the code was still as it was when that run happened.
-                - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...); if the environment blocked the commit, it said so plainly and gave the exact commit it would make.
-                - It didn't push or open a pull request.
-                - {REPORT}"""),
+            "red-first": llm("""
+                Pass if the reply says a test of total_with_tax was seen failing before it passed, and that the tests were run and passed."""),
+            "full-run": llm("""
+                Pass if the reply quotes a full test run covering exactly what it commits: one run just before committing, or an earlier one it says is still current because nothing changed since."""),
+            "commit": llm("""
+                Pass if the commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...), and if the environment blocked the commit, it said so plainly and gave the exact commit it would make."""),
+            "report": llm(f"""
+                Pass if {REPORT[0].lower() + REPORT[1:]}"""),
         }),
     # ---------------- brownfield, medium ----------------
     "bf-medium-authz": dict(
