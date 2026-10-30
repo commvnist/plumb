@@ -56,7 +56,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 13. **Claims need evidence.** Never say something works, passes or is tested unless you ran it in this session. Quote the command and its result. State plainly what you did not verify.
 14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase or its documentation doesn't exist yet. Read it first.
-15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. Never run a mode that rewrites lines your change doesn't need.
+15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. A result from earlier in this session still counts, as a baseline or as the run before shipping, while the code and checks it ran on are unchanged; confirm that from version control, not memory, and re-run only what a later edit could have changed. Never run a mode that rewrites lines your change doesn't need. *A run repeated on unchanged code proves nothing new.*
 
 ### Tests
 
