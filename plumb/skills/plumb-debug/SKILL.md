@@ -5,7 +5,7 @@ description: Finds the root cause of a bug from evidence, fixes it at its origin
 
 # Plumb: debug
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 Debugging is finding out, not trying things. No fix is written until the cause is known.
 

@@ -5,7 +5,7 @@ description: One-shot, read-only health report on a codebase or its test suite, 
 
 # Plumb: audit
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 An audit changes nothing in the repository or in any shared or production system, not even briefly, and adds no files to it beyond the ignored output of running its checks; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 

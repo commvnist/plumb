@@ -5,7 +5,7 @@ description: The standard for when a test should exist, what makes a good one, a
 
 # Plumb: test
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 A test suite is code that holds the rest of the code still. Every test costs runtime, reading time and change friction forever, so each one must pay for itself by catching breaks people would otherwise ship.
 

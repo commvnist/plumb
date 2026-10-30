@@ -5,7 +5,7 @@ description: Packages finished work for review and release, covering commit spli
 
 # Plumb: ship
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 Never commit, push, open or update a pull request, merge, tag, publish or deploy without an explicit instruction to do that specific thing (a standing one counts, per the charter's Authority); an instruction to open a pull request covers committing the change, on a new branch if you're on the default one, and pushing it. Rewriting history that's already pushed, or commits you didn't make this session (amend, rebase, force push), needs a yes that names it. When a push makes an open pull request's description untrue, say which part and offer the update.
 

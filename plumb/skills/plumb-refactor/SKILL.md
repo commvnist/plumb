@@ -5,7 +5,7 @@ description: Restructures code without changing behaviour, in small verified ste
 
 # Plumb: refactor
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 A refactor changes structure and never behaviour. If behaviour must change too, that is a separate diff, before or after, and needs a yes unless the user asked for it.
 

@@ -5,7 +5,7 @@ description: Implements a feature or change as the smallest complete, reviewable
 
 # Plumb: build
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 ## Steps
 

@@ -5,7 +5,7 @@ description: Turns a feature request, spec or larger change into a short plan of
 
 # Plumb: plan
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 A plan exists to make every later diff small and obvious, and to let the operator see and overturn every decision before code exists. It is a proposal in the reply, not a document, and it is only as long as the decisions in it; its expensive decisions are kept as decision records (charter, Decisions).
 
