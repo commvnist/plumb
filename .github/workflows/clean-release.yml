@@ -22,7 +22,7 @@ jobs:
           mkdir out
           git archive --prefix=plumb/ HEAD | tar -x -C out
           grep -rlIiZ -- "$OWNER" out | xargs -0 -r sed -i "s/$OWNER/maintainer/gI"
-          if grep -rIin -- "$OWNER" out; then echo "owner handle still present" >&2; exit 1; fi
+          if grep -rli -- "$OWNER" out; then echo "owner handle still present" >&2; exit 1; fi
           (cd out && zip -qrX "../plumb-$TAG-clean.zip" plumb)
       - name: Attach to release
         env:
