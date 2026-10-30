@@ -44,7 +44,7 @@ Every change's report has a `Decided` line for the choices a reviewer could have
 Each of these is on purpose:
 
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
-- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Or let it commit each step as it passes; it still stops when a step needs a decision from you, leaves something unverified, adds a risk, or changes the plan.
+- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Or let it commit each step as it passes; it still stops when a step makes a decision that needs a record, leaves something unverified, adds a risk, or changes the plan.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.

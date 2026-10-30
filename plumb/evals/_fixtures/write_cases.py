@@ -242,7 +242,7 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
         graders={
             "skill-build": skill("plumb-build"),
             "reviewer": agent("plumb-reviewer"),
-            "no-pasted-diff": agent("plumb-reviewer", r"diff --git|@@ -\d", min_=0, max_=0),
+            "no-pasted-diff": agent(None, r"diff --git|@@ -\d", min_=0, max_=0),
             "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
             "quality": llm(f"""
                 Pass only if all hold:
