@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Plumb's scout, reviewer and auditors save context and give a review fresh eyes. Some operators can't or won't run subagents: their budget has no room for them, their tool or plan doesn't offer them, or they turned them off (Claude Code: deny the `Agent` tool; Codex: `agents.enabled = false`). Nick asked plumb to support that case (2026-10-30).
+Plumb's scout, reviewer and auditors save context and give a review fresh eyes. Some operators can't or won't run subagents: their budget has no room for them, their tool or plan doesn't offer them, or they turned them off (Claude Code: deny the `Agent` tool; Codex: `agents.enabled = false`). commvnist asked plumb to support that case (2026-10-30).
 
 Options considered:
 

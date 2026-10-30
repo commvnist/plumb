@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Plumb starts three kinds of agent: the scout, the reviewer and the auditors. Operators run plumb on very different budgets, from all-Haiku to an Opus reviewer over cheaper scouts, and on Claude Code or Codex. Nick asked to choose the model for each, without plumb assuming any tier (2026-10-30).
+Plumb starts three kinds of agent: the scout, the reviewer and the auditors. Operators run plumb on very different budgets, from all-Haiku to an Opus reviewer over cheaper scouts, and on Claude Code or Codex. commvnist asked to choose the model for each, without plumb assuming any tier (2026-10-30).
 
 Options considered:
 

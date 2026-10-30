@@ -16,7 +16,7 @@ Options considered:
 
 ## Decision
 
-Name no model in any agent definition. Nick chose this on 2026-10-30 so plumb fits any budget. The Sonnet pins bought nothing measured (0.4.0's evals already ran on Sonnet), and `inherit` blocks the operator's override just as a named model does. The change landed in PR #6 (commit 31cfbc3); this record follows it.
+Name no model in any agent definition. commvnist chose this on 2026-10-30 so plumb fits any budget. The Sonnet pins bought nothing measured (0.4.0's evals already ran on Sonnet), and `inherit` blocks the operator's override just as a named model does. The change landed in PR #6 (commit 31cfbc3); this record follows it.
 
 ## Consequences
 

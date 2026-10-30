@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Nick asked for plumb to support OpenAI Codex as well as Claude Code (2026-10-30). Codex reads the same `SKILL.md` format, but its plugin manifest (`.codex-plugin/plugin.json`), marketplace (`.agents/plugins/marketplace.json`) and custom agents (TOML files in `~/.codex/agents/` or `.codex/agents/`) differ, and its plugins have no documented way to ship agents. Codex couldn't be run while this was written, so its behaviour comes from OpenAI's documentation and its curated plugins repository, not a test.
+commvnist asked for plumb to support OpenAI Codex as well as Claude Code (2026-10-30). Codex reads the same `SKILL.md` format, but its plugin manifest (`.codex-plugin/plugin.json`), marketplace (`.agents/plugins/marketplace.json`) and custom agents (TOML files in `~/.codex/agents/` or `.codex/agents/`) differ, and its plugins have no documented way to ship agents. Codex couldn't be run while this was written, so its behaviour comes from OpenAI's documentation and its curated plugins repository, not a test.
 
 Options considered:
 
