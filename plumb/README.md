@@ -61,7 +61,7 @@ The project's written rules (CLAUDE.md, contributing guides, tool configuration)
 
 ### Choosing models
 
-Plumb names no model for its agents. Unless you choose, each one runs on your tool's default for subagents (in Claude Code, `CLAUDE_CODE_SUBAGENT_MODEL` if you set it, otherwise your session's model). To choose per role, add a `plumb agents:` line with a model, and optionally a reasoning effort, for any role; use whatever model names your tool accepts:
+Plumb names no model for its agents. Unless you choose, each one runs on your tool's default for subagents (in Claude Code, `CLAUDE_CODE_SUBAGENT_MODEL` if you set it, otherwise your session's model; in Codex, see [installing on Codex](../README.md#codex)). To choose per role, add a `plumb agents:` line with a model, and optionally a reasoning effort, for any role; use whatever model names your tool accepts:
 
 ```
 - plumb agents: scout haiku low, auditor haiku, reviewer opus high

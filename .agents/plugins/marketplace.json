@@ -1,0 +1,20 @@
+{
+  "name": "plumb-marketplace",
+  "interface": {
+    "displayName": "plumb-marketplace"
+  },
+  "plugins": [
+    {
+      "name": "plumb",
+      "source": {
+        "source": "local",
+        "path": "./plumb"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
