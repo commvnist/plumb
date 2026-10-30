@@ -11,7 +11,7 @@ Faster and cheaper to run, with the same guarantees: tests seen failing before t
 - Eval cases for building then committing in one session, a build with an independent review, and a whole-repository audit with parallel auditors.
 
 ### Changed
-- The scout and auditors run on Sonnet. The reviewer still runs on your session's model.
+- Agents no longer set a model, so they follow your choice (the session's model, or `CLAUDE_CODE_SUBAGENT_MODEL` for all subagents). Setting that variable to a cheaper model is the main way to cut agent cost.
 - The charter and the phase skill load in the same turn, and another plumb skill loads only when a step applies a standard only that skill states.
 - A check run earlier in the session still counts while version control shows the code is unchanged, so build, refactor and ship stop repeating runs. Committing or shipping still needs a full run on exactly what ships; an earlier one counts only if nothing has changed since.
 - After a self-review edit, build and debug re-prove only what the edit could have made untrue. Refactors run the pinning checks after each move and the full checks once per diff.
