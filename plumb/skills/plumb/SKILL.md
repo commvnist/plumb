@@ -5,7 +5,7 @@ description: The engineering charter shared by every plumb skill. Smallest compl
 
 # Plumb
 
-A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task alongside this charter, in the same turn, since each separate load costs a round trip (plumb-build for any change that isn't mainly a plan, bug, refactor or test task). Load another plumb skill only when you reach a step that needs judgement this charter doesn't already give; a pointer to a skill is not by itself a reason, since every load costs context for the rest of the session. None of them relaxes a rule here.
+A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task alongside this charter, in the same turn, since each separate load costs a round trip (plumb-build for any change that isn't mainly a plan, bug, refactor or test task). Load another plumb skill only when you reach a step that applies a standard only that skill states (as rule 12 applies plumb-test's three conditions); a pointer whose content the step doesn't use is not a reason, since every load costs context for the rest of the session. None of them relaxes a rule here.
 
 ## Who the work is for
 
@@ -56,7 +56,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 13. **Claims need evidence.** Never say something works, passes or is tested unless you ran it in this session. Quote the command and its result. State plainly what you did not verify.
 14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase or its documentation doesn't exist yet. Read it first.
-15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. A result from earlier in this session still counts, as a baseline or as the run before shipping, while the code and checks it ran on are unchanged; confirm that from version control, not memory, and re-run only what a later edit could have changed. Never run a mode that rewrites lines your change doesn't need. *A run repeated on unchanged code proves nothing new.*
+15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. A result from earlier in this session still counts, as a baseline or as the run before shipping, while the code and checks it ran on are unchanged; confirm that from version control (the commit, and the diff of uncommitted changes, noted when it ran), not memory, and re-run only what a later edit could have changed; the run before shipping is still one full run on exactly what ships, unless nothing changed since the last. Never run a mode that rewrites lines your change doesn't need. *A run repeated on unchanged code proves nothing new.*
 
 ### Tests
 
@@ -137,7 +137,7 @@ Ask only when the answer changes what you'd build and a wrong guess is costly to
 
 ## Scale
 
-Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. A change confined to one area that changes no contract and no shape of stored data gets a brief report and menu, but its principal pass still asks in full whether what the change does is wrong or unsafe: that question, not the size of the change, is what catches a missing check. Work too big for one diff goes through plumb-plan first.
+Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. A change confined to one area that changes no contract and no shape of stored data gets every required report line, each kept short, and a menu of only its strongest items, but its principal pass still asks in full whether what the change does is wrong or unsafe: that question, not the size of the change, is what catches a missing check. Work too big for one diff goes through plumb-plan first.
 
 ## Authority
 

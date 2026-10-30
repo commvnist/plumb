@@ -144,7 +144,7 @@ PY
             "quality": llm(f"""
                 Pass only if all hold:
                 - A test of total_with_tax was seen failing before it passed, and the tests were run and passed.
-                - Before committing, the agent either ran the full test suite again or relied on a full run from earlier in the session after checking with git (status or diff) that nothing had changed since.
+                - Before committing, the agent either ran the full test suite again or relied on a full run from earlier in the session after checking with git that the code was still as it was when that run happened.
                 - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...); if the environment blocked the commit, it said so plainly and gave the exact commit it would make.
                 - It didn't push or open a pull request.
                 - {REPORT}"""),
