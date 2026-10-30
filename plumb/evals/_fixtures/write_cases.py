@@ -21,6 +21,16 @@ def no_tool(tool, input_match=None):
     return g
 
 
+def agent(name, input_match=None, min_=1, max_=None):
+    """Checks a plumb agent was dispatched (or, with max_=0, that no dispatch matched input_match)."""
+    g = {"type": "tool_used", "tool": "Agent", "input_match": input_match or f'"subagent_type"\\s*:\\s*"(?:[\\w-]+:)?{name}"'}
+    if min_ != 1 or max_ is not None:
+        g["min"] = min_
+    if max_ is not None:
+        g["max"] = max_
+    return g
+
+
 def regex_file(path, pattern, match="contains", flags=""):
     return {"type": "regex", "pattern": pattern, "match": match, "flags": flags,
             "target": f"{{source: file, path: {path}}}"}
@@ -124,6 +134,21 @@ PY
                 - If the environment blocked the commit, it said so plainly and gave the exact commit it would make.
                 - It didn't push, open a pull request or change code."""),
         }),
+    "bf-small-build-ship": dict(
+        tags=["brownfield", "small", "build", "ship"], fixture="shop-small",
+        prompt="Add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices, then commit it.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "skill-ship": skill("plumb-ship"),
+            "conventional": {"type": "regex", "pattern": r"feat(\([\w-]+\))?: ", "match": "contains", "target": "trace"},
+            "quality": llm(f"""
+                Pass only if all hold:
+                - A test of total_with_tax was seen failing before it passed, and the tests were run and passed.
+                - Before committing, the agent either ran the full test suite again or relied on a full run from earlier in the session after checking with git (status or diff) that nothing had changed since.
+                - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...); if the environment blocked the commit, it said so plainly and gave the exact commit it would make.
+                - It didn't push or open a pull request.
+                - {REPORT}"""),
+        }),
     # ---------------- brownfield, medium ----------------
     "bf-medium-authz": dict(
         tags=["brownfield", "medium", "build"], fixture="orders-medium",
@@ -211,6 +236,20 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
                 - It reports the failure and asks how to proceed (update the test for the new cap, or revert), without changing code itself.
                 - Any commit message it proposes follows Conventional Commits."""),
         }),
+    "bf-medium-reviewed": dict(
+        tags=["brownfield", "medium", "build", "review"], fixture="orders-medium",
+        prompt="Add a handler to fetch a single invoice by id, next to list_invoices, and have it reviewed independently before you report back.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "reviewer": agent("plumb-reviewer"),
+            "no-pasted-diff": agent("plumb-reviewer", r"diff --git|@@ -\d", min_=0, max_=0),
+            "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "quality": llm(f"""
+                Pass only if all hold:
+                - The reply shows the independent reviewer's verdict, and any Blocking finding was either fixed (with the tests re-run) or disputed in a reply rather than dropped.
+                - The reply says a test shows another user is refused, and that the tests were run and passed.
+                - {REPORT}"""),
+        }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(
         tags=["brownfield", "large", "build"], fixture="monorepo-large",
@@ -243,6 +282,20 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
                 - test_build_matches_formula is flagged for computing the expected value the way the code does.
                 - The missing tests named include proration.credit_cents (rounding down, the days_in_period guard), ranked by risk.
                 - Findings are ranked, concrete, and nothing was changed."""),
+        }),
+    "bf-large-audit-all": dict(
+        tags=["brownfield", "large", "audit"], fixture="monorepo-large",
+        prompt="Audit the whole repository and tell me what to fix first.",
+        graders={
+            "skill-audit": skill("plumb-audit"),
+            "auditors": agent("plumb-auditor"),
+            "no-edit": no_tool("Edit"),
+            "no-write": no_tool("Write"),
+            "quality": llm("""
+                Pass only if all hold:
+                - Findings are ranked, at most 15 (with a count of the rest if there are more), each with a file location, a concrete consequence and an action.
+                - The findings cover more than one service, and none is generic advice.
+                - Nothing in the repository was changed."""),
         }),
     # ---------------- greenfield ----------------
     "gf-small-cli": dict(
