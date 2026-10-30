@@ -4,7 +4,7 @@ Seeded tasks that check plumb changes agent behaviour, run with `claude plugin e
 
 | | small | medium | large |
 |---|---|---|---|
-| brownfield | `bf-small-*` (pricing library): debug, tests, refactor, ship, build then ship in one session | `bf-medium-*` (order service): ownership check, the same with an independent review, and with the reviewer on a model the project chose, idempotent consumer, staged migration plan, review of a weakened test, ship over a red check | `bf-large-*` (12-service monorepo): reuse of an existing limiter via the scout, test-suite audit, whole-repository audit with parallel auditors |
+| brownfield | `bf-small-*` (pricing library): debug, tests, refactor, ship, build then ship in one session | `bf-medium-*` (order service): ownership check, the same with an independent review, with the reviewer on a model the project chose, and with agents turned off, idempotent consumer, staged migration plan, review of a weakened test, ship over a red check | `bf-large-*` (12-service monorepo): reuse of an existing limiter via the scout, test-suite audit, whole-repository audit with parallel auditors, the same audit with agents turned off |
 | greenfield | `gf-small-cli` | `gf-medium-api` | `gf-large-platform` |
 
 Each case's `skill-*` grader checks that the right plumb skill fired (routing), and an agent grader checks that a case meant to dispatch the reviewer or auditors did. The `llm` grader checks the behaviour plumb promises: smallest diff, evidence, Decided line, decision records, tests that earn their place.

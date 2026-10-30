@@ -11,7 +11,7 @@ A review answers one question: does this change leave the codebase better and sa
 
 The review uses the charter's self-review checklist and plumb-test's standard, including its "Keep, merge, rewrite or delete".
 
-To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
+To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it. With agents off, the charter's Agents says what to do instead.
 
 ## Steps
 

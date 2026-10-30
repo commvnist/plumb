@@ -264,6 +264,23 @@ git commit -qam "chore: choose the reviewer's model"
             "effort": agent(None, r'"effort"\s*:\s*"low"'),
             "names-model": llm("Pass if the final reply says which model the independent reviewer ran on, and it is Haiku."),
         }),
+    "bf-medium-reviewed-off": dict(
+        tags=["brownfield", "medium", "build", "review", "agents"], fixture="orders-medium",
+        prompt="Add a handler to fetch a single invoice by id, next to list_invoices, and have it reviewed independently before you report back.",
+        scaffold_extra=r"""
+echo "- plumb agents: off" >> CLAUDE.md
+git commit -qam "chore: no subagents in this project"
+""",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-agent": no_tool("Agent"),
+            "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "quality": llm(f"""
+                Pass only if all hold:
+                - The reply says no independent review ran, because agents are off in this project, and offers one in a fresh session given only the change and its goal.
+                - The reply doesn't present its own review as independent.
+                - {REPORT}"""),
+        }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(
         tags=["brownfield", "large", "build"], fixture="monorepo-large",
@@ -305,6 +322,23 @@ git commit -qam "chore: choose the reviewer's model"
             "auditors": agent("plumb-auditor"),
             "no-edit": no_tool("Edit"),
             "no-write": no_tool("Write"),
+            "quality": llm("""
+                Pass only if all hold:
+                - Findings are ranked, at most 15 (with a count of the rest if there are more), each with a file location, a concrete consequence and an action.
+                - The findings cover more than one service, and none is generic advice.
+                - Nothing in the repository was changed."""),
+        }),
+    "bf-large-audit-off": dict(
+        tags=["brownfield", "large", "audit", "agents"], fixture="monorepo-large",
+        prompt="Audit the whole repository and tell me what to fix first.",
+        scaffold_extra=r"""
+echo "- plumb agents: off" > CLAUDE.md
+git add CLAUDE.md && git commit -qm "chore: no subagents in this project"
+""",
+        graders={
+            "skill-audit": skill("plumb-audit"),
+            "no-agent": no_tool("Agent"),
+            "no-edit": no_tool("Edit"),
             "quality": llm("""
                 Pass only if all hold:
                 - Findings are ranked, at most 15 (with a count of the rest if there are more), each with a file location, a concrete consequence and an action.
