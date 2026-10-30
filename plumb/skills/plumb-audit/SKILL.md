@@ -9,7 +9,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; i
 
 An audit changes nothing in the repository or in any shared or production system, not even briefly, and adds no files to it beyond the ignored output of running its checks; mark a test you suspect can't fail, but could confirm only by breaking code, as "can't fail (unconfirmed)". It returns a ranked list the user can act on one diff at a time.
 
-**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas, each some code together with its tests, and run one plumb-auditor agent per area in parallel, then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges, and any gap another area's tests already catch.
+**Mode:** `code` (the default), `tests`, or `both`. Use what the user named; otherwise infer it from their words. For a large repository, split it into areas, each some code together with its tests, run the project's checks once yourself, then run one plumb-auditor agent per area in parallel, giving each what ran and what failed in its area rather than the whole log, since a suite run per auditor multiplies the cost and the failures that come from runs colliding. Then merge, deduplicate and re-rank their findings, dropping any Delete whose covering test another area also deletes or merges, and any gap another area's tests already catch.
 
 ## Code mode
 
