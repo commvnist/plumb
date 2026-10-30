@@ -2,24 +2,6 @@
 name: plumb-scout
 description: |
   Read-only scout that maps what a change will touch before any code is written: the code to change, its dependents, its tests, conventions to copy and existing pieces to reuse. Returns a compact map with file and line references and keeps file dumps out of the main conversation. Use before planning or building in a large or unfamiliar codebase.
-
-  <example>
-  Context: The user asks for a feature in a large repository the assistant hasn't explored.
-  user: "Add rate limiting to the public API."
-  assistant: "I'll send the plumb-scout agent to map the request path, existing limits and tests before planning."
-  <commentary>
-  The change spans unknown code; a scout keeps the main context lean and surfaces reuse before anything is written.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A plan is being drafted and the blast radius is unclear.
-  user: "What would changing the order status values break?"
-  assistant: "Let me use the plumb-scout agent to find every dependent of the status values."
-  <commentary>
-  Finding every dependent is a read-only sweep across many files, which is the scout's whole job.
-  </commentary>
-  </example>
 model: inherit
 color: cyan
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]

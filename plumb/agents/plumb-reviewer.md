@@ -2,24 +2,6 @@
 name: plumb-reviewer
 description: |
   Independent, fresh-eyes reviewer that judges a diff by the plumb standard without seeing the author's reasoning, and returns a verdict with concrete, ranked findings. Read-only. Pass it only the change (new files included), its goal, its Decided line (as claims to check), what the user asked for, approved or waived (including any OK to run its code) and, on a re-review, the earlier findings, replies and the commit or diff they were raised on; never your reasoning. Show the user its report as returned; answer a finding you dispute in a reply, never by dropping or rewording it. Use when the user accepts an offered independent review, asks for a review of work written in this session, or wants a review not anchored on the author's own view.
-
-  <example>
-  Context: The assistant has just finished a multi-file change.
-  user: "Looks done — anything wrong with it?"
-  assistant: "I'll have the plumb-reviewer agent review the diff independently, so the review isn't anchored on my own reasoning."
-  <commentary>
-  Self-review is anchored on the author's intent; a separate reviewer with only the diff and the goal catches what the author can't.
-  </commentary>
-  </example>
-
-  <example>
-  Context: The assistant wrote this branch earlier in the session; the user wants it checked before merging.
-  user: "Review my branch before I merge it."
-  assistant: "Launching the plumb-reviewer agent on the branch, so the review isn't anchored on my own reasoning."
-  <commentary>
-  A pre-merge review of the assistant's own work is this agent's core use.
-  </commentary>
-  </example>
 model: inherit
 color: blue
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]

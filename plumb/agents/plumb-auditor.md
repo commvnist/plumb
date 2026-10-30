@@ -2,24 +2,6 @@
 name: plumb-auditor
 description: |
   Audits one area of a codebase or its test suite by the plumb standard and returns ranked, concrete findings, including bugs, risks, deletions, useless tests and risk-based test gaps. Leaves the code as it found it. Dispatched by plumb-audit, one agent per area run in parallel, for audits, tech-debt surveys and test-suite pruning or gap analysis of a large repository.
-
-  <example>
-  Context: The user wants a health check of a large repository.
-  user: "Audit the whole repo and tell me what to fix first."
-  assistant: "I'll run plumb-audit, with a plumb-auditor agent per area in parallel, then merge the findings."
-  <commentary>
-  Repository-wide audits fan out well; each auditor reads one area deeply and returns only ranked findings.
-  </commentary>
-  </example>
-
-  <example>
-  Context: A large repository's test suite is slow and bloated.
-  user: "Which of our tests are useless, and what are we missing?"
-  assistant: "I'll run plumb-audit in tests mode, with a plumb-auditor agent per area in parallel, then merge the findings."
-  <commentary>
-  Pruning and finding gaps is the auditor's tests mode.
-  </commentary>
-  </example>
 model: inherit
 color: yellow
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
