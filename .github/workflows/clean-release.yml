@@ -1,0 +1,31 @@
+name: clean release zip
+
+# Attaches a copy of the release's files with the owner's handle replaced by
+# "maintainer", for sharing without identifying the author. The repo itself keeps the handle.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  clean-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build cleaned zip
+        env:
+          OWNER: ${{ github.repository_owner }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir out
+          git archive --prefix=plumb/ HEAD | tar -x -C out
+          grep -rlIiZ -- "$OWNER" out | xargs -0 -r sed -i "s/$OWNER/maintainer/gI"
+          if grep -rli -- "$OWNER" out; then echo "owner handle still present" >&2; exit 1; fi
+          (cd out && zip -qrX "../plumb-$TAG-clean.zip" plumb)
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" "plumb-$TAG-clean.zip" --clobber

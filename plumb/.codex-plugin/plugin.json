@@ -1,0 +1,17 @@
+{
+  "name": "plumb",
+  "version": "0.5.0",
+  "description": "One opinionated engineering philosophy across the whole development lifecycle: smallest complete change, reviewable diffs, evidence over claims, tests that earn their place, improvements offered instead of applied.",
+  "author": {
+    "name": "commvnist"
+  },
+  "license": "GPL-3.0-or-later",
+  "keywords": [
+    "engineering",
+    "code-review",
+    "testing",
+    "minimalism",
+    "sdlc"
+  ],
+  "skills": "./skills/"
+}

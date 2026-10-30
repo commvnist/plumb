@@ -5,7 +5,7 @@ description: Turns a feature request, spec or larger change into a short plan of
 
 # Plumb: plan
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 A plan exists to make every later diff small and obvious, and to let the operator see and overturn every decision before code exists. It is a proposal in the reply, not a document, and it is only as long as the decisions in it; its expensive decisions are kept as decision records (charter, Decisions).
 
@@ -40,4 +40,4 @@ Noticed:       <problems this plan didn't cause and doesn't fix, one line each â
 - No time estimates; size in changed lines.
 - A one-step plan with no expensive decisions is just a build: say so, and proceed with plumb-build unless the user asked only for a plan.
 - A plan of more than one step, or one with a step that waits on a release, lives where the team will see it next week, not only in this conversation: each step's pull request description (or its commit body, where the team merges without pull requests) carries the Steps (plumb-ship's Plan section), marking which are done and what the next one waits for; when the user writes the pull request, give them that section with the step's report. Before building a later step in a new session, read the latest such list rather than trusting the request alone, and confirm the event the next step waits for has happened, asking if you can't see it.
-- For more than one step, or any expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build (plumb-refactor for a behaviour-preserving step), paced as charter rule 4 says. Re-plan, and get a new go-ahead, when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.
+- For more than one step, or any expensive decision, wait for a go-ahead before building, then build one step at a time with plumb-build (plumb-refactor for a behaviour-preserving step), paced as charter rule 4 says. When asking for the go-ahead, offer both forms: step by step, or every step committed as it passes, which saves a stop per step and still pauses wherever charter rule 4 says. Re-plan, and get a new go-ahead, when a step teaches you something that changes later steps; don't push on with a plan you know is wrong.

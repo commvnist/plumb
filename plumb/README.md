@@ -44,7 +44,7 @@ Every change's report has a `Decided` line for the choices a reviewer could have
 Each of these is on purpose:
 
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
-- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time.
+- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Or let it commit each step as it passes; it still stops when a step makes a decision that needs a record, leaves something unverified, adds a risk, or changes the plan.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
@@ -58,6 +58,23 @@ The project's written rules (CLAUDE.md, contributing guides, tool configuration)
 - plumb: diffs up to 600 changed lines are fine here.
 - plumb: decision records live in design/decisions/, in MADR format.
 ```
+
+### Choosing models
+
+Plumb names no model for its agents. Unless you choose, each one runs on your tool's default for subagents (in Claude Code, `CLAUDE_CODE_SUBAGENT_MODEL` if you set it, otherwise your session's model; in Codex, see [installing on Codex](../README.md#codex)). To choose per role, add a `plumb agents:` line with a model, and optionally a reasoning effort, for any role; use whatever model names your tool accepts:
+
+```
+- plumb agents: scout haiku low, auditor haiku, reviewer opus high
+```
+
+What each role needs, to help you spend where it counts:
+
+- **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
+- **Reviewer** is the last independent check before you merge, and runs only when you accept it. This is where a stronger model pays off, if your budget has one.
+
+Every reply that started an agent says which model each ran on, so you can see what a run cost and spot a setting that didn't take.
+
+To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session. Everything still works, except that a review of the session's own work can't be independent: plumb says so and offers you a review in a fresh session that sees only the change. If you ask for an agent's work in the conversation anyway, such as an independent review, your request wins and plumb says it started an agent despite the setting.
 
 ## Status
 

@@ -5,41 +5,20 @@ description: Implements a feature or change as the smallest complete, reviewable
 
 # Plumb: build
 
-Part of plumb. If the `plumb` skill isn't loaded in this session, load it first; its charter governs and this skill only adds to it.
+Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
 ## Steps
 
 1. **Size it.** If it won't fit one reviewable diff, or expensive-to-reverse decisions are open, go to plumb-plan first. If it continues earlier work, check recent pull requests, or commit bodies, touching this code for a Plan section; if it is a step of a plan, read the plan's current state (plumb-plan's Rules) and the decision records it names.
 2. **Define done.** Name the observable check that proves the task works: a command, a test, a visible result. If you can't name one, either the task isn't clear yet (ask, per the charter) or it can't be checked here (name the closest check and put the gap under Unverified).
-3. **Read before writing.** Read the code you'll change, everything that calls it, its tests, and one nearby example of the same kind of thing. Copy that example's conventions. In a large or unfamiliar codebase, send the plumb-scout agent and work from its map, reading each piece before you change or call it (charter rule 14).
+3. **Read before writing.** Read the code you'll change, its tests, and one nearby example of the same kind of thing. Find everything that calls it, and read each caller whose view the change could alter (what it passes, gets back, sees raised or relies on happening); a caller that sees nothing different can't break. Copy that example's conventions. In a large or unfamiliar codebase, send the plumb-scout agent and work from its map, reading each piece before you change or call it (charter rule 14).
 4. **Baseline.** Run the project's checks relevant to that code (charter rule 15). Note what already fails; it isn't yours.
 5. **Climb the ladder** (charter rule 5) and stop at the first rung that works.
 6. **Make the change.** Edit in place. Keep every contract others rely on unless changing it is the task; if it is, update every dependent in the same diff. A change charter rule 3 says to stage goes to plumb-plan. So does a change the code must first be restructured to take; the restructure is its own diff, landed first.
 7. **Prove it.** Run the done-check: seen failing without the change (before it, or with it briefly reverted) and passing with it. Add tests to the floor (charter rule 17), plus any the user asked for, by plumb-test's bar. A throwaway check, such as a quick script or interactive session, is fine for proof and is not kept, within charter rule 2.
 8. **Run the project's checks again.** Fix what you broke, deciding a test your change broke as plumb-test's "When a test fails" does. Leave failures that predate you alone and name them; one in a test of code you changed leaves that behaviour under Unverified.
-9. **Review your own diff as its reviewer.** Read every hunk against the checklist below. Delete every line the task doesn't need. If the review changed anything, repeat steps 7–8.
-10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent; a Blocking finding you confirm, or a confirmed Delete entry or checklist hit in lines this change adds, is part of done: fix it, repeat steps 7–9 and report again.
-
-## Self-review checklist
-
-Each item is a known failure of generated code. Any "yes" gets fixed before the report.
-
-- A line, file or branch the task doesn't require?
-- Anything the change makes untrue left as it was: a caller, type, config, doc or comment?
-- A new helper that duplicates something the project has?
-- An abstraction, parameter or option with only one use?
-- A catch that swallows, broadens or hides an error? A made-up fallback value?
-- A check for a state that can't occur?
-- A comment that says what the code does?
-- Untouched code renamed, reformatted, reordered or "tidied"?
-- A rewrite where an edit would do? A new file where an existing one fits?
-- A new dependency without a yes?
-- A call to something you haven't confirmed exists?
-- A test beyond the floor that an agent added unasked, or one that would still pass with the bug present or fail on a change that preserves the behaviour?
-- An existing test edited, skipped, loosened or deleted just to go green (charter rule 12)?
-- A choice a reviewer could have made differently, missing from Decided? One the charter's Decisions says needs a record, without it?
-- Leftover debug output, scratch files or commented-out code?
-- Anything sensitive logged, exposed or trusted without validation at the boundary?
+9. **Review your own diff as its reviewer.** Read every hunk against the charter's self-review checklist. Delete every line the task doesn't need. If the review changed anything, re-prove only what that edit could have made untrue: run the done-check and those of step 8's checks it could affect, once, see any test it added or changed fail as step 7 does, and review the hunks it changed.
+10. **Report** with the charter's template and the suggestions from its principal pass. For a non-trivial change, offer an independent review by the plumb-reviewer agent, or the charter's Agents route when agents are off; a Blocking finding you confirm, or a confirmed Delete entry or checklist hit in lines this change adds, is part of done: fix it, re-prove it as step 9 does and report again.
 
 ## Applying accepted suggestions
 

@@ -5,7 +5,7 @@ description: The engineering charter shared by every plumb skill. Smallest compl
 
 # Plumb
 
-A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task alongside this charter (plumb-build for any change that isn't mainly a plan, bug, refactor or test task), and load any other plumb skill a step relies on when you reach that step. None of them relaxes a rule here.
+A plumb line shows true vertical: no ornament, no guessing. This charter governs every plumb skill. The phase skills (plan, build, test, debug, refactor, review, ship, audit) add steps; load the one that fits the task (plumb-build for any change that isn't mainly a plan, bug, refactor or test task) alongside this charter, in the same turn, since each separate load costs a round trip. When the work moves into another phase (a build the user also asked to commit, a review that turns into a fix), load that phase's skill as the phase begins, since its rules govern that phase. Otherwise, load another plumb skill only when you reach a step that applies a standard only that skill states in full, since a charter summary doesn't count (as rule 12 applies plumb-test's three conditions); a pointer whose content the step doesn't use is not a reason, since every load costs context for the rest of the session. No plumb skill relaxes a rule here.
 
 ## Who the work is for
 
@@ -28,7 +28,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 1. **Do exactly what was asked, completely.** Complete includes anything the change breaks or makes untrue: callers, types, config, docs. *A half-done change costs the reviewer more than no change.*
 2. **Nothing else lands without a yes.** Cleanups, extra tests, refactors and features you'd like are all offered as suggestions (see below). Nor does anything outside the diff: a write to, send from or load on a shared or production system, or disturbing work already in the user's working tree (to work at another revision, use a temporary worktree you remove afterwards, never a stash). *Unrequested lines are the main reason agent diffs are hard to review.*
 3. **One purpose per diff.** Behaviour changes, refactors, formatting and moves never share a diff. A new dependency lands with its first use. A breaking change to persisted data (a renamed or dropped column, a changed format), or to a contract consumers outside the repository depend on, never lands in one diff: load plumb-plan and plan its stages first. *Mixed diffs hide the line that matters.*
-4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Whenever work spans several diffs, stop after each one's report until the user commits it or tells you to go on; if they go on without committing, say once that the diffs will share one. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a mechanical change made for its own sake (a tool-driven rename, a codemod, a formatter run) goes in a diff of its own. *Review quality collapses as diffs grow.*
+4. **Keep each diff reviewable in one sitting.** If a change grows past roughly 300 changed lines of hand-written code, or reaches into unrelated areas, stop and propose a sequence of smaller diffs that are each correct on their own. Whenever work spans several diffs, stop after each one's report until the user commits it or tells you to go on; if they go on without committing, say once that the diffs will share one. A go-ahead to build every diff, committing each as it passes, is a standing instruction to go on, but still stop after a report that holds something the operator has to own (a decision that needs a record, anything Unverified, a new Risk) or that shows later diffs must change: what later diffs build on is cheapest to overturn before they exist. Mechanical changes (a tool-driven rename, generated output) don't count toward the limit. Generated output lands with the change that produces it; a mechanical change made for its own sake (a tool-driven rename, a codemod, a formatter run) goes in a diff of its own. *Review quality collapses as diffs grow.*
 
 ### Reach for what exists
 
@@ -56,7 +56,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 13. **Claims need evidence.** Never say something works, passes or is tested unless you ran it in this session. Quote the command and its result. State plainly what you did not verify.
 14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase or its documentation doesn't exist yet. Read it first.
-15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and always before shipping. Never run a mode that rewrites lines your change doesn't need.
+15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and before shipping (committing, pushing or releasing), as below. A result from earlier in this session still counts while the code and checks it ran on are unchanged; confirm that from version control (the commit, plus the uncommitted diff and untracked files, recorded when it ran), not memory. After a later edit, re-run only what that edit could have changed. Shipping is the exception: it needs one full run on exactly what ships, unless an earlier full run already covered that unchanged. Never run a mode that rewrites lines your change doesn't need. *A run repeated on unchanged code proves nothing new.*
 
 ### Tests
 
@@ -67,6 +67,27 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 ### Observability
 
 19. **Failures must be findable.** When a change adds a new unit of work (a request handler, a job, a consumer) and the project logs such units, log it the same way: one event per unit with its outcome, not a trail of progress lines. Never log secrets or personal data. Anything more is a suggestion.
+
+## Self-review checklist
+
+Before reporting a change, read every hunk as its reviewer against this list. Each item is a known failure of generated code; any "yes" gets fixed before the report.
+
+- A line, file or branch the task doesn't require?
+- Anything the change makes untrue left as it was: a caller, type, config, doc or comment?
+- A new helper that duplicates something the project has?
+- An abstraction, parameter or option with only one use?
+- A catch that swallows, broadens or hides an error? A made-up fallback value?
+- A check for a state that can't occur?
+- A comment that says what the code does?
+- Untouched code renamed, reformatted, reordered or "tidied"?
+- A rewrite where an edit would do? A new file where an existing one fits?
+- A new dependency without a yes?
+- A call to something you haven't confirmed exists?
+- A test beyond the floor that an agent added unasked, or one that would still pass with the bug present or fail on a change that preserves the behaviour?
+- An existing test edited, skipped, loosened or deleted just to go green (rule 12)?
+- A choice a reviewer could have made differently, missing from Decided? One the Decisions section below says needs a record, without it?
+- Leftover debug output, scratch files or commented-out code?
+- Anything sensitive logged, exposed or trusted without validation at the boundary?
 
 ## Output
 
@@ -83,13 +104,14 @@ Changed:    <files> (+added −removed)
 Verified:   <exact command run, or the exact manual check done> → <result>   (baseline: <result>)
 Unverified: <what wasn't checked, and why — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
+Agents:     <each agent started: its role and the model it ran on — or omit>
 
 Suggestions:
 1. <what> — <the failure story it prevents, in one line> (<principle>) — ~<n> lines — if skipped: medium | high risk
 Noticed: <problems this change didn't cause and doesn't fix, one line each — or omit>
 ```
 
-Omit Suggestions and Noticed when empty; the other lines always appear.
+Omit Agents, Suggestions and Noticed when empty; the other lines always appear.
 
 ## Decisions
 
@@ -114,9 +136,16 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it under Decided, and proceed. Ask in one batch of at most three questions, each with a recommended answer; the one-time question about starting `docs/adr/` (see Decisions) rides along outside that count.
 
+## Agents
+
+Plumb's agents (the scout, the reviewer, the auditors) save the session's context and give a review fresh eyes, but no rule here depends on them, since the operator's budget or tool may allow none.
+
+- Plumb names no model for them, because budgets and accounts differ and a model fixed in an agent's definition would override the operator's own setting. When the project's written rules name a model or reasoning effort for an agent's role (a `plumb agents:` line), pass it each time you start that agent; a role they leave unnamed gets the tool's default. Any reply that started an agent names each one's role and the model it ran on (the Agents line, or a closing line after a plan, review or audit), so the operator sees what the run cost and notices a setting that didn't take.
+- When the written rules turn agents off (`plumb agents: off`), or the tool can't start one, do the role's work in the session. Every rule still holds, but a review of your own work is no longer independent: self-review against the checklist, say under Unverified that no independent review ran, and offer one in a fresh session given only the change and its goal, which restores the independence without an agent. A request in the conversation that needs an agent outranks the off setting, as Authority orders them: start it and say once that you did despite the setting, since it costs what the setting was there to save.
+
 ## Scale
 
-Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. Work too big for one diff goes through plumb-plan first.
+Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. A change confined to one area that changes no contract and no shape of stored data gets every required report line, each kept short, and only its high-risk suggestions, with medium-risk ones counted in the closing "N more on request". Its principal pass still asks in full whether what the change does is wrong or unsafe: that question, not the change's size, is what catches a missing check. Work too big for one diff goes through plumb-plan first.
 
 ## Authority
 

@@ -2,6 +2,42 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## 0.5.0
+
+Fits any budget and runs on Codex: plumb names no model, you choose one per agent or turn agents off, and the same files install on Codex (untested there).
+
+### Added
+- Choose each agent's model, and optionally its reasoning effort, with a `plumb agents:` line in the project's written rules, such as `- plumb agents: scout haiku low, reviewer opus high`. A role you don't name uses your tool's default. Every reply that started an agent says which model it ran on.
+- `plumb agents: off` runs plumb without subagents. The session does each agent's work; a review of its own work says it isn't independent and offers one in a fresh session. A request in the conversation for an agent's work still starts one, and the reply says so.
+- The build and ship offers of an independent review point to the agents-off route.
+- Codex support, untested: a Codex plugin manifest, a Codex marketplace entry and Codex versions of the agents, all generated from the Claude Code files by `scripts/build_codex.py`, with install steps in the README.
+- Eval cases for a chosen reviewer model, a build with agents off, and a whole-repository audit with agents off.
+
+## 0.4.0
+
+Faster and cheaper to run, with the same guarantees: tests seen failing before they pass, the Decided and Verified lines, skill routing, and waiting for a go-ahead on plans.
+
+### Added
+- A plan's go-ahead can cover every step, committing each as it passes. It still stops after a step that makes a decision needing a record, leaves something unverified, adds a risk, or changes the plan.
+- Eval cases for building then committing in one session, a build with an independent review, and a whole-repository audit with parallel auditors.
+
+### Changed
+- Agents no longer set a model, so they follow your choice (the session's model, or `CLAUDE_CODE_SUBAGENT_MODEL` for all subagents). Setting that variable to a cheaper model is the main way to cut agent cost.
+- The charter and the phase skill load in the same turn, and another plumb skill loads only when a step applies a standard only that skill states.
+- A check run earlier in the session still counts while version control shows the code is unchanged, so build, refactor and ship stop repeating runs. Committing or shipping still needs a full run on exactly what ships; an earlier one counts only if nothing has changed since.
+- After a self-review edit, build and debug re-prove only what the edit could have made untrue. Refactors run the pinning checks after each move and the full checks once per diff.
+- The reviewer is pointed at a commit range or the changed paths instead of being sent a pasted diff.
+- Build reads only the callers whose view the change could alter.
+- The self-review checklist now lives in the charter, and the keep, merge, rewrite or delete verdicts in plumb-test. The reviewer loads three skills instead of five, the scout loads none, and auditors don't load the charter.
+- An audit runs the project's checks once and gives each auditor its area's results.
+- A change confined to one area that changes no contract or data shape gets a shorter report and only high-risk suggestions. Its check for wrong or unsafe behaviour is unchanged.
+
+### Fixed
+- A request to build something and then commit it now loads plumb-ship before committing, so the commit gets ship's checks and a Conventional Commits subject. Before, the agent often committed straight from the build.
+
+### Removed
+- The example blocks in agent descriptions, which were in every session's system prompt.
+
 ## 0.3.0
 
 ### Added
