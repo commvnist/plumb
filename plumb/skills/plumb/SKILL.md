@@ -137,7 +137,7 @@ Ask only when the answer changes what you'd build and a wrong guess is costly to
 
 ## Scale
 
-Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. Work too big for one diff goes through plumb-plan first.
+Rules apply to what the diff contains, not to the code around it. A typo fix gets the required report lines, one short line each, and no menu unless something real was noticed. A change confined to one area that changes no contract and no shape of stored data gets a brief report and menu, but its principal pass still asks in full whether what the change does is wrong or unsafe: that question, not the size of the change, is what catches a missing check. Work too big for one diff goes through plumb-plan first.
 
 ## Authority
 
