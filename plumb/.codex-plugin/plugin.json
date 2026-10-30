@@ -1,6 +1,6 @@
 {
   "name": "plumb",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "One opinionated engineering philosophy across the whole development lifecycle: smallest complete change, reviewable diffs, evidence over claims, tests that earn their place, improvements offered instead of applied.",
   "author": {
     "name": "commvnist"
