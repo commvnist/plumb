@@ -2,7 +2,7 @@
 name: plumb-auditor
 description: |
   Audits one area of a codebase or its test suite by the plumb standard and returns ranked, concrete findings, including bugs, risks, deletions, useless tests and risk-based test gaps. Leaves the code as it found it. Dispatched by plumb-audit, one agent per area run in parallel, for audits, tech-debt surveys and test-suite pruning or gap analysis of a large repository.
-model: inherit
+model: sonnet
 color: yellow
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
 ---

@@ -2,7 +2,7 @@
 name: plumb-scout
 description: |
   Read-only scout that maps what a change will touch before any code is written: the code to change, its dependents, its tests, conventions to copy and existing pieces to reuse. Returns a compact map with file and line references and keeps file dumps out of the main conversation. Use before planning or building in a large or unfamiliar codebase.
-model: inherit
+model: sonnet
 color: cyan
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
 ---
