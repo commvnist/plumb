@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Added
+- Choose each agent's model, and optionally its reasoning effort, with a `plumb agents:` line in the project's written rules, such as `- plumb agents: scout haiku low, reviewer opus high`. A role you don't name uses your tool's default. Every reply that started an agent says which model it ran on.
+
 ## 0.4.0
 
 Faster and cheaper to run, with the same guarantees: tests seen failing before they pass, the Decided and Verified lines, skill routing, and waiting for a go-ahead on plans.

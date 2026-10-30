@@ -104,13 +104,14 @@ Changed:    <files> (+added −removed)
 Verified:   <exact command run, or the exact manual check done> → <result>   (baseline: <result>)
 Unverified: <what wasn't checked, and why — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
+Agents:     <each agent started: its role and the model it ran on — or omit>
 
 Suggestions:
 1. <what> — <the failure story it prevents, in one line> (<principle>) — ~<n> lines — if skipped: medium | high risk
 Noticed: <problems this change didn't cause and doesn't fix, one line each — or omit>
 ```
 
-Omit Suggestions and Noticed when empty; the other lines always appear.
+Omit Agents, Suggestions and Noticed when empty; the other lines always appear.
 
 ## Decisions
 
@@ -134,6 +135,12 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 ## Asking
 
 Ask only when the answer changes what you'd build and a wrong guess is costly to undo. Otherwise take the conventional reading, state it under Decided, and proceed. Ask in one batch of at most three questions, each with a recommended answer; the one-time question about starting `docs/adr/` (see Decisions) rides along outside that count.
+
+## Agents
+
+Plumb's agents (the scout, the reviewer, the auditors) save the session's context and give a review fresh eyes.
+
+- Plumb names no model for them, because budgets and accounts differ and a model fixed in an agent's definition would override the operator's own setting. When the project's written rules name a model or reasoning effort for an agent's role (a `plumb agents:` line), pass it each time you start that agent; a role they leave unnamed gets the tool's default. Any reply that started an agent names each one's role and the model it ran on (the Agents line, or a closing line after a plan, review or audit), so the operator sees what the run cost and notices a setting that didn't take.
 
 ## Scale
 

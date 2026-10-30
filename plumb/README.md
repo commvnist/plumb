@@ -59,6 +59,21 @@ The project's written rules (CLAUDE.md, contributing guides, tool configuration)
 - plumb: decision records live in design/decisions/, in MADR format.
 ```
 
+### Choosing models
+
+Plumb names no model for its agents. Unless you choose, each one runs on your tool's default for subagents (in Claude Code, `CLAUDE_CODE_SUBAGENT_MODEL` if you set it, otherwise your session's model). To choose per role, add a `plumb agents:` line with a model, and optionally a reasoning effort, for any role; use whatever model names your tool accepts:
+
+```
+- plumb agents: scout haiku low, auditor haiku, reviewer opus high
+```
+
+What each role needs, to help you spend where it counts:
+
+- **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
+- **Reviewer** is the last independent check before you merge, and runs only when you accept it. This is where a stronger model pays off, if your budget has one.
+
+Every reply that started an agent says which model each ran on, so you can see what a run cost and spot a setting that didn't take.
+
 ## Status
 
 Plumb's behaviour is checked by seeded tasks in [evals/](evals/README.md), and CI checks that every numbered rule and step reference still points at the right target (`python3 scripts/check_refs.py`). See [CHANGELOG.md](CHANGELOG.md) for what changes between versions; a change in wording is a change in behaviour.

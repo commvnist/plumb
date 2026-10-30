@@ -251,6 +251,19 @@ sed -i 's/min(years_as_customer \* 2, 10)/min(years_as_customer * 2, 12)/' app/d
                 - The reply says a test shows another user is refused, and that the tests were run and passed.
                 - {REPORT}"""),
         }),
+    "bf-medium-reviewed-model": dict(
+        tags=["brownfield", "medium", "build", "review", "agents"], fixture="orders-medium",
+        prompt="Add a handler to fetch a single invoice by id, next to list_invoices, and have it reviewed independently before you report back.",
+        scaffold_extra=r"""
+echo "- plumb agents: reviewer haiku low" >> CLAUDE.md
+git commit -qam "chore: choose the reviewer's model"
+""",
+        graders={
+            "reviewer": agent("plumb-reviewer"),
+            "model": agent(None, r'"model"\s*:\s*"[^"]*haiku'),
+            "effort": agent(None, r'"effort"\s*:\s*"low"'),
+            "names-model": llm("Pass if the final reply says which model the independent reviewer ran on, and it is Haiku."),
+        }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(
         tags=["brownfield", "large", "build"], fixture="monorepo-large",
