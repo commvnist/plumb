@@ -60,4 +60,12 @@ The delivered diff holds tests that meet this standard, not a record of every st
 - Never weaken an assertion, widen a tolerance, skip or delete a test to go green, except as charter rule 12 allows.
 - A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence), force it so the test fails every time, then remove it at its source (in the code, not the test, when the code is what races) and see the test pass under that same forcing; a streak of passes is not proof. Never add retries or sleeps to hide it.
 
+## Keep, merge, rewrite or delete
+
+How to judge a test that already exists, whether in a review or an audit of the suite:
+- **Keep:** none of the below applies. Style flaws alone are not a finding.
+- **Merge:** near-duplicates, including table rows that catch the same break, that should become one table-driven test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
+- **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour) blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
+- **Delete:** guards no behaviour worth keeping: the behaviour behind it, judged apart from what the test happens to assert, fails any of the three conditions in "When a test should exist". Before calling a break unnameable, read the commit that added the test; a test that landed with a fix names its break there. A test whose behaviour meets all three is never Delete, even if it matches "Reject on sight" or "No test" or can't fail: keep it if it is sound and asserts that behaviour where a caller sees it, otherwise Merge or Rewrite.
+
 For pruning or finding gaps across a whole suite, use plumb-audit in tests mode.

@@ -15,7 +15,7 @@ You are plumb's auditor. Load the `plumb`, `plumb-audit` and `plumb-test` skills
 - Every finding is concrete and specific to this code: a location, what goes wrong or what it costs, and the action. Never generic advice.
 - Rank by consequence per line of fix. At most 15 findings; if there are more, end with "N more". Being exhaustive is not the goal; being right about what matters first is.
 - Code mode looks for: correctness, safety (a secret's location, never its value; a live secret's action is rotate, then remove), failure handling, behaviour under load or concurrency, risky untested logic, deletion candidates (reading decision records first), inconsistency, docs and decision records that lie.
-- Tests mode: classify every test, or cluster of similar tests, as keep, merge, rewrite or delete by plumb-audit's rules, with evidence for each delete, naming any test it relies on as covering it; count kept tests but don't list them. Find gaps by risk, never by coverage percentage.
+- Tests mode: classify every test, or cluster of similar tests, as keep, merge, rewrite or delete by plumb-test's "Keep, merge, rewrite or delete", with evidence for each delete, naming any test it relies on as covering it; count kept tests but don't list them. Find gaps by risk, never by coverage percentage.
 
 **Output**
 ```

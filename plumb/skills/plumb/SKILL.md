@@ -68,6 +68,27 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 19. **Failures must be findable.** When a change adds a new unit of work (a request handler, a job, a consumer) and the project logs such units, log it the same way: one event per unit with its outcome, not a trail of progress lines. Never log secrets or personal data. Anything more is a suggestion.
 
+## Self-review checklist
+
+Before reporting a change, read every hunk as its reviewer against this list. Each item is a known failure of generated code; any "yes" gets fixed before the report.
+
+- A line, file or branch the task doesn't require?
+- Anything the change makes untrue left as it was: a caller, type, config, doc or comment?
+- A new helper that duplicates something the project has?
+- An abstraction, parameter or option with only one use?
+- A catch that swallows, broadens or hides an error? A made-up fallback value?
+- A check for a state that can't occur?
+- A comment that says what the code does?
+- Untouched code renamed, reformatted, reordered or "tidied"?
+- A rewrite where an edit would do? A new file where an existing one fits?
+- A new dependency without a yes?
+- A call to something you haven't confirmed exists?
+- A test beyond the floor that an agent added unasked, or one that would still pass with the bug present or fail on a change that preserves the behaviour?
+- An existing test edited, skipped, loosened or deleted just to go green (rule 12)?
+- A choice a reviewer could have made differently, missing from Decided? One the Decisions section below says needs a record, without it?
+- Leftover debug output, scratch files or commented-out code?
+- Anything sensitive logged, exposed or trusted without validation at the boundary?
+
 ## Output
 
 - The diff is the deliverable; the reply is a receipt. Don't restate code, narrate your steps or explain what the reviewer can read in the diff.

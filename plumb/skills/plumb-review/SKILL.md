@@ -9,7 +9,7 @@ Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; i
 
 A review answers one question: does this change leave the codebase better and safe to ship? Approve when it does, even if it isn't how you'd have written it. Taste is not a finding unless the project's own conventions back it.
 
-The review uses plumb-build's self-review checklist, plumb-test's standard and plumb-audit's Delete rule.
+The review uses the charter's self-review checklist and plumb-test's standard, including its "Keep, merge, rewrite or delete".
 
 To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reasoning, so it can't be anchored by it.
 
@@ -21,8 +21,8 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 4. **Judge in this order:**
    - **Correctness:** does it do what it says, including edge cases, error paths, ordering and concurrency?
    - **Safety:** security, data loss, privacy, broken contracts, migrations, rollback.
-   - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard, judged as plumb-audit's Delete judges them? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
-   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the plumb-build self-review checklist over the diff.
+   - **Proof:** is the test floor met? Would each test fail if the change were wrong, and can you name the break it catches? Are any tests useless by the plumb-test standard, judged as plumb-test's "Keep, merge, rewrite or delete" judges them? Judge added tests by that standard; going beyond the floor is a finding only for tests an agent added unasked.
+   - **Simplicity:** lines that could go, speculative generality, reinvented pieces the project already has. Run the charter's self-review checklist over the diff.
    - **Clarity and consistency:** names, structure, matching the surrounding code.
    - **Decisions:** are the choices a reviewer could have made differently stated with reasons (the Decided line, or the description)? In a project that keeps decision records, a decision the charter's Decisions says needs a record, without one, or a change that goes against an accepted record without superseding it, is Blocking; elsewhere, an expensive decision whose reason is stated nowhere is a Should.
    - **Scope:** unrelated changes or mixed purposes within one diff (in a stack meant to be read commit by commit, each commit is a diff; otherwise the whole pull request is). If it's too large for one sitting (charter rule 4), ask for a split and propose one. A commit whose message convention misstates it (under Conventional Commits, a `refactor:` that changes behaviour, or a breaking change without `!`) is a finding, and Blocking when it would hide a breaking change from the version bump.
