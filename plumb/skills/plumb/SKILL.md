@@ -60,7 +60,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 ### Tests
 
-16. **A test earns its place** by catching a realistic break in behaviour someone relies on, while surviving every change that preserves that behaviour. Every test you add has been seen to fail, before the code existed or with the code briefly broken; a test that runs but was never seen red doesn't ship, and one you couldn't run goes under Unverified. The full standard is in plumb-test.
+16. **A test earns its place** by catching a realistic break in behaviour someone relies on, while surviving every change that preserves that behaviour. Every test you add has been seen to fail on the break it exists to catch, before the code existed or with the code briefly broken, since a failure from a typo or a setup error proves nothing about the test; a test that runs but was never seen red doesn't ship, and one you couldn't run goes under Unverified. The full standard is in plumb-test.
 17. **The test floor.** Where the project can test that layer: a bug fix ships with one test that fails without the fix, deterministically; tighten an existing test that aims at the behaviour rather than adding a near-duplicate, and when the bug was in a test, the corrected test is the proof. New logic, or logic whose behaviour changes, that makes real decisions (branching, calculation, parsing, state changes) ships with one test per new or changed outcome a caller would notice, unless an existing test already pins it; cases that differ only by input share one table-driven test. Code that makes no decision of its own (wiring, configuration, plain data, delegation, trivial accessors) gets no test of its own; a break in them that matters is caught by a test of the behaviour that runs through them. Every other test is a suggestion.
 18. **Never write tests that break on harmless changes or pass on real bugs:** assertions on source text, layout, log wording or internals; expected values computed the way the code computes them; fakes of the thing under test; snapshots nobody reads; locked-in repository state; tests of the language or a library. The full list is in plumb-test.
 
@@ -97,12 +97,12 @@ Before reporting a change, read every hunk as its reviewer against this list. Ea
 - End every change with this report:
 
 ```
-Done:       <one line, usable as the commit subject (plumb-ship's convention)>
+Done:       <one line, usable as the commit subject: the project's commit convention, else Conventional Commits>
 Why:        <one line; for a fix, the cause>
-Decided:    <each choice a reviewer could reasonably have made differently, with its reason — or "nothing notable">
+Decided:    <each choice a reviewer could reasonably have made differently, with its reason, and for one expensive to reverse, its record or the question about starting one — or "nothing notable">
 Changed:    <files> (+added −removed)
 Verified:   <exact command run, or the exact manual check done> → <result>   (baseline: <result>)
-Unverified: <what wasn't checked, and why — or "nothing">
+Unverified: <each behaviour this change adds or alters that no run above exercised, and why — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
 Agents:     <each agent started: its role and the model it ran on, or "the tool's default" — or omit>
 

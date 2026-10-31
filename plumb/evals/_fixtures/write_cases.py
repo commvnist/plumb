@@ -331,7 +331,9 @@ git commit -qam "chore: no subagents in this project"
         prompt="Audit the whole repository and tell me what to fix first.",
         graders={
             "skill-audit": skill("plumb-audit"),
-            "auditors": agent("plumb-auditor"),
+            "auditors": llm("""
+                Pass if the agent either ran plumb-auditor agents over separate areas and merged their findings, or
+                says in its reply why the repository was small enough to read closely in one session."""),
             "no-edit": no_tool("Edit"),
             "no-write": no_tool("Write"),
             "quality": llm("""
