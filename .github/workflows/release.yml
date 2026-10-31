@@ -1,0 +1,55 @@
+name: release
+
+# On each push to main, scripts/release.py works out the next version from the commits since the
+# last tag; when there is one, this commits the bump, publishes the release and attaches the
+# cleaned zip. See docs/adr/0005-release-from-conventional-commits.md.
+on:
+  push:
+    branches: [main]
+
+# One release at a time, so two quick merges can't both claim the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.next.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Work out the next version
+        id: next
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python3 scripts/release.py "$RUNNER_TEMP/notes.md")
+          if [ -n "$version" ]; then echo "tag=v$version" >> "$GITHUB_OUTPUT"; fi
+      - name: Commit the bump and publish the release
+        if: steps.next.outputs.tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.next.outputs.tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git commit -qam "chore(release): ${TAG#v}"
+            git push origin HEAD:main
+          fi
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+
+  # A release made with the workflow's own token doesn't trigger other workflows, so call it here.
+  clean-zip:
+    needs: release
+    if: needs.release.outputs.tag
+    uses: ./.github/workflows/clean-release.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
