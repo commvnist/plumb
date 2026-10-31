@@ -16,4 +16,8 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 - After changing an agent, `plumb/.claude-plugin/plugin.json` or the marketplace, run `python3 scripts/build_codex.py` to regenerate the Codex files; CI fails while they're out of date.
 - Run `python3 scripts/check_refs.py`, and `python3 scripts/test_check_commit.py` after changing the commit hook. If you renumbered a rule or step, re-read every reference to it, then run it with `--update`.
 - Run the evals (see `plumb/evals/README.md`) and compare the score with the last run. Expect about ±0.1 between runs.
-- Commits follow Conventional Commits. Record what changes for users in `plumb/CHANGELOG.md`.
+- Commits follow Conventional Commits. Record what changes for users under `## Unreleased` at the top of `plumb/CHANGELOG.md`.
+
+## How a release happens
+
+Each merge to main releases itself (`.github/workflows/release.yml`, [ADR 5](docs/adr/0005-release-from-conventional-commits.md)). The pull request title, which becomes the squash commit's subject, sets the bump: `feat` is minor, `fix` and `perf` are patch, a `!` after the type or a `BREAKING CHANGE:` footer is major, and other types release nothing. To override, add a `release:major`, `release:minor`, `release:patch` or `release:none` label to the pull request before merging. The workflow bumps the version files, turns `## Unreleased` into the version's section, commits that as `chore(release): X.Y.Z`, and publishes the release with the cleaned zip attached.
