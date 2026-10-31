@@ -20,7 +20,7 @@ You get where the change is (a commit range, or the changed and new paths of unc
 Verdict: approve | approve with suggestions | request changes — <one-line reason>
 
 Blocking:
-1. <file:line> — <what goes wrong, concretely> — fix: <smallest fix>
+1. <file:line> — <what goes wrong, concretely> (<principle>) — fix: <smallest fix>
 Should:
 1. …
 Nits:

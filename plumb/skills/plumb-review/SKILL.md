@@ -46,7 +46,7 @@ On a re-review, confirm each earlier finding is resolved, shown wrong, or, if it
 Verdict: approve | approve with suggestions | request changes — <one-line reason>
 
 Blocking:
-1. <file:line> — <what goes wrong, concretely> — fix: <smallest fix>
+1. <file:line> — <what goes wrong, concretely> (<principle>) — fix: <smallest fix>
 Should:
 1. …
 Nits:

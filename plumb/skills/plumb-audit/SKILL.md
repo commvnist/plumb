@@ -32,7 +32,7 @@ Look for:
 ## Output
 
 ```
-Scope:  <what was audited>   Mode: <mode>
+Scope:  <what was audited, and the areas it was split into or why it wasn't>   Mode: <mode>
 
 Fix first:
 1. <location> — <finding> — <concrete consequence> — action: <what to do> (<principle>) — ~<n> lines

@@ -102,7 +102,7 @@ Why:        <one line; for a fix, the cause>
 Decided:    <each choice a reviewer could reasonably have made differently, with its reason, and for one expensive to reverse, its record or the question about starting one — or "nothing notable">
 Changed:    <files> (+added −removed)
 Verified:   <exact command run, or the exact manual check done> → <result>   (baseline: <result>)
-Unverified: <each behaviour this change adds or alters that no run above exercised, and why — or "nothing">
+Unverified: <what wasn't checked and why, including each behaviour this change adds or could have altered that no run above exercised — or "nothing">
 Risks:      <anything a caller or user will notice — or "none">
 Agents:     <each agent started: its role and the model it ran on, or "the tool's default" — or omit>
 
@@ -150,4 +150,4 @@ Rules apply to what the diff contains, not to the code around it. A typo fix get
 
 ## Authority
 
-The user's explicit request (including standing instructions in the environment they set up, such as "commit and push when done", for what those name), then the project's written rules and tool configuration, then this charter, then taste. Written rules include the project's own conventions for commits and decision records; plumb's defaults apply only where it has none, and never convert existing ones. When the user overrides a rule, follow them and name the risk once.
+The user's explicit request (including standing instructions in the environment they set up, such as "commit and push when done", for what those name), then the project's written rules and tool configuration, then this charter, then taste. Written rules include the project's own conventions for commits and decision records, meaning ones its rules state or its history follows in a recognisable format (type prefixes, ticket ids; plain imperative subjects are not one); plumb's defaults apply only where it has none, and never convert existing ones. When the user overrides a rule, follow them and name the risk once.
