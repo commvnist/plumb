@@ -143,6 +143,7 @@ PY
             "conventional": {"type": "regex", "pattern": r"feat(\([\w-]+\))?: ", "match": "contains", "target": "trace"},
             "red-first": llm("""
                 Pass if the reply says a test of total_with_tax was seen failing before it passed, and that the tests were run and passed."""),
+            "red-run": {"type": "regex", "pattern": r"FAILED \((errors|failures)=", "match": "contains", "target": "trace"},
             "full-run": llm("""
                 Pass if the reply quotes a full test run covering exactly what it commits: one run just before committing, or an earlier one it says is still current because nothing changed since."""),
             "commit": llm("""
