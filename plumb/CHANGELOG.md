@@ -7,6 +7,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 Decisions and checks are easier for the operator to see, and plumb loads less text and skips repeat work, with the same guarantees.
 
 ### Added
+- A hook checks each commit the agent makes. When its subject isn't Conventional Commits, the agent is asked to amend it straight away, or to tell you if it's already pushed. A message you dictated, or one in the project's own convention, is left as it is. Skill text alone can't guarantee the format, so this catches a slip while it's still cheap to fix.
 - Audit findings and Blocking review findings name the principle they serve, as suggestions already did.
 - An audit's Scope line says how it split the repository into areas, or why it read it in one session.
 - An eval case checks that a request for two diffs stops after the first one's report.

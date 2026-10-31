@@ -14,6 +14,6 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 
 - A change to skill text comes with evidence: an eval case that shows the failure it fixes (`plumb/evals/`), or an existing case that already covers it.
 - After changing an agent, `plumb/.claude-plugin/plugin.json` or the marketplace, run `python3 scripts/build_codex.py` to regenerate the Codex files; CI fails while they're out of date.
-- Run `python3 scripts/check_refs.py`. If you renumbered a rule or step, re-read every reference to it, then run it with `--update`.
+- Run `python3 scripts/check_refs.py`, and `python3 scripts/test_check_commit.py` after changing the commit hook. If you renumbered a rule or step, re-read every reference to it, then run it with `--update`.
 - Run the evals (see `plumb/evals/README.md`) and compare the score with the last run. Expect about ±0.1 between runs.
 - Commits follow Conventional Commits. Record what changes for users in `plumb/CHANGELOG.md`.
