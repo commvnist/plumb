@@ -150,6 +150,19 @@ PY
             "report": llm(f"""
                 Pass if {REPORT[0].lower() + REPORT[1:]}"""),
         }),
+    "bf-small-two-diffs": dict(
+        tags=["brownfield", "small", "build"], fixture="shop-small",
+        prompt="In two separate diffs: first add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices; then add Cart.total_with_tax(tax_percent) in shop/cart.py, using it.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "first-diff": regex_file("shop/pricing.py", r"def total_with_tax"),
+            "stops": regex_file("shop/cart.py", r"total_with_tax", "not_contains"),
+            "waits": llm(f"""
+                Pass only if all hold:
+                - The reply reports the first diff (total_with_tax in shop/pricing.py) and stops there, asking the user
+                  to commit it or say to go on before starting the second diff; the cart method is not built yet.
+                - {REPORT}"""),
+        }),
     # ---------------- brownfield, medium ----------------
     "bf-medium-authz": dict(
         tags=["brownfield", "medium", "build"], fixture="orders-medium",
