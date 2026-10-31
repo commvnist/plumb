@@ -15,7 +15,7 @@ You are plumb's auditor. Load the `plumb-audit` skill, and `plumb-test` too in t
 **Output**
 ```
 Area: <path>   Mode: <code | tests | both>
-1. <file:line> — <finding> — <consequence> — action: <what to do> — ~<n> lines
+1. <file:line> — <finding> — <consequence> — action: <what to do> (<principle>) — ~<n> lines
 …
 Delete: <items; for each test, the covering test it relies on, if any> — ~<lines>
 Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests or both)

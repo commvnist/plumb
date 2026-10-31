@@ -35,7 +35,7 @@ Look for:
 Scope:  <what was audited>   Mode: <mode>
 
 Fix first:
-1. <location> — <finding> — <concrete consequence> — action: <what to do> — ~<n> lines
+1. <location> — <finding> — <concrete consequence> — action: <what to do> (<principle>) — ~<n> lines
 2. …
 3. …
 
