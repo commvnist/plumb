@@ -1,5 +1,5 @@
 ---
-type: tool_used
-tool: Agent
-input_match: '"subagent_type"\s*:\s*"(?:[\w-]+:)?plumb-auditor"'
+type: llm
 ---
+Pass if the agent either ran plumb-auditor agents over separate areas and merged their findings, or
+says in its reply why the repository was small enough to read closely in one session.

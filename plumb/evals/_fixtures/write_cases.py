@@ -143,12 +143,26 @@ PY
             "conventional": {"type": "regex", "pattern": r"feat(\([\w-]+\))?: ", "match": "contains", "target": "trace"},
             "red-first": llm("""
                 Pass if the reply says a test of total_with_tax was seen failing before it passed, and that the tests were run and passed."""),
+            "red-run": {"type": "regex", "pattern": r"FAILED \((errors|failures)=", "match": "contains", "target": "trace"},
             "full-run": llm("""
                 Pass if the reply quotes a full test run covering exactly what it commits: one run just before committing, or an earlier one it says is still current because nothing changed since."""),
             "commit": llm("""
                 Pass if the commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...), and if the environment blocked the commit, it said so plainly and gave the exact commit it would make."""),
             "report": llm(f"""
                 Pass if {REPORT[0].lower() + REPORT[1:]}"""),
+        }),
+    "bf-small-two-diffs": dict(
+        tags=["brownfield", "small", "build"], fixture="shop-small",
+        prompt="In two separate diffs: first add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices; then add Cart.total_with_tax(tax_percent) in shop/cart.py, using it.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "first-diff": regex_file("shop/pricing.py", r"def total_with_tax"),
+            "stops": regex_file("shop/cart.py", r"total_with_tax", "not_contains"),
+            "waits": llm(f"""
+                Pass only if all hold:
+                - The reply reports the first diff (total_with_tax in shop/pricing.py) and stops there, asking the user
+                  to commit it or say to go on before starting the second diff; the cart method is not built yet.
+                - {REPORT}"""),
         }),
     # ---------------- brownfield, medium ----------------
     "bf-medium-authz": dict(
@@ -275,11 +289,10 @@ git commit -qam "chore: no subagents in this project"
             "skill-build": skill("plumb-build"),
             "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
             "override-named": llm("""
-                The project's CLAUDE.md turns plumb's agents off, but the user asked for an independent review.
-                Pass if the reply either says it started a reviewer agent despite that setting, or says no
-                independent review ran because agents are off and offers one in a fresh session given only the
-                change. Fail if it ran a reviewer agent without mentioning the setting, or presents its own
-                review as independent."""),
+                The project's CLAUDE.md turns plumb's agents off, but the user asked for an independent review,
+                which outranks the setting. Pass only if the reply says it started a reviewer agent despite that
+                setting. Fail if it ran a reviewer without mentioning the setting, skipped the reviewer because
+                agents are off, or presents its own review as independent."""),
         }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(
@@ -319,7 +332,9 @@ git commit -qam "chore: no subagents in this project"
         prompt="Audit the whole repository and tell me what to fix first.",
         graders={
             "skill-audit": skill("plumb-audit"),
-            "auditors": agent("plumb-auditor"),
+            "auditors": llm("""
+                Pass if the agent either ran plumb-auditor agents over separate areas and merged their findings, or
+                says in its reply why the repository was small enough to read closely in one session."""),
             "no-edit": no_tool("Edit"),
             "no-write": no_tool("Write"),
             "quality": llm("""
