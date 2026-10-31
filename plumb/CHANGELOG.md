@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Added
+- A hook checks each commit the agent makes. When its subject isn't Conventional Commits, the agent is asked to amend it straight away, or to tell you if it's already pushed. A message you dictated, or one in the project's own convention, is left as it is. Skill text alone can't guarantee the format, so this catches a slip while it's still cheap to fix.
+
 ## 0.5.0
 
 Fits any budget and runs on Codex: plumb names no model, you choose one per agent or turn agents off, and the same files install on Codex (untested there).
