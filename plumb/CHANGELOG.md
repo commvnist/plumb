@@ -2,6 +2,31 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## 0.6.0
+
+Decisions and checks are easier for the operator to see, and plumb loads less text and skips repeat work, with the same guarantees.
+
+### Added
+- Audit findings and Blocking review findings name the principle they serve, as suggestions already did.
+- An audit's Scope line says how it split the repository into areas, or why it read it in one session.
+- An eval case checks that a request for two diffs stops after the first one's report.
+
+### Changed
+- A request that names several phases (build it, then commit it) loads each phase's skill in the first turn, so the commit rules shape the build.
+- The report's Done line uses the project's commit convention, else Conventional Commits. Plain imperative subjects in a project's history don't count as a convention.
+- Decided names the record, or the question about starting `docs/adr/`, for a choice that is expensive to reverse.
+- Unverified lists each behaviour the change adds or could have altered that no run exercised.
+- A test, added or changed, counts as seen failing only when a run shows it failing on the break it exists to catch. A predicted failure isn't evidence, and the self-review checklist asks for the run.
+- A change that misbehaves under conditions it will meet (its own calls repeated, concurrent or failing partway) is a defect to fix, not a menu item.
+- A plan's first slice carries the narrowest form of whatever it needs to run, instead of following setup or foundation steps.
+- Every plan step confirms the event it waits for before it is built.
+- Building a later plan step no longer loads plumb-plan, and a scout map from earlier in the session is reused for code only this session has changed.
+- The reviewer's briefing moved from its always-loaded description into the charter, cutting the text every session carries by about 17%.
+- The Agents line says "the tool's default" when the model that ran isn't known, rather than guessing.
+- With agents off, a missing independent review goes under Unverified only when one was asked for or accepted, so a standing go-ahead doesn't stop at every step.
+- Fixing a confirmed reviewer finding is part of done in every phase, not only in build.
+- Each question asks one thing.
+
 ## 0.5.0
 
 Fits any budget and runs on Codex: plumb names no model, you choose one per agent or turn agents off, and the same files install on Codex (untested there).
