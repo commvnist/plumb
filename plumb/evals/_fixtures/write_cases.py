@@ -288,11 +288,10 @@ git commit -qam "chore: no subagents in this project"
             "skill-build": skill("plumb-build"),
             "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
             "override-named": llm("""
-                The project's CLAUDE.md turns plumb's agents off, but the user asked for an independent review.
-                Pass if the reply either says it started a reviewer agent despite that setting, or says no
-                independent review ran because agents are off and offers one in a fresh session given only the
-                change. Fail if it ran a reviewer agent without mentioning the setting, or presents its own
-                review as independent."""),
+                The project's CLAUDE.md turns plumb's agents off, but the user asked for an independent review,
+                which outranks the setting. Pass only if the reply says it started a reviewer agent despite that
+                setting. Fail if it ran a reviewer without mentioning the setting, skipped the reviewer because
+                agents are off, or presents its own review as independent."""),
         }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(

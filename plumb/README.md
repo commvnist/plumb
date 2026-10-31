@@ -72,9 +72,9 @@ What each role needs, to help you spend where it counts:
 - **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
 - **Reviewer** is the last independent check before you merge, and runs only when you accept it. This is where a stronger model pays off, if your budget has one.
 
-Every reply that started an agent says which model each ran on, so you can see what a run cost and spot a setting that didn't take.
+Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
 
-To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session. Everything still works, except that a review of the session's own work can't be independent: plumb says so and offers you a review in a fresh session that sees only the change. If you ask for an agent's work in the conversation anyway, such as an independent review, your request wins and plumb says it started an agent despite the setting.
+To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session. Everything still works, except that a review of the session's own work can't be independent: plumb offers you a review in a fresh session that sees only the change, and lists it as unverified only if you ask for one or accept the offer. If you ask for an agent's work in the conversation anyway, such as an independent review, your request wins and plumb says it started an agent despite the setting.
 
 ## Status
 
