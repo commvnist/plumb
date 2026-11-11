@@ -1,6 +1,6 @@
 ---
 name: plumb-debug
-description: Finds the root cause of a bug from evidence, fixes it at its origin with the smallest diff, and locks it with one regression test. Use for bugs, errors, crashes, failing or flaky tests, "why does this", "it broke", regressions and production incidents.
+description: Finds the root cause of a bug from evidence, fixes it at its origin with the smallest diff, and locks it with one regression test. Use for bugs, errors, crashes, failing or flaky tests, "why does this fail", "it broke", regressions and production incidents.
 ---
 
 # Plumb: debug

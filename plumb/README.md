@@ -49,14 +49,14 @@ Each of these is on purpose:
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
-- **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and changes it, and if the evidence still supports the choice it shows you that evidence once, then does what you decide. Ask for something it can see failing and it follows you, naming the risk once.
+- **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong, and if the evidence still supports the choice it shows you that evidence once. A question then waits for your decision; an instruction is followed, unless it rests on a fact about the code that isn't true. Ask for something it can see failing however it is built and it follows you, naming the risk once, and names it first when the step can't be undone.
 
 ## Tuning it
 
 The project's written rules (CLAUDE.md, contributing guides, tool configuration) outrank the charter, and an explicit request outranks both. To change a default for a project, say so in its CLAUDE.md, for example:
 
 ```
-- plumb: commit each plan step without stopping; I review the PR as a whole.
+- plumb: commit each plan step as it passes; I review the PR as a whole.
 - plumb: diffs up to 600 changed lines are fine here.
 - plumb: decision records live in design/decisions/, in MADR format.
 ```

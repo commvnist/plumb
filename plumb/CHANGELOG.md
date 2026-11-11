@@ -2,6 +2,28 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+A consistency pass over what 0.7.0 added, so no two rules give different answers for the same situation.
+
+### Fixed
+- Pushback and Authority no longer disagree about an instruction that rejects a choice. A question gets the evidence and waits for your decision; an instruction is already your decision and is followed, with the evidence shown once. When you're right and only asked, the change is offered rather than made.
+- A request that rests on a wrong belief about the code, whether a question or an instruction, gets the line or run that says otherwise and then waits for what you want.
+- Naming a risk no longer excuses a defect. Only a failure that happens however well the thing is built is yours to accept; one that building it properly avoids is fixed as part of the change.
+- A risk is named before a step that can't be undone, and plumb waits for your answer unless you've shown you already know it. Before, the charter said to follow and name it while plumb-ship said to ask first.
+- A choice you made against plumb's evidence is recorded under Decided as yours. Before, one rule said to record it and another said choices the ask settled stay off that line.
+- The independent reviewer no longer files what you asked for or decided, knowing its risk, as a finding, so a review can't undo your decision.
+- A challenge phrased as "why did you do it this way" is checked again before it is explained.
+- In `plumb-explain`, a defect in the session's own work has its own `Part of done` line and waits for your go; `Noticed` keeps its one meaning (problems this work didn't cause), and better choices go on the suggestions menu.
+- A pull request description carries the report's Look hardest line only when the report has one.
+- `plumb-debug` no longer triggers on a why question about working code, which is `plumb-explain`'s.
+- The README's example for committing plan steps matches what the charter delivers.
+- A defect found after the report is still part of the change, never a menu item. It is fixed at once when a check that was a step of the change found it, and on your go when it surfaced in answering your question, in an explanation, or in a review that was all you asked for.
+- A review you accepted on plumb's offer counts as a step of the change, so a confirmed Blocking finding from it is fixed without asking again. A review you asked for yourself reports and waits.
+- A review finding the charter already requires of the author (a self-review checklist hit or dead code in added lines, a missing reason for a decision) is part of the change even when the review files it as a Should.
+- With agents off, the review offered in a fresh session is given your decisions too, so it doesn't request changes over something you chose.
+- If you tell plumb to leave out a protection it built in, that is an override like any other: it follows you and names the risk once.
+
 ## 0.7.0
 
 The operator can ask to be walked through anything, sees where to look hardest, and gets an honest answer when they push back.

@@ -31,14 +31,14 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 ## Findings
 
 - **Blocking:** wrong behaviour, unsafe, breaks a contract or the project's written rules, fakes success, the test floor unmet, too large or mixed to review safely.
-- **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions, each naming the principle it serves.
+- **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change, except where the charter already requires it of the author (a checklist hit or Delete entry in lines the change adds, a missing reason for a decision): that is part of done, as the charter's Agents says, since a review can't make optional what the author owed before it. At most five, ranked as the charter ranks suggestions, each naming the principle it serves.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
-Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
+Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict. In a change an agent wrote for the user, what the user asked for or decided knowing its risk, a waived rule included, isn't a finding; name its risk once in the verdict line, since a review judges the author's choices, not the user's.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 
-On a re-review, confirm each earlier finding is resolved, shown wrong, or, if it wasn't Blocking, declined by whoever decides it (see Should) and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
+On a re-review, confirm each earlier finding is resolved, shown wrong, or, if it wasn't Blocking, declined by whoever decides it, where it was theirs to decline (see Should) and review everything changed since; raise something new on code you already reviewed only if it is Blocking.
 
 ## Output
 
