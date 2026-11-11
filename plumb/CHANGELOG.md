@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.7.0
 
 The operator can ask to be walked through anything, sees where to look hardest, and gets an honest answer when they push back.
 
