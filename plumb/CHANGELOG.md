@@ -19,6 +19,8 @@ A consistency pass over what 0.7.0 added, so no two rules give different answers
 - `plumb-debug` no longer triggers on a why question about working code, which is `plumb-explain`'s.
 - The README's example for committing plan steps matches what the charter delivers.
 - A defect found after the report is still part of the change, never a menu item. It is fixed at once when a check that was a step of the change found it, and on your go when it surfaced in answering your question, in an explanation, or in a review that was all you asked for.
+- A review you accepted on plumb's offer counts as a step of the change, so a confirmed Blocking finding from it is fixed without asking again. A review you asked for yourself reports and waits.
+- A review finding the charter already requires of the author (a self-review checklist hit or dead code in added lines, a missing reason for a decision) is part of the change even when the review files it as a Should.
 - With agents off, the review offered in a fresh session is given your decisions too, so it doesn't request changes over something you chose.
 - If you tell plumb to leave out a protection it built in, that is an override like any other: it follows you and names the risk once.
 
