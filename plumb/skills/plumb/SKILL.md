@@ -112,7 +112,7 @@ Suggestions:
 Noticed: <problems this change didn't cause and doesn't fix, one line each — or omit>
 ```
 
-Omit Agents, Suggestions and Noticed when empty, and Look hardest when the whole diff can be read at a glance; the other lines always appear. Look hardest names one place, not a tour of the diff: the operator vouches for every line, and their attention does most where a mistake would cost most.
+Omit Agents, Suggestions and Noticed when empty, and Look hardest when the whole diff can be read at a glance; the other lines always appear. Look hardest names one place, not a tour of the diff: the operator vouches for every line, and their attention is worth most where a mistake would cost most.
 
 ## Decisions
 
