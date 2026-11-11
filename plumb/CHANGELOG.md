@@ -2,6 +2,20 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+The operator can ask to be walked through anything, sees where to look hardest, and gets an honest answer when they push back.
+
+### Added
+- `plumb-explain` walks you through code, a diff or a decision: the point in a sentence or two, one real case traced by file and line, the reason for each choice a reader would question with the alternative and its cost, where it could be wrong, and one check you can run yourself. It changes nothing, and gives a reason it can't find as unknown rather than inventing one.
+- The report has a `Look hardest` line naming the one place where a mistake would cost most and what to check there. It is left out when the whole diff can be read at a glance.
+- Pushback has a rule. When you question or reject a choice, plumb checks it again before answering. If you're right it says what was wrong and changes it; if the evidence still supports the choice it shows that evidence and what your alternative would cost, once, then does what you decide and records the choice as yours. When a question rests on a belief about the code that isn't true, it shows the line or run that says otherwise first.
+- Eval cases for a walkthrough of existing code, a challenge that rests on a wrong belief, and an instruction whose failure can be named.
+
+### Changed
+- When you ask for something whose failure plumb can already name, it follows you and names the risk once, as a failure story. Before, this covered only overriding one of plumb's rules.
+- A technique the codebase hasn't used before goes on the Decided line with its reason.
+
 ## 0.6.0
 
 Decisions and checks are easier for the operator to see, and plumb loads less text and skips repeat work, with the same guarantees.

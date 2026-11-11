@@ -19,6 +19,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
 | `plumb-ship` | release | Commits, PR descriptions, splitting, changelogs, safe rollout |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
+| `plumb-explain` | any | Walks you through code, a diff or a decision until you could defend it; changes nothing |
 
 ## Agents
 
@@ -32,10 +33,10 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 
 ```
 plan → build → (test · debug · refactor as needed) → review → ship
-                      audit any time
+                 audit · explain any time
 ```
 
-Every phase that changes code ends with the same report: what changed, what was decided and why, what was verified, what wasn't, risks, and the suggestions menu. Plan, review and audit return their own formats.
+Every phase that changes code ends with the same report: what changed, what was decided and why, what was verified, what wasn't, risks, where to look hardest, and the suggestions menu. Plan, review, audit and explain return their own formats.
 
 Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), and commits follow Conventional Commits unless the project has its own convention.
 
@@ -48,6 +49,7 @@ Each of these is on purpose:
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
+- **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and changes it, and if the evidence still supports the choice it shows you that evidence once, then does what you decide. Ask for something it can see failing and it follows you, naming the risk once.
 
 ## Tuning it
 
