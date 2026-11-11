@@ -49,7 +49,7 @@ Each of these is on purpose:
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
-- **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong, and if the evidence still supports the choice it shows you that evidence once. A question then waits for your decision; an instruction is followed. Ask for something it can see failing however it is built and it follows you, naming the risk once, and names it first when the step can't be undone.
+- **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong, and if the evidence still supports the choice it shows you that evidence once. A question then waits for your decision; an instruction is followed, unless it rests on a fact about the code that isn't true. Ask for something it can see failing however it is built and it follows you, naming the risk once, and names it first when the step can't be undone.
 
 ## Tuning it
 

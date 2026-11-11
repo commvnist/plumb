@@ -34,7 +34,7 @@ To review work you wrote, use the plumb-reviewer agent. It hasn't seen your reas
 - **Should:** a real improvement with a concrete benefit; the author decides, or the user when an agent wrote the change. At most five, ranked as the charter ranks suggestions, each naming the principle it serves.
 - **Nit:** one line each, at most three, clearly optional. If in doubt, leave it out.
 
-Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict.
+Each finding gives the location, a concrete scenario that goes wrong (input, sequence, reader), and the smallest fix. "This could be cleaner" is not a finding. Run or trace a Blocking scenario before filing it; if you couldn't confirm it, say so in the finding. A problem the change didn't cause and doesn't worsen goes under Noticed and doesn't affect the verdict. In a change an agent wrote for the user, what the user asked for or decided knowing its risk, a waived rule included, isn't a finding; name its risk once in the verdict line, since a review judges the author's choices, not the user's.
 
 The verdict follows the findings: any Blocking means request changes; otherwise any Should or Delete entry means approve with suggestions; otherwise approve.
 

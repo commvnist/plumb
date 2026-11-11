@@ -16,7 +16,7 @@ An explanation exists so the operator can vouch for the code and overturn what i
 3. **Lead with the point.** One or two sentences: what it does for its caller, and the one idea that makes it work.
 4. **Trace one real case.** Follow one concrete input through the code to its outcome, by file:line, then the case where the path differs (an error, an edge). Run it where that is cheap and affects nothing, and say which parts you ran and which you read (charter rule 13). *A reader keeps a traced example long after a description has gone.*
 5. **Give the reasons.** For each choice a reader would question: what was chosen, the alternative, and what the alternative would cost here. Name the technique or principle in a word or two, and say in a line what any term the codebase doesn't otherwise use means, so they can look it up and recognise it next time.
-6. **Say where it could be wrong.** What the code assumes, what you didn't verify, and the place you would look hardest as its reviewer. A defect the explaining exposed in this session's unshipped work is part of done (charter rule 1): say so, and fix it once they say go, since an explanation changes nothing. A defect this session's work didn't cause goes under Noticed, and a better choice is a suggestion.
+6. **Say where it could be wrong.** What the code assumes, what you didn't verify, and the place you would look hardest as its reviewer. A defect the explaining exposed in this session's work is part of done (charter rule 1): say so, and fix it once they say go, since an explanation changes nothing. A defect this session's work didn't cause goes under Noticed, and a better choice is a suggestion.
 7. **Hand them something to try.** One check they can run themselves that would show the explanation is true: a command, or a line to change and the test that then fails. *Trying it is what turns being told into knowing.*
 
 ## Output
@@ -28,7 +28,7 @@ Why this way: <choice — alternative — what the alternative would cost — (t
 Not sure:     <assumptions, what wasn't verified, reasons that are inference — or "nothing">
 Look hardest: <the place a mistake would cost most, and what to check there>
 Try it:       <one check they can run>
-Part of done: <a defect the explaining exposed in this session's unshipped work, waiting for their go — or omit>
+Part of done: <a defect the explaining exposed in this session's work, waiting for their go — or omit>
 Suggestions:  <better choices, by the charter's menu rules — or omit>
 Noticed:      <problems this session's work didn't cause, one line each — or omit>
 ```

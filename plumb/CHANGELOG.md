@@ -14,10 +14,13 @@ A consistency pass over what 0.7.0 added, so no two rules give different answers
 - A choice you made against plumb's evidence is recorded under Decided as yours. Before, one rule said to record it and another said choices the ask settled stay off that line.
 - The independent reviewer no longer files what you asked for or decided, knowing its risk, as a finding, so a review can't undo your decision.
 - A challenge phrased as "why did you do it this way" is checked again before it is explained.
-- In `plumb-explain`, a defect in the session's unshipped work has its own `Part of done` line and waits for your go; `Noticed` keeps its one meaning (problems this work didn't cause), and better choices go on the suggestions menu.
+- In `plumb-explain`, a defect in the session's own work has its own `Part of done` line and waits for your go; `Noticed` keeps its one meaning (problems this work didn't cause), and better choices go on the suggestions menu.
 - A pull request description carries the report's Look hardest line only when the report has one.
 - `plumb-debug` no longer triggers on a why question about working code, which is `plumb-explain`'s.
 - The README's example for committing plan steps matches what the charter delivers.
+- A defect found after the report is still part of the change, never a menu item. It is fixed at once when a check that was a step of the change found it, and on your go when it surfaced in answering your question, in an explanation, or in a review that was all you asked for.
+- With agents off, the review offered in a fresh session is given your decisions too, so it doesn't request changes over something you chose.
+- If you tell plumb to leave out a protection it built in, that is an override like any other: it follows you and names the risk once.
 
 ## 0.7.0
 
