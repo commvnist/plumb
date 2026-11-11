@@ -51,7 +51,7 @@ Use the project's pull request template if it has one; otherwise:
 <for a step of a multi-step plan: every step, which are done, and what the next one waits for — or omit>
 ```
 
-Keep it short. Point the reviewer to the one place to look hardest. No marketing words, no emoji, no restating the diff.
+Keep it short. Carry the report's Look hardest line into How to verify when it has one. No marketing words, no emoji, no restating the diff.
 
 ## Releases
 
