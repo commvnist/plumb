@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.7.1
 
 A consistency pass over what 0.7.0 added, so no two rules give different answers for the same situation.
 
