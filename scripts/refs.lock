@@ -43,6 +43,15 @@
       "7": "Clean up",
       "8": "Report"
     },
+    "plumb-explain": {
+      "1": "Take the scope and depth from the question",
+      "2": "Read it before explaining it",
+      "3": "Lead with the point",
+      "4": "Trace one real case",
+      "5": "Give the reasons",
+      "6": "Say where it could be wrong",
+      "7": "Hand them something to try"
+    },
     "plumb-plan": {
       "1": "State the goal as outcomes",
       "2": "Map the ground",
