@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Added
+- GitHub Copilot CLI support. Install with `copilot plugin marketplace add commvnist/plumb` and `copilot plugin install plumb@plumb-marketplace`. The skills, agents and both hooks work there unchanged, and a `plumb agents:` line in AGENTS.md picks each agent's model as it does elsewhere. Claude Code and Codex see no change.
+
 ## 0.7.1
 
 A consistency pass over what 0.7.0 added, so no two rules give different answers for the same situation.

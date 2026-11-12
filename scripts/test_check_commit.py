@@ -14,12 +14,18 @@ def git(repo, *args):
     subprocess.run(GIT + ["-C", repo, *args], check=True, capture_output=True)
 
 
-def run_hook(repo, command, output=""):
+def hook_output(repo, command, output="", copilot=False):
     payload = {"hook_event_name": "PostToolUse", "cwd": repo, "tool_name": "Bash",
                "tool_input": {"command": command}, "tool_response": {"stdout": output}}
-    out = subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
-                         text=True, check=True).stdout
-    return "isn't Conventional Commits" in out
+    env = {k: v for k, v in os.environ.items() if k != "COPILOT_PLUGIN_ROOT"}
+    if copilot:
+        env["COPILOT_PLUGIN_ROOT"] = "/plugin"
+    return subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
+                          text=True, check=True, env=env).stdout
+
+
+def run_hook(repo, command, output=""):
+    return "isn't Conventional Commits" in hook_output(repo, command, output)
 
 
 class CheckCommit(unittest.TestCase):
@@ -64,6 +70,14 @@ class CheckCommit(unittest.TestCase):
         git(self.repo, "merge", "-q", "--no-ff", "--no-commit", "side")
         git(self.repo, "commit", "-q", "--no-edit")
         self.assertFalse(run_hook(self.repo, "git commit --no-edit"))
+
+    def test_answers_in_the_shape_each_tool_reads(self):
+        # Claude Code reads hookSpecificOutput; Copilot CLI reads only a top-level additionalContext.
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
+        claude = json.loads(hook_output(self.repo, "git commit -m 'Add stuff'"))
+        copilot = json.loads(hook_output(self.repo, "git commit -m 'Add stuff'", copilot=True))
+        self.assertIn("isn't Conventional Commits", claude["hookSpecificOutput"]["additionalContext"])
+        self.assertIn("isn't Conventional Commits", copilot["additionalContext"])
 
 
 if __name__ == "__main__":
