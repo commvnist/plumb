@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.9.0
 
 ### Changed
 - Code plumb writes now gives every input it can actually receive a decided outcome (handled, rejected loudly, or shown impossible), alongside the existing rule against guarding the impossible.
