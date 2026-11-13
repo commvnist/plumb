@@ -64,6 +64,10 @@ CASES = {
                 - Exactly one regression test was added for the comma case, and the reply says it was seen failing before the fix.
                 - No unrelated code was changed or reformatted.
                 - {REPORT}"""),
+            "cause-evidence": llm("""
+                Pass if the reply backs the cause with the observation that established it (a run showing the
+                error on text with a comma, or the line where the text reaches Decimal with the comma still in it),
+                not only a statement of the cause."""),
         }),
     "bf-small-tests": dict(
         tags=["brownfield", "small", "test"], fixture="shop-small",
@@ -82,6 +86,30 @@ CASES = {
             "report": llm("""
                 Pass if the reply says which cart behaviour was deliberately left untested and why, and shows the
                 tests were run and passed."""),
+            "red-break": llm("""
+                Pass if the reply names, for the tests it added, the change to the code each was seen failing on
+                (for example flipping the coupon comparison, or removing the merge of a repeated item), rather
+                than only saying the tests pass or were seen red."""),
+        }),
+    "bf-small-tests-spec": dict(
+        tags=["brownfield", "small", "test"], fixture="shop-small",
+        scaffold_extra=r"""
+python3 - <<'PY'
+p = "shop/cart.py"
+s = open(p).read().replace("    def total(self):\n", '    def total(self):\n        \"\"\"Applies the coupon when the subtotal is over the coupon minimum.\"\"\"\n')
+open(p, "w").write(s)
+PY
+git commit -qam "Document when a coupon applies"
+""",
+        prompt="Add tests for shop/cart.py.",
+        graders={
+            "skill-test": skill("plumb-test"),
+            "spec": llm("""
+                Cart.total's docstring says a coupon applies when the subtotal is over its minimum, but the code
+                applies it at exactly the minimum too (>=). Pass if the reply points out this mismatch, and either
+                asks which is intended, reports it as a likely bug, or says any test of the exact-minimum case
+                records today's behaviour for the user to confirm. Fail if it presents a test asserting the discount
+                at exactly the minimum as settled correct behaviour without mentioning the mismatch."""),
         }),
     "bf-small-refactor": dict(
         tags=["brownfield", "small", "refactor"], fixture="shop-small",
@@ -133,6 +161,137 @@ PY
                 - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...), is in the imperative and describes the behaviour added.
                 - If the environment blocked the commit, it said so plainly and gave the exact commit it would make.
                 - It didn't push, open a pull request or change code."""),
+            "decided": llm("""
+                The history's subjects are plain imperative sentences with no type prefix or ticket id. Pass if the
+                reply says, on its Decided line or equivalent, that it used Conventional Commits because the history
+                follows no message format of its own (or words to that effect)."""),
+        }),
+    "bf-small-ship-ticket": dict(
+        tags=["brownfield", "small", "ship"], fixture="shop-small",
+        scaffold_extra=r"""
+rm -rf .git && git init -q -b main && git config user.email dev@example.com && git config user.name Dev
+git add -A && git commit -qm "SHOP-3: Add pricing helpers and cart"
+echo "Ask in #shop before changing rounding." >> README.md
+git commit -qam "SHOP-7: Note who to ask about rounding"
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s += '''
+
+def total_with_tax(amount, tax_percent):
+    # Adds sales tax, rounded to the cent.
+    return _round_cents(amount * (Decimal(100) + Decimal(tax_percent)) / Decimal(100))
+'''
+open(p, "w").write(s)
+PY
+""",
+        prompt="Commit this.",
+        graders={
+            "skill-ship": skill("plumb-ship"),
+            "convention": llm("""
+                The repository's history uses ticket-prefixed subjects (SHOP-3: ..., SHOP-7: ...). Pass if the
+                commit subject the agent used or proposed keeps that form (SHOP-<n>: ..., asking for or leaving a
+                placeholder for the ticket number is fine) rather than switching to Conventional Commits."""),
+        }),
+    "bf-small-pr-title": dict(
+        tags=["brownfield", "small", "ship"], fixture="shop-small",
+        scaffold_extra=r"""
+git checkout -q -b feature/tax
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s += '''
+
+def total_with_tax(amount, tax_percent):
+    # Adds sales tax, rounded to the cent.
+    return _round_cents(amount * (Decimal(100) + Decimal(tax_percent)) / Decimal(100))
+'''
+open(p, "w").write(s)
+PY
+git commit -qam "feat(pricing): add total_with_tax"
+python3 - <<'PY'
+p = "shop/cart.py"
+s = open(p).read().replace('''    def item_count(self):
+        return sum(i["quantity"] for i in self.items)
+
+''', '')
+open(p, "w").write(s)
+PY
+git commit -qam "feat(cart)!: drop Cart.item_count
+
+BREAKING CHANGE: callers count items themselves from Cart.items."
+""",
+        prompt="Open a pull request for this branch.",
+        graders={
+            "skill-ship": skill("plumb-ship"),
+            "title": llm("""
+                The branch holds a feat commit and a breaking feat(cart)! commit. Pass if the pull request title the
+                agent used or proposed follows Conventional Commits and carries the breaking marker (for example
+                "feat!: ..." or "feat(cart)!: ...")."""),
+        }),
+    "bf-small-orphan": dict(
+        tags=["brownfield", "small", "build"], fixture="shop-small",
+        scaffold_extra=r"""
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s = s.replace('''def format_price(amount):
+    return "$" + str(_round_cents(amount))''', '''def _legacy_round(amount):
+    return amount.quantize(Decimal("0.01"))
+
+
+def format_price(amount):
+    return "$" + str(_legacy_round(amount))''')
+open(p, "w").write(s)
+t = "tests/test_pricing.py"
+s = open(t).read().replace('''
+
+if __name__''', '''
+    def test_legacy_round_keeps_two_places(self):
+        self.assertEqual(pricing._legacy_round(Decimal("2.5")), Decimal("2.50"))
+
+
+if __name__''')
+open(t, "w").write(s)
+PY
+git commit -qam "Format prices with the legacy rounding"
+""",
+        prompt="Make format_price round with _round_cents instead of _legacy_round.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "helper-gone": regex_file("shop/pricing.py", r"def _legacy_round", "not_contains"),
+            "test-gone": regex_file("tests/test_pricing.py", r"_legacy_round", "not_contains"),
+            "quality": llm("""
+                Pass if the reply says _legacy_round was left with no user and was removed with its test in this
+                change, citing a search that shows nothing else uses it, and doesn't offer its removal as an
+                optional suggestion."""),
+        }),
+    "bf-small-pushback-right": dict(
+        tags=["brownfield", "small", "pushback"], fixture="shop-small",
+        scaffold_extra=r"""
+cat >> shop/pricing.py <<'PY'
+
+
+def split_evenly(amount, people):
+    # Splits a bill into equal shares.
+    return round(float(amount) / people, 2)
+
+
+def unit_price(total, quantity):
+    return round(float(total) / quantity, 2)
+PY
+git commit -qam "Add bill splitting and unit prices"
+""",
+        prompt="Doesn't split_evenly in shop/pricing.py lose precision by going through float? Prices are Decimal everywhere else.",
+        graders={
+            "no-edit": no_tool("Edit"),
+            "no-write": no_tool("Write"),
+            "quality": llm("""
+                The user is right: split_evenly converts a Decimal to float. unit_price does the same.
+                Pass only if all hold:
+                - The reply agrees, with evidence (the line, or a run showing a wrong or inexact result).
+                - It names unit_price as another place with the same mistake.
+                - It changed no code and offers the fix or asks before making it."""),
         }),
     "bf-small-build-ship": dict(
         tags=["brownfield", "small", "build", "ship"], fixture="shop-small",
@@ -163,6 +322,9 @@ PY
                 - The reply reports the first diff (total_with_tax in shop/pricing.py) and stops there, asking the user
                   to commit it or say to go on before starting the second diff; the cart method is not built yet.
                 - {REPORT}"""),
+            "waiting-on": llm("""
+                Pass if the reply's report says in one place (a 'Waiting on' line or equivalent closing line) what
+                it needs from the user before going on."""),
         }),
     "bf-small-explain": dict(
         tags=["brownfield", "small", "explain"], fixture="shop-small",
@@ -257,7 +419,68 @@ PY
                 - The agent produced a plan and did not change code yet, waiting for a go-ahead.
                 - Because the column is persisted data, the plan stages it (add the new column, migrate or dual-write, then remove the old), with migrations in app/migrations/ as the project's rules require.
                 - It lists the expensive decisions with options, a choice and a reason, and plans a decision record covering the rename of the persisted column and API field (one record for the rename and how it is staged is enough), even though the request made that choice; it raises starting docs/adr/ (the repo has none), recommending an answer.
-                - Questions, if any, are at most three, each with a recommended answer."""),
+                - Questions, if any, are at most three, each with a recommended answer and a reason for it."""),
+        }),
+    "bf-medium-event-rename": dict(
+        tags=["brownfield", "medium", "build", "plan"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat > app/shipping.py <<'PY'
+from app import log
+
+
+def dispatch(broker, order_id):
+    # Publishes shipment.dispatched once the parcel leaves the warehouse.
+    broker.publish("shipment.dispatched", {"order_id": order_id})
+    log.event("shipment.publish", order_id=order_id, outcome="ok")
+PY
+git add -A && git commit -qm "Publish shipment.dispatched from the warehouse flow"
+""",
+        prompt="Rename the order_id field of shipment.dispatched messages to order_ref, in app/shipping.py which publishes them and in the consumer that handles them.",
+        graders={
+            "quality": llm("""
+                The publisher and the consumer live in the same repository, but messages already queued, and the
+                two sides running different versions during a deploy, will meet the renamed field. Pass if the agent
+                stages the rename (for example the consumer accepts both names first, then the publisher switches,
+                then the old name is dropped) or plans it before changing code, or otherwise names that old and new
+                versions will read each other's messages. Fail if it renames both sides in one diff and says nothing
+                about messages in flight or deploy order."""),
+        }),
+    "bf-medium-review-noise": dict(
+        tags=["brownfield", "medium", "review"], fixture="orders-medium",
+        scaffold_extra=r"""
+git checkout -q -b feature/order-total
+python3 - <<'PY'
+p = "app/handlers/orders.py"
+s = open(p).read()
+s += '''
+
+
+def _total_body(order):
+    return {"order_id": order["id"], "total": order["total_cents"] // 100}
+
+
+def get_order_total(conn, request):
+    order = store.get_order(conn, int(request.params["id"]))
+    if order is None:
+        raise NotFound()
+    require_owner(request, order)
+    log.event("order.total", user_id=request.user_id, order_id=order["id"], outcome="ok")
+    return Response(200, _total_body(order))
+'''
+open(p, "w").write(s)
+PY
+git commit -qam "feat: return an order's total in dollars"
+""",
+        prompt="Review the feature/order-total branch against main before I merge it.",
+        graders={
+            "skill-review": skill("plumb-review"),
+            "no-edit": no_tool("Edit"),
+            "quality": llm("""
+                Pass only if all hold:
+                - A Blocking finding says integer division drops the cents from the total (for example 1999 cents becomes 19).
+                - No finding asks for a guard against a missing order or a None order in _total_body, since its only
+                  caller already raises NotFound for a missing order before calling it.
+                - It changed no files."""),
         }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review"], fixture="orders-medium",
@@ -534,6 +757,10 @@ git add -A && git commit -qm "build: package metadata and CI"
                 - Findings are ranked, at most 15 (with a count of the rest if there are more), each with a file location, a concrete consequence and an action.
                 - The findings cover more than one service, and none is generic advice.
                 - Nothing in the repository was changed."""),
+            "pattern": llm("""
+                The billing and search services both log the raw api_key. Pass if the reply reports this as one
+                finding naming both locations (or the search that finds them), not as two separate ranked entries.
+                Fail if it is reported twice, or not at all."""),
         }),
     "bf-large-audit-off": dict(
         tags=["brownfield", "large", "audit", "agents"], fixture="monorepo-large",
@@ -591,11 +818,19 @@ git add CLAUDE.md && git commit -qm "chore: no subagents in this project"
             "slices": llm("""
                 Pass if the plan's early steps each deliver working behaviour end to end (a request through to
                 storage, or an external call) for a narrow piece, rather than building one layer of the whole
-                system first (for example all models, then all APIs)."""),
+                system first (for example all models, then all APIs), and no step that only sets up scaffolding,
+                schema, tenancy or auth comes before the first step that delivers behaviour."""),
             "decisions": llm("""
                 Pass if the reply lists the expensive-to-reverse decisions (at least the tenancy model and how money
                 or payment state is stored or synced), each with options, a choice and a reason, and proposes
                 decision records for them."""),
+            "question-reasons": llm("""
+                Pass if each question the reply asks comes with a recommended answer and a reason for that
+                recommendation."""),
+            "trade-offs": llm("""
+                Pass if, for the tenancy model and for most of the other expensive decisions it lists, the plan says
+                what the choice gives up against another option, or when another option would be the better choice,
+                not only why it was picked."""),
             "questions": llm("""
                 Pass if the reply asks at most three questions, each with a recommended answer (a question about
                 starting decision records doesn't count toward the three), and doesn't present any suggestion as

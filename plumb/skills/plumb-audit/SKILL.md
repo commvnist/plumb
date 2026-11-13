@@ -14,7 +14,7 @@ An audit changes nothing in the repository or in any shared or production system
 ## Code mode
 
 Look for:
-1. **Correctness:** bugs with a concrete failing scenario, traced through the code or reproduced without editing it; say so in the finding if you couldn't confirm it.
+1. **Correctness:** bugs with a concrete failing scenario the system can produce (its input traced back to where it enters, since a state the code is never given asks for a guard charter rule 8 forbids), traced through the code or reproduced without editing it; say so in the finding if you couldn't confirm it.
 2. **Safety:** security holes, data loss, leaked secrets or personal data (cite the location, never the value; a live secret's action is rotate, then remove), unsafe handling of untrusted input.
 3. **Failure handling:** swallowed errors, fake defaults, failures nobody would ever see.
 4. **Behaviour under real conditions:** what breaks with load, slowness, repetition or concurrency.
@@ -47,4 +47,4 @@ Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>   (tests 
 Not examined: <areas skipped, and why>
 ```
 
-Rank by consequence per line of fix. Every finding is concrete and specific to this code. No generic advice. End with: "Pick any number and each lands as its own diff." Land picks as plumb-build applies accepted suggestions (plumb-debug for a bug).
+A defect repeated across locations or areas is one finding that lists them (or gives the search that finds them all), ranked by their combined consequence, with its action at the shared cause where there is one, since a ranked list filled by one pattern hides the next problem and fixing copies one by one never shows what keeps producing them. Rank by consequence per line of fix. Every finding is concrete and specific to this code. No generic advice. End with: "Pick any number and each lands as its own diff." Land picks as plumb-build applies accepted suggestions (plumb-debug for a bug).
