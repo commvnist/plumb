@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.10.0
 
 ### Changed
 - Breaking changes to anything one version of the code writes and another reads (queued messages, jobs, caches, a separately deployed client) are now staged even when both sides live in the same repository, since old and new code meet during a deploy.
