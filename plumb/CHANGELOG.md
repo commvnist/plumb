@@ -2,6 +2,20 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Breaking changes to anything one version of the code writes and another reads (queued messages, jobs, caches, a separately deployed client) are now staged even when both sides live in the same repository, since old and new code meet during a deploy.
+- A change removes code it leaves with no user, with its tests, instead of offering the deletion as a suggestion.
+- Plans start with a slice that delivers behaviour; what it needs lands in its real shape for one case rather than as a foundation step first.
+- Plans and decision records say what each choice gives up and what would reopen it; recommended answers to questions carry their reason.
+- Reports gain an optional `Waiting on:` line naming what the agent needs from you, and a run that went on past earlier reports gathers their decisions at the end.
+- Suggestions and Noticed items you've already seen aren't shown again; when you're right in a pushback, the agent also names every other place the same mistake appears.
+- Test expected values come from what the behaviour should be, never from running the code; reports name the break each new test was seen failing on.
+- Debug reports back the cause with the observation that established it and the closest alternative it ruled out.
+- Reviews and audits file only scenarios the system can actually produce, and report a defect repeated in several places as one finding at its shared cause.
+- Commits: plain imperative histories are explained as no convention (adding a type continues them), the first commit in a new format goes under Decided, and pull request titles follow the commit rules, since a squash merge makes the title the commit.
+
 ## 0.9.0
 
 ### Changed

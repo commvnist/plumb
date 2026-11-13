@@ -27,7 +27,7 @@ if printf '%s\n' "$subject" | grep -Eq '^(feat|fix|perf|refactor|test|docs|build
   exit 0
 fi
 
-note="plumb: the commit just made has a subject that isn't Conventional Commits. Unless the user asked for this exact message or the project has its own commit convention (the charter's Authority defines one), load plumb-ship and amend the message to its format, keeping the body. If the commit is already pushed, don't rewrite it: tell the user and propose the corrected message."
+note="plumb: the commit just made has a subject that isn't Conventional Commits. Unless the user asked for this exact message or the project has its own commit convention (a format its subjects follow, such as type prefixes or ticket ids; plain imperative subjects are not one, since adding a type continues them), load plumb-ship and amend the message to its format, keeping the body. If the commit is already pushed, don't rewrite it: tell the user and propose the corrected message."
 # Copilot CLI reads context only from a top-level field; Claude Code from hookSpecificOutput.
 if [ -n "$COPILOT_PLUGIN_ROOT" ]; then
   printf '{"additionalContext":"%s"}\n' "$note"

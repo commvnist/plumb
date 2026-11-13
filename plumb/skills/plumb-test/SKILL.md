@@ -27,7 +27,7 @@ No test of its own: wiring and configuration, plain data, pass-through and deleg
 ## What a good test is
 
 - **Behavioural.** It goes through the surface a real caller uses and asserts on outcomes the caller can observe. It checks an interaction only when the interaction is the contract, such as "a message is sent".
-- **Sensitive.** It fails when the behaviour breaks. Prove it: watch it fail before the fix exists, or briefly break the code and see it go red.
+- **Sensitive.** It fails when the behaviour breaks. Prove it: watch it fail before the fix exists, or briefly break the code and see it go red. Its expected values come from what the behaviour should be (a spec, a doc, a caller, the commit that added it), worked out independently, never copied from running the code, since a value taken from the output passes on the very bug it should catch. Where nothing but the code states the behaviour, the test records today's behaviour: name it in the report, so the operator can confirm it is intended.
 - **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals. It asserts only what the behaviour promises; comparing whole objects or exact order locks in what callers don't rely on.
 - **Focused.** It has one reason to fail, and its name states the behaviour ("rejects an expired coupon"), not the function it calls.
 - **Readable alone.** Setup, action and assertion are visible in the test, and the data that decides the outcome is inline and minimal; build the rest with the project's own fixtures.
@@ -39,7 +39,7 @@ Cases that differ only by data share one table-driven test, with one row per dis
 
 ## Reject on sight
 
-Assertions on source text, file layout, log wording or private internals. Expected values computed the way the code computes them. Fakes of the unit under test. Snapshots nobody reads. Tests of the language or a library. Tests that lock in incidental repository state, such as counts or lists of registered items. Tests with no assertion, or that catch an error in order to pass. Sleep-based waiting. Near-duplicates.
+Assertions on source text, file layout, log wording or private internals. Expected values computed the way the code computes them, or copied from its output. Fakes of the unit under test. Snapshots nobody reads. Tests of the language or a library. Tests that lock in incidental repository state, such as counts or lists of registered items. Tests with no assertion, or that catch an error in order to pass. Sleep-based waiting. Near-duplicates.
 
 ## Test-driven loop
 
