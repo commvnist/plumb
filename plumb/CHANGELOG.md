@@ -2,6 +2,19 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- The skills and agents are about a seventh of their former length (15,692 words down to 2,279; the charter 5,126 down to 623), so each session spends far less context on plumb. All 19 rules and every numbered step keep their titles. The eval suite scores 0.929 against 0.948 before.
+- Each rule is now its title and one clause. The reasons and the special-case procedure around the rules are gone; the agent is expected to decide those cases from the rule itself.
+- The report is six lines: Done, Why, Decided, Verified, Waiting on, Suggestions.
+
+### Removed
+- The report's `Changed`, `Unverified`, `Risks`, `Noticed`, `Look hardest` and `Agents` lines. A reply that started an agent still names its model.
+- The self-review checklist, and the separate charter sections on decisions, suggestions, asking, pushback, agents and authority, each now a sentence or two.
+- The automatic offer of an independent review, and the standing "commit each step as it passes" mode for multi-step plans.
+- The review and explain output templates, pull request description sections, release and rollout rules, the test-driven loop, and the 300-line diff limit.
+
 ## 0.10.0
 
 ### Changed

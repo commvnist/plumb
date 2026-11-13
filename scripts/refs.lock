@@ -58,8 +58,7 @@
       "3": "Find the thinnest end-to-end slice",
       "4": "Decide only what is expensive to reverse",
       "5": "Sequence the diffs",
-      "6": "Name the unknowns",
-      "7": "Principal pass"
+      "6": "Name the unknowns"
     },
     "plumb-refactor": {
       "1": "Name the goal",
