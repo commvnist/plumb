@@ -779,6 +779,147 @@ git add CLAUDE.md && git commit -qm "chore: no subagents in this project"
                 - The findings cover more than one service, and none is generic advice.
                 - Nothing in the repository was changed."""),
         }),
+    # ---------------- enterprise traits: what a principal engineer's review checks ----------------
+    "bf-medium-one-rule": dict(
+        tags=["brownfield", "medium", "build", "quality", "enterprise"], fixture="orders-medium",
+        prompt="Checkout needs to show customers their loyalty discount as a percentage, like \"You save 6%\". Add what it needs.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "one-rule": llm("""
+                This is app/discounts.py after the change. The business rule is "2% off per full year as a
+                customer, capped at 10%". Pass if, after the change, that rule (the 2-per-year rate and the
+                10% cap) is written in exactly one place, and both the existing cents calculation and the new
+                percentage are derived from it. Fail if the rate or the cap is typed out twice, for example a
+                new function that repeats min(years * 2, 10) beside the old one that still has its own copy.""",
+                path="app/discounts.py"),
+        }),
+    "bf-small-clock": dict(
+        tags=["brownfield", "small", "build", "quality", "enterprise"], fixture="shop-small",
+        scaffold_extra=r"""
+cat > tests/test_cart.py <<'PY'
+import unittest
+from decimal import Decimal
+
+from shop.cart import Cart
+
+
+class CartTest(unittest.TestCase):
+    def test_coupon_applies_above_minimum(self):
+        cart = Cart()
+        cart.add("mug", Decimal("30"), 2)
+        cart.coupon = {"percent": 10, "minimum": Decimal("50")}
+        self.assertEqual(cart.total(), Decimal("54.00"))
+
+
+if __name__ == "__main__":
+    unittest.main()
+PY
+git add -A && git commit -qm "test: coupon minimum"
+""",
+        prompt="Coupons should be able to expire: give a coupon an expiry date, and stop applying it once it has expired.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "tests-timeless": llm("""
+                This is tests/test_cart.py after the change. Pass if every test gives the same result whatever
+                day it runs on: the tests control the current time (pass it in, inject a clock, or patch it) or
+                place dates relative to a time the test controls. Fail if any test compares a fixed calendar
+                date (such as 2030-01-01) or the real current date against the real clock, because such a
+                test changes result as days pass.""", path="tests/test_cart.py"),
+            "clock-seam": llm("""
+                This is shop/cart.py after the change. Pass if the expiry check can be given the time it
+                compares against (a parameter, an injectable clock, or a single module-level function a test
+                can replace), and the boundary is decided on purpose (whether a coupon is still valid on its
+                expiry date is clear from the code or a comment). Fail if the comparison reads the real clock
+                inline with no way for a caller or test to set it.""", path="shop/cart.py"),
+        }),
+    "bf-medium-payment-log": dict(
+        tags=["brownfield", "medium", "build", "quality", "enterprise"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat > app/payments.py <<'PY'
+class PaymentDeclined(Exception):
+    pass
+
+
+def charge(card, amount_cents):
+    # Charges the card through the payment gateway and returns its transaction id.
+    # card is {"number", "cvc", "exp_month", "exp_year", "holder_name"}. Raises PaymentDeclined.
+    raise NotImplementedError("gateway client is configured in production")
+PY
+cat > app/handlers/payments.py <<'PY'
+from app import payments, store
+from app.auth import require_owner
+from app.http import NotFound, Response
+
+
+def pay_order(conn, request):
+    order = store.get_order(conn, int(request.params["id"]))
+    if order is None:
+        raise NotFound()
+    require_owner(request, order)
+    try:
+        payments.charge(request.body["card"], order["total_cents"])
+    except payments.PaymentDeclined:
+        return Response(402, {"error": "payment declined"})
+    store.set_status(conn, order["id"], "paid")
+    return Response(200, {"status": "paid"})
+PY
+git add -A && git commit -qm "feat: pay for an order"
+""",
+        prompt="Support can't investigate failed payments because pay_order logs nothing. Log enough about each payment attempt that support can see what was sent and why it failed.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-secrets": llm("""
+                This is app/handlers/payments.py after the change. Pass if nothing it logs can contain the
+                full card number, the CVC, or the whole card or request body (logging the last four digits,
+                the expiry, the card brand, the order id, amounts, outcomes, and an exception's type or message is
+                fine). Fail if any log call passes the
+                card dict, request.body, the number or the cvc, directly or inside another value.""",
+                path="app/handlers/payments.py"),
+            "debuggable": llm("""
+                This is app/handlers/payments.py after the change. Pass if a failed payment is logged with the
+                order id and the reason it failed (the decline, or the exception's type or message), so support
+                can tell attempts apart and see why each failed.""", path="app/handlers/payments.py"),
+        }),
+    "bf-medium-carrier": dict(
+        tags=["brownfield", "medium", "build", "quality", "enterprise"], fixture="orders-medium",
+        prompt=("Add a handler in app/handlers/shipping.py that returns a shipping quote for one of the signed-in user's orders. Get it from the "
+                "carrier's rates API: POST https://rates.example.com/v1/quote with JSON "
+                "{\"order_id\": ..., \"total_cents\": ...}; it answers {\"price_cents\": ...}. Use the standard library."),
+        graders={
+            "skill-build": skill("plumb-build"),
+            "timeout": llm("""
+                Below is the reply; the code it describes is in the repository. Judge the code that calls the
+                carrier, which the reply should show or describe. Pass only if the request to the carrier sets
+                an explicit timeout (for example urlopen(..., timeout=...)). Fail if the call has no timeout or
+                the reply doesn't make clear it has one."""),
+            "caller-terms": llm("""
+                Below is the reply; judge what it says the handler does when the carrier is down, slow, or
+                answers with an error or malformed body. Pass if those failures reach the handler's caller as a
+                defined response or as an error type of the project's own (such as a 502, or a new exception
+                beside the project's NotFound and Forbidden), never as a raw urllib, socket or JSON exception.
+                Fail if the reply doesn't say how carrier failures are handled."""),
+            "failure-logged": llm("""
+                This is app/handlers/shipping.py after the change. Pass if, when the carrier call fails, the
+                handler logs an event that carries the order id and the cause of the failure (the exception, its
+                message, or the carrier's status), so support can see which quote failed and why. Fail if a
+                failure is logged with only a generic outcome and no cause, or not logged at all.""",
+                path="app/handlers/shipping.py"),
+        }),
+    "bf-medium-export": dict(
+        tags=["brownfield", "medium", "build", "quality", "enterprise"], fixture="orders-medium",
+        prompt="Finance wants a nightly CSV of every invoice. Add a function in app/exports.py that writes all invoices to a CSV file at a path it is given.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-partial-file": llm("""
+                This is app/exports.py after the change. Pass if an export that fails part way (a crash, a
+                full disk, a database error mid-read) cannot leave a half-written CSV at the given path for
+                finance to pick up: for example it writes to a temporary file and renames it into place, or
+                removes the partial file on failure. Fail if it opens the given path for writing and writes the
+                rows straight into it.""", path="app/exports.py"),
+            "closed": llm("""
+                This is app/exports.py after the change. Pass if every file it opens is closed even when
+                writing fails (a with block or try/finally).""", path="app/exports.py"),
+        }),
     # ---------------- greenfield ----------------
     "gf-small-cli": dict(
         tags=["greenfield", "small", "build"], fixture=None,
