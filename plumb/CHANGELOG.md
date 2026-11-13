@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.12.0
 
 ### Changed
 - Work that can stop part way (a file write, a batch, a multi-step update) either completes or leaves things as they were, rather than leaving a half-written file or half-applied update behind.
