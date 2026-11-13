@@ -7,62 +7,24 @@ description: The standard for when a test should exist, what makes a good one, a
 
 Part of plumb. If the `plumb` skill isn't loaded in this session, load it now; its charter governs and this skill only adds to it.
 
-A test suite is code that holds the rest of the code still. Every test costs runtime, reading time and change friction forever, so each one must pay for itself by catching breaks people would otherwise ship.
+Every test costs runtime, reading time and change friction forever, so each must pay for itself.
 
 ## When a test should exist
 
-Write one only when all three hold:
-1. Someone relies on the behaviour: a user, a caller, another system.
-2. You can name the break in one line: a plausible edit by a future maintainer, or a real input, that would get this behaviour wrong.
-3. No other test or check the project runs (a type check, the compiler, a linter) would already catch that break; of overlapping tests, the one that best meets this standard stays.
-
-A general request to "add tests" asks for the tests that meet this bar, not for coverage. Write those, and list in one line what you deliberately left untested and why, so the user can override. A test the user names specifically gets written; if it fails the bar, say so once.
-
-Highest value: regressions of real bugs, business rules and calculations, parsing and validation of untrusted input, state transitions, concurrency and repeat-delivery contracts, security boundaries, public interfaces others build on.
-
-No test of its own: wiring and configuration, plain data, delegation, trivial accessors, constants, what the type system already proves, private helpers whose breaks tests of public behaviour already catch.
+Only when all three hold: someone relies on the behaviour; you can name, in one line, a plausible break; no other test or check would already catch it. A request to "add tests" asks for the tests that meet this bar, not coverage: write those, and say in one line what you deliberately left untested and why.
 
 ## What a good test is
 
-- **Behavioural.** It goes through the surface a real caller uses and asserts on outcomes the caller can observe. It checks an interaction only when the interaction is the contract, such as "a message is sent".
-- **Sensitive.** It fails when the behaviour breaks. Prove it: watch it fail before the fix exists, or briefly break the code and see it go red. Its expected values come from what the behaviour should be (a spec, a doc, a caller, the commit that added it), never copied from running the code, since a value taken from the output passes on the very bug it should catch. Where nothing but the code states the behaviour, the test records today's behaviour: name it in the report, so the operator can confirm it is intended.
-- **Resilient.** It passes under any change that preserves the behaviour: renames, restructuring, reordering of internals. Comparing whole objects or exact order locks in what callers don't rely on.
-- **Focused.** It has one reason to fail, and its name states the behaviour ("rejects an expired coupon"), not the function it calls.
-- **Readable alone.** Setup, action and assertion are visible in the test, with the data that decides the outcome inline.
-- **Deterministic and fast.** It controls time, randomness, ordering and concurrency, and needs no service it can't run locally.
-- **Honest about boundaries.** Fake only what the code doesn't own: clocks, third-party and remote services. Use real collaborators inside the boundary.
-- **Pitched at the right level.** Test at the lowest level that exercises the real behaviour with real collaborators, where the break is cheap to catch; if no such level exists, write no test unless the floor (charter rule 17) requires one, and say so. When the risk is in the wiring, one integration test beats five unit tests full of fakes.
-
-Cases that differ only by data share one table-driven test, one row per distinct break. Coverage shows what nothing tests, never what is tested well.
+It goes through the surface a real caller uses and asserts on outcomes; it has been seen to fail on the break it exists to catch; it survives any change that preserves the behaviour; its name states the behaviour. Its expected values come from what the behaviour should be (a spec, a doc), never from running the code; where the code and its stated behaviour disagree, say so in the report. Cases that differ only by data share one table.
 
 ## Reject on sight
 
-Assertions on source text, file layout, log wording or private internals. Expected values computed the way the code computes them, or copied from its output. Fakes of the unit under test. Snapshots nobody reads. Tests of the language or a library. Tests that lock in incidental repository state, such as counts or lists of registered items. Tests with no assertion, or that catch an error in order to pass. Sleep-based waiting. Near-duplicates.
-
-## Test-driven loop
-
-Use it when the user asks for it, or when the behaviour is well specified up front.
-
-1. **List** the behaviours the test floor requires (charter rule 17). Pick the simplest one that teaches something.
-2. **Red.** Write one test and run it. Confirm it fails for the reason you expect, not a typo or a setup error.
-3. **Green.** Write the simplest honest code that passes. Never special-case the test's inputs.
-4. **Refactor.** With everything green, simplify what you just wrote without changing behaviour. Run again.
-5. **Repeat** until the list is done. Then delete the tests from this loop that later ones have made redundant: the diff holds tests that meet this standard, not a record of every step.
+Assertions on internals or log wording; expected values computed the way the code computes them; tests of the language or a library; trivial accessors; near-duplicates.
 
 ## When a test fails
 
-- Fix a failure only when fixing it is the task or your change caused it; otherwise name it under Noticed.
-- Decide whether the test or the code is wrong from the requirement, not from which is easier to change. A test your change broke is wrong only in the three cases charter rule 12 lists; never weaken an assertion, widen a tolerance, skip or delete a test to go green otherwise.
-- When the code is wrong, find the cause with plumb-debug rather than patching until green; in a refactor, revert the step instead.
-- When a new test exposes an existing bug, never assert the wrong output. If the task depends on that behaviour, stop and propose fixing it first, in its own diff; otherwise report it and offer the fix as a suggestion.
-- A flaky test is a real bug. Find the nondeterminism (time, ordering, shared state, concurrency, outside dependence), force it so the test fails every time, then remove it at its source (in the code, not the test, when the code is what races) and see the test pass under that same forcing; a streak of passes is not proof. Never add retries or sleeps to hide it.
+Decide whether the test or the code is wrong from the requirement. Never weaken or delete a test to go green.
 
 ## Keep, merge, rewrite or delete
 
-How to judge a test that already exists, in a review or an audit of the suite:
-- **Keep:** none of the below applies. Style flaws alone are not a finding.
-- **Merge:** near-duplicates, table rows that catch the same break included, that should become one test or one row, or a cluster of fake-heavy tests that one test at the right level would replace.
-- **Rewrite:** guards the right behaviour badly: brittle (it would fail on a change that preserves the behaviour), blind (it would pass with the break it exists to catch), or slow where a cheaper real level would catch the same break.
-- **Delete:** guards no behaviour worth keeping: the behaviour behind it, judged apart from what the test happens to assert, fails any of the three conditions in "When a test should exist". Before calling a break unnameable, read the commit that added the test. A test whose behaviour meets all three is never Delete, however badly it tests it: Merge or Rewrite it.
-
-For pruning or finding gaps across a whole suite, use plumb-audit in tests mode.
+Judging an existing test: **merge** near-duplicates; **rewrite** one that guards the right behaviour badly (brittle, blind, or computing its expected value as the code does); **delete** one that guards no behaviour anyone relies on; **keep** the rest.

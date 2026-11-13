@@ -5,7 +5,14 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 ## Unreleased
 
 ### Changed
-- The skills and agents are about 14% shorter (the charter 20%), so each session spends less context on plumb. Every numbered rule, step and report line is kept. What went is repetition and narrow special cases a rule's reason already covers, such as saving a copy of an uncommitted diff for a re-review, or saying once that uncommitted diffs will share a commit.
+- The skills and agents are about a quarter of their former length (15,692 words down to 4,318; the charter 5,126 down to 1,366), so each session spends far less context on plumb. All 19 rules, every step and the report stay. The eval suite scores the same as before.
+- Rules are stated as the principle, most with a one-line reason. The special-case procedure around them is gone, and the agent is expected to decide those cases from the rule's reason.
+
+### Removed
+- The report's `Look hardest` and `Agents` lines. A reply that started an agent still names it and its model.
+- The automatic offer of an independent review after a non-trivial change. Ask for one and you get it.
+- The standing "commit each step as it passes" mode for multi-step plans and its stop conditions. Plumb stops after each diff until you commit it or say go on.
+- The detailed rules for when a broken test may be re-pointed or deleted, for re-reviews, for editing decision records after merge, and for splitting a change into a stack.
 
 ## 0.10.0
 
