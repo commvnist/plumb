@@ -2,6 +2,15 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Code plumb writes now gives every input it can actually receive a decided outcome (handled, rejected loudly, or shown impossible), alongside the existing rule against guarding the impossible.
+- Values reach a query, shell command, markup, file path or pattern only through that language's own mechanism for data (bound parameters, argument lists, encoders, a fixed mapping for names), never by building the text, since a check where the data entered can't know where it will be used.
+- Behaviour that breaks at real data sizes or with a slow or failing dependency (a query per item in a loop, an unbounded read, a call with no timeout) counts as a defect to fix in the change, not a suggestion.
+- New code gets the narrowest visibility the language allows and returns only what its callers need, never a whole stored record by default.
+- An API counts as verified only against the versions the project actually runs on (its lockfile, its declared language version).
+
 ## 0.8.0
 
 ### Added

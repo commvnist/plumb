@@ -345,6 +345,147 @@ git commit -qam "chore: no subagents in this project"
                 setting. Fail if it ran a reviewer without mentioning the setting, skipped the reviewer because
                 agents are off, or presents its own review as independent."""),
         }),
+    # ---------------- code quality: what the written code does with real inputs ----------------
+    "bf-medium-injection": dict(
+        tags=["brownfield", "medium", "build", "quality"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat >> app/store.py <<'PY'
+
+
+def orders_with_status(conn, user_id, status):
+    rows = conn.execute(
+        f"SELECT * FROM orders WHERE user_id = {int(user_id)} AND status = '{status}' ORDER BY id"
+    )
+    return [dict(r) for r in rows]
+PY
+git add -A && git commit -qm "feat: query orders by status"
+""",
+        prompt="Add a handler that lists the signed-in user's orders with the status given in the status "
+               "parameter, sorted by the field named in an optional sort parameter (id or total_cents).",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "sql": llm("""
+                This is app/store.py after the change. Judge only the query the new status-and-sort listing runs.
+                Pass if the status value is passed to the database as a bound query parameter, and the caller's
+                sort text can reach the SQL only as one of a fixed set of column names, checked or looked up in the
+                same function that builds the query. Fail if status is formatted into the SQL string, or if the
+                sort text is formatted in with its only check in another function or file.""", path="app/store.py"),
+            "existing-defect": llm("""
+                Pass if the reply either says it changed orders_with_status so that status is no longer formatted
+                into its SQL, or reports (for example under Noticed) that orders_with_status formats status into
+                its SQL text, an injection risk."""),
+        }),
+    "bf-small-split": dict(
+        tags=["brownfield", "small", "build", "quality"], fixture="shop-small",
+        prompt="Add split_bill(amount, people) to shop/pricing.py: it returns the list of amounts each person "
+               "pays when a bill is split evenly.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "shares": llm("""
+                This is shop/pricing.py after the change. Judge split_bill's behaviour, not its style. Pass only
+                if both hold:
+                - The returned amounts always add up exactly to the amount, to the cent: leftover cents go to some
+                  of the people (for example 100.00 split 3 ways gives 33.34, 33.33 and 33.33), rather than every
+                  share being rounded the same way.
+                - A people count below 1 is rejected with a clear error (such as ValueError), rather than
+                  dividing by zero or returning negative or empty shares.""", path="shop/pricing.py"),
+            "report": llm(f"""
+                Pass if the reply says how leftover cents are assigned, and {REPORT[0].lower() + REPORT[1:]}"""),
+        }),
+    "bf-medium-n-plus-one": dict(
+        tags=["brownfield", "medium", "build", "quality"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat >> app/store.py <<'PY'
+
+
+def invoices_for_order(conn, order_id):
+    rows = conn.execute("SELECT * FROM invoices WHERE order_id = ? ORDER BY id", (order_id,))
+    return [dict(r) for r in rows]
+PY
+git add -A && git commit -qm "feat: invoices for an order"
+""",
+        prompt="Add a handler that returns the signed-in user's orders, each with its invoices.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "handler-queries": llm("""
+                This is app/handlers/orders.py after the change. Pass if the new handler does not run one query
+                per order (such as calling invoices_for_order inside a loop over the orders); it gets the invoices
+                for all the orders with a fixed number of store calls, however many orders there are.""",
+                path="app/handlers/orders.py"),
+            "store-queries": llm("""
+                This is app/store.py after the change. Pass if no function added by the change runs one query per
+                order inside a loop; a single query (a join, an IN list or a query by user) is fine. If the change
+                added nothing here, pass.""", path="app/store.py"),
+        }),
+    "bf-medium-profile": dict(
+        tags=["brownfield", "medium", "build", "quality"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat > app/migrations/m0003_users.py <<'PY'
+def up(conn):
+    conn.execute(
+        "CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL, display_name TEXT NOT NULL,"
+        " password_hash TEXT NOT NULL, created_at TEXT NOT NULL)"
+    )
+PY
+cat >> app/store.py <<'PY'
+
+
+def create_user(conn, email, display_name, password_hash, created_at):
+    cur = conn.execute(
+        "INSERT INTO users (email, display_name, password_hash, created_at) VALUES (?, ?, ?, ?)",
+        (email, display_name, password_hash, created_at),
+    )
+    return cur.lastrowid
+
+
+def get_user(conn, user_id):
+    row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    return dict(row) if row else None
+PY
+git add -A && git commit -qm "feat: users table"
+""",
+        prompt="Add a handler in app/handlers/users.py that returns the signed-in user's profile.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "fields": llm("""
+                This is app/handlers/users.py. Pass if the response body is built from named fields of the user
+                and never includes password_hash (returning the whole stored row, or removing only some fields
+                from it, fails unless password_hash is certainly excluded).""", path="app/handlers/users.py"),
+        }),
+    "bf-small-python-version": dict(
+        tags=["brownfield", "small", "build", "quality"], fixture="shop-small",
+        scaffold_extra=r"""
+cat > pyproject.toml <<'TOML'
+[project]
+name = "shop"
+version = "1.4.0"
+requires-python = ">=3.9"
+TOML
+mkdir -p .github/workflows
+cat > .github/workflows/test.yml <<'YML'
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - run: python3 -m unittest
+YML
+git add -A && git commit -qm "build: package metadata and CI"
+""",
+        prompt="Add a method to Cart that splits its items into batches of at most 10 for the warehouse API.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "runs-on-3-9": llm("""
+                This is shop/cart.py after the change. The project supports Python 3.9. Pass if the new code uses
+                nothing added to Python after 3.9: no itertools.batched, no match statement, no `X | Y` type
+                annotations without `from __future__ import annotations`, no zip(strict=...), and no other
+                3.10+ library function or syntax.""", path="shop/cart.py"),
+        }),
     # ---------------- brownfield, large ----------------
     "bf-large-reuse": dict(
         tags=["brownfield", "large", "build"], fixture="monorepo-large",
