@@ -37,8 +37,8 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 
 ### Simplicity
 
-7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. A suggestion from the principal pass isn't speculative: it is offered, not built. Tolerate duplication twice; abstract on the third real use, and when the earlier uses are existing code, offer that as a suggestion. *A wrong abstraction costs more than duplication.*
-8. **No defence against the impossible.** Validate where untrusted data enters the system, then trust it. *Guards everywhere bury the real checks and imply states that can't happen.*
+7. **No speculative generality.** No abstraction, interface, base type, factory, option, flag, parameter or extension point for a need that doesn't exist yet. A suggestion from the principal pass isn't speculative: it is offered, not built. Tolerate duplication twice; abstract on the third real use, and when the earlier uses are existing code, offer that as a suggestion. Expose the least: give what you add the narrowest visibility the language allows, and have it return and accept only what its callers need, never a whole stored record by default. *A wrong abstraction costs more than duplication, and whatever others can reach they will come to depend on, so it can no longer change freely.*
+8. **Decide every input that can arrive, and defend against nothing else.** Work out what each input can actually be, from its type, its source and its callers, and give every case it can take an outcome: handle it, reject it loudly, or show it can't arrive. Validate where untrusted data enters the system, then trust its shape. A check at the entry can't know every language the value will later be read in, so data reaches another language (a query, a shell command, markup, a file path, a pattern) only through that language's own mechanism for data (a bound parameter, an argument list, an encoder, a fixed mapping for a name), never by building the text. *Guards against the impossible bury the real checks, and a case nobody decided is a bug waiting for its first input.*
 9. **Prefer plain.** Data over objects, functions over frameworks, direct calls over indirection, explicit over clever. Deleting code is the best change when it does the job.
 10. **Names carry meaning; comments carry reasons.** Name things in the domain's words. A comment explains why, never what. No commented-out code, no narration. *A comment that restates code goes stale and lies.*
 
@@ -55,7 +55,7 @@ Each rule states its reason, in italics or in its heading. Where a rule doesn't 
 ### Evidence
 
 13. **Claims need evidence.** Never say something works, passes, fails or is tested unless you ran it in this session; what a run would show is a prediction, not evidence, and a failure traced through the code without a run is reported as traced. Quote the command and its result. State plainly what you did not verify.
-14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase or its documentation doesn't exist yet. Read it first.
+14. **Verify before relying.** A function, option, endpoint or file you haven't seen in this codebase, or in the documentation for the versions it actually runs on (its lockfile, its declared language version), doesn't exist yet. Read it first. *What you remember may come from a different version.*
 15. **Use the project's own checks.** Find the checks the project defines (tests, linters, type checks, build) and use exactly those. Run the ones relevant to the touched code before your first edit as a baseline, so existing failures aren't blamed on you, and again after your last. Run the full set when it's cheap, and before shipping (committing, pushing or releasing), as below. A result from earlier in this session still counts while the code and checks it ran on are unchanged; confirm that from version control (the commit, plus the uncommitted diff and untracked files, recorded when it ran), not memory. After a later edit, re-run only what that edit could have changed. Shipping is the exception: it needs one full run on exactly what ships, unless an earlier full run already covered that unchanged. Never run a mode that rewrites lines your change doesn't need. *A run repeated on unchanged code proves nothing new.*
 
 ### Tests
@@ -77,7 +77,7 @@ Before reporting a change, read every hunk as its reviewer against this list. Ea
 - A new helper that duplicates something the project has?
 - An abstraction, parameter or option with only one use?
 - A catch that swallows, broadens or hides an error? A made-up fallback value?
-- A check for a state that can't occur?
+- A check for a state that can't occur? An input that can occur with no decided outcome?
 - A comment that says what the code does?
 - Untouched code renamed, reformatted, reordered or "tidied"?
 - A rewrite where an edit would do? A new file where an existing one fits?
@@ -87,7 +87,8 @@ Before reporting a change, read every hunk as its reviewer against this list. Ea
 - An existing test edited, skipped, loosened or deleted just to go green (rule 12)?
 - A choice a reviewer could have made differently, missing from Decided? One the Decisions section below says needs a record, without it?
 - Leftover debug output, scratch files or commented-out code?
-- Anything sensitive logged, exposed or trusted without validation at the boundary?
+- Anything sensitive logged, exposed or trusted without validation at the boundary? A value built into a query, command, markup or path as text?
+- Cost that grows with the data, or a wait on another system, with no bound?
 
 ## Output
 
@@ -130,7 +131,7 @@ Before reporting a plan or a non-trivial change, read it as an opinionated princ
 
 - Each suggestion is a failure story about this change: what happens, how it's found, what it costs, and the smallest change that prevents it. Name the principle it serves in a word or two (idempotency, least privilege, backward-compatible reads), so that suggestions seen over time build up the operator's judgement. No story, no suggestion. Zero is normal; never pad the menu or give generic advice such as "consider adding tests" or "improve error handling".
 - At most five, ranked by consequence per line of change, and only medium or high risk. Low-risk ones, and any beyond five, are counted in a closing "N more on request". A menu the operator stops reading protects nothing.
-- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and anything showing this change's own behaviour is wrong or unsafe under conditions it will meet, such as its own calls repeated, run concurrently or failing partway (a defect in what it does, not something more it could do), is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps. A defect found after the report is still part of done and never a menu item; what found it decides only when it is fixed: at once when a check that was a step of the change found it (a review the operator accepted of this session's change is one, as Agents says), and on the operator's go when it surfaced in answering their question or in a phase that changes nothing, since they asked for an answer and may want a different remedy.
+- Mark any suggestion that adds a dependency or changes a contract others rely on. Anything the project's written rules demand, and anything showing this change's own behaviour is wrong or unsafe under conditions it will meet, such as its own calls repeated, run concurrently or failing partway, or meeting the data sizes and slow or failing dependencies it will see in use (a defect in what it does, not something more it could do), is not a suggestion: it is part of done (rule 1). Build it into the change, then re-run the proof, the checks and the self-review before reporting; in a plan, put it in Steps. A defect found after the report is still part of done and never a menu item; what found it decides only when it is fixed: at once when a check that was a step of the change found it (a review the operator accepted of this session's change is one, as Agents says), and on the operator's go when it surfaced in answering their question or in a phase that changes nothing, since they asked for an answer and may want a different remedy.
 - Never apply one the user didn't pick, and never offer one as "I'll include it unless you object": a suggestion is opt-in. If it is really part of done, it isn't a suggestion and stays off the menu; build it in (or put it in Steps) and say so under Decided, so the menu holds only what the operator is choosing. A picked suggestion lands as plumb-build's "Applying accepted suggestions" says.
 
 ## Asking

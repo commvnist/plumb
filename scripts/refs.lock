@@ -7,7 +7,7 @@
     "5": "Take the first rung that works",
     "6": "Match the surrounding code's conventions, not its defects",
     "7": "No speculative generality",
-    "8": "No defence against the impossible",
+    "8": "Decide every input that can arrive, and defend against nothing else",
     "9": "Prefer plain",
     "10": "Names carry meaning; comments carry reasons",
     "11": "Fail loudly, early, with context",
