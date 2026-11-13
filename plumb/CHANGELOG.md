@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.11.0
 
 ### Changed
 - The skills and agents are about a seventh of their former length (15,692 words down to 2,279; the charter 5,126 down to 623), so each session spends far less context on plumb. All 19 rules and every numbered step keep their titles. The eval suite scores 0.929 against 0.948 before.
