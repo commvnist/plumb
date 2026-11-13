@@ -11,11 +11,11 @@ An explanation exists so the operator can vouch for the code and overturn what i
 
 ## Steps
 
-1. **Take the scope and depth from the question.** A line, a function, a diff or a decision: answer what was asked, pitched at what their words and the code they already work in show they know. Ask what they know only when the answer would change the whole explanation. A why that challenges a choice is first checked again as the charter's Pushback says, since an explanation of a wrong choice only defends it.
-2. **Read it before explaining it.** Read the code and what it calls, and for work from this session re-read the diff, since an explanation from memory describes what you meant to write (charter rule 14). For a why, read the history, the decision records and the report's Decided line. A reason you can't find is given as unknown, or as your inference and marked so, never as fact. *An invented reason gets repeated as the project's own.*
+1. **Take the scope and depth from the question.** A line, a function, a diff or a decision: answer what was asked, pitched at what their words and the code they already work in show they know. A why that challenges a choice is first checked again as the charter's Pushback says, since an explanation of a wrong choice only defends it.
+2. **Read it before explaining it.** Read the code and what it calls, and for work from this session re-read the diff, since an explanation from memory describes what you meant to write. For a why, read the history, the decision records and the report's Decided line. A reason you can't find is given as unknown, or as your inference and marked so, never as fact. *An invented reason gets repeated as the project's own.*
 3. **Lead with the point.** One or two sentences: what it does for its caller, and the one idea that makes it work.
-4. **Trace one real case.** Follow one concrete input through the code to its outcome, by file:line, then the case where the path differs (an error, an edge). Run it where that is cheap and affects nothing, and say which parts you ran and which you read (charter rule 13). *A reader keeps a traced example long after a description has gone.*
-5. **Give the reasons.** For each choice a reader would question: what was chosen, the alternative, and what the alternative would cost here. Name the technique or principle in a word or two, and say in a line what any term the codebase doesn't otherwise use means, so they can look it up and recognise it next time.
+4. **Trace one real case.** Follow one concrete input through the code to its outcome, by file:line, then the case where the path differs (an error, an edge). Run it where that is cheap and affects nothing, and say which parts you ran and which you read. *A reader keeps a traced example long after a description has gone.*
+5. **Give the reasons.** For each choice a reader would question: what was chosen, the alternative, and what the alternative would cost here. Name the technique or principle in a word or two, and say in a line what any term new to the codebase means, so they can recognise it next time.
 6. **Say where it could be wrong.** What the code assumes, what you didn't verify, and the place you would look hardest as its reviewer. A defect the explaining exposed in this session's work is part of done (charter rule 1): say so, and fix it once they say go, since an explanation changes nothing. A defect this session's work didn't cause goes under Noticed, and a better choice is a suggestion.
 7. **Hand them something to try.** One check they can run themselves that would show the explanation is true: a command, or a line to change and the test that then fails. *Trying it is what turns being told into knowing.*
 
@@ -37,8 +37,7 @@ A question about one line or one choice gets the lines that answer it, not the w
 
 ## Rules
 
-- Change nothing: no edits, and no files beyond what a run leaves ignored. A fix they ask for lands as plumb-build applies accepted suggestions.
-- Explain what is there, not what you would have written.
+- Change nothing. A fix they ask for lands as plumb-build applies accepted suggestions.
+- Explain what is there, not what you would have written, and never soften what the code does to agree with the question.
 - Point at code by file:line instead of quoting it at length, and go line by line only when asked. An explanation longer than the code it explains has usually stopped explaining.
-- Correct a wrong belief plainly, as the charter's Pushback says, and never soften what the code does to agree with the question.
 - No quiz and no talking down. The operator decides when they have understood.

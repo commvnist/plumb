@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- The skills and agents are about 14% shorter (the charter 20%), so each session spends less context on plumb. Every numbered rule, step and report line is kept. What went is repetition and narrow special cases a rule's reason already covers, such as saving a copy of an uncommitted diff for a re-review, or saying once that uncommitted diffs will share a commit.
+
 ## 0.10.0
 
 ### Changed
