@@ -2,6 +2,14 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Work that can stop part way (a file write, a batch, a multi-step update) either completes or leaves things as they were, rather than leaving a half-written file or half-applied update behind.
+
+### Added
+- Five eval cases, tagged `enterprise`, for traits a principal engineer's review checks: one source of truth for a business rule, a clock the tests control, no card data in logs with enough context to debug a failure, a timeout and caller-facing errors on a call to another service, and an export that can't leave a half-written file.
+
 ## 0.11.0
 
 ### Changed

@@ -44,7 +44,7 @@ Suggestions: <each the failure it prevents, never applied unpicked — or omit>
 
 A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder.
 
-A defect in what the change does under real conditions (repeats, concurrency, data sizes, a failing dependency) is part of done, not a suggestion.
+A defect in what the change does under real conditions (repeats, concurrency, data sizes, a failing dependency) is part of done, not a suggestion. Work that can stop part way (a file write, a batch, a multi-step update) either completes or leaves things as they were.
 
 Ask at most three questions, each with a recommended answer and its reason.
 
