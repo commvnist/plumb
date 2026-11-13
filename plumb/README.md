@@ -4,7 +4,7 @@ One engineering philosophy across the whole development lifecycle.
 
 Plumb is not for vibe coding. It is a way of working between an agent and its operator: the operator stays on top of every line, decision and reason, can overturn any choice the agent made, and becomes a better engineer from the suggestions it offers.
 
-**The reviewer is the customer.** Every change is the smallest complete diff that does the job, proven by evidence rather than claims, with one purpose per diff. Everything else (cleanups, extra tests, refactors, hardening) is offered as a ranked, numbered menu.
+**The reviewer is the customer.** Every change is the smallest complete diff that does the job, proven by evidence rather than claims, with one purpose per diff. Everything else (cleanups, extra tests, refactors, hardening) is offered as suggestions.
 
 ## Skills
 
@@ -13,11 +13,11 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb` | all | The charter: the rules every other skill inherits |
 | `plumb-plan` | design | Breaks large work into small, independently mergeable diffs |
 | `plumb-build` | implement | Smallest complete change, proof, self-review, suggestions menu |
-| `plumb-test` | test | When a test should exist, what a good one is, the TDD loop |
+| `plumb-test` | test | When a test should exist and what a good one is |
 | `plumb-debug` | fix | Evidence to root cause to origin fix to one regression test |
 | `plumb-refactor` | maintain | Behaviour-preserving restructuring in small green steps |
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
-| `plumb-ship` | release | Commits, PR descriptions, splitting, changelogs, safe rollout |
+| `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
 | `plumb-explain` | any | Walks you through code, a diff or a decision until you could defend it; changes nothing |
 
@@ -26,7 +26,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | Agent | Used by | Why a separate agent |
 |---|---|---|
 | `plumb-scout` | build | Maps what a change touches without flooding the main context |
-| `plumb-reviewer` | review | Fresh eyes: never sees the author's reasoning |
+| `plumb-reviewer` | on request | Fresh eyes: never sees the author's reasoning |
 | `plumb-auditor` | audit | One per area, run in parallel |
 
 ## Flow
@@ -36,7 +36,7 @@ plan → build → (test · debug · refactor as needed) → review → ship
                  audit · explain any time
 ```
 
-Every phase that changes code ends with the same report: what changed, what was decided and why, what was verified, what wasn't, risks, and the suggestions menu. Plan, review, audit and explain return their own formats.
+Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats.
 
 Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), and commits follow Conventional Commits unless the project has its own convention.
 
@@ -46,7 +46,7 @@ Each of these is on purpose:
 
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
 - **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time.
-- **It offers instead of fixing.** Cleanups, refactors and hardening come as a numbered menu with the failure each one prevents. Nothing on it lands until you pick it.
+- **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
 - **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and where else the same mistake appears. If what you ask rests on a fact about the code that isn't true, it shows you the line and waits. Ask for something it can see failing and it follows you, naming the risk once.
@@ -56,7 +56,6 @@ Each of these is on purpose:
 The project's written rules (CLAUDE.md, contributing guides, tool configuration) outrank the charter, and an explicit request outranks both. To change a default for a project, say so in its CLAUDE.md, for example:
 
 ```
-- plumb: diffs up to 600 changed lines are fine here.
 - plumb: decision records live in design/decisions/, in MADR format.
 ```
 
@@ -71,7 +70,7 @@ Plumb names no model for its agents. Unless you choose, each one runs on your to
 What each role needs, to help you spend where it counts:
 
 - **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
-- **Reviewer** is the last independent check before you merge, and runs only when you accept it. This is where a stronger model pays off, if your budget has one.
+- **Reviewer** is the last independent check before you merge, and runs only when you ask for it. This is where a stronger model pays off, if your budget has one.
 
 Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
 

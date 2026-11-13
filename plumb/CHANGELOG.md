@@ -5,14 +5,15 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 ## Unreleased
 
 ### Changed
-- The skills and agents are about a quarter of their former length (15,692 words down to 4,351; the charter 5,126 down to 1,350), so each session spends far less context on plumb. All 19 rules, every step and the report stay. The eval suite scores the same as before.
-- Rules are stated as the principle, most with a one-line reason. The special-case procedure around them is gone, and the agent is expected to decide those cases from the rule's reason.
+- The skills and agents are about a seventh of their former length (15,692 words down to 2,279; the charter 5,126 down to 623), so each session spends far less context on plumb. All 19 rules and every numbered step keep their titles. The eval suite scores 0.929 against 0.948 before.
+- Each rule is now its title and one clause. The reasons and the special-case procedure around the rules are gone; the agent is expected to decide those cases from the rule itself.
+- The report is six lines: Done, Why, Decided, Verified, Waiting on, Suggestions.
 
 ### Removed
-- The report's `Look hardest` and `Agents` lines. A reply that started an agent still names it and its model.
-- The automatic offer of an independent review after a non-trivial change. Ask for one and you get it.
-- The standing "commit each step as it passes" mode for multi-step plans and its stop conditions. Plumb stops after each diff until you commit it or say go on.
-- The detailed rules for when a broken test may be re-pointed or deleted, for re-reviews, for editing decision records after merge, and for splitting a change into a stack.
+- The report's `Changed`, `Unverified`, `Risks`, `Noticed`, `Look hardest` and `Agents` lines. A reply that started an agent still names its model.
+- The self-review checklist, and the separate charter sections on decisions, suggestions, asking, pushback, agents and authority, each now a sentence or two.
+- The automatic offer of an independent review, and the standing "commit each step as it passes" mode for multi-step plans.
+- The review and explain output templates, pull request description sections, release and rollout rules, the test-driven loop, and the 300-line diff limit.
 
 ## 0.10.0
 
