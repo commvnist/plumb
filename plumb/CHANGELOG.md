@@ -5,7 +5,7 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 ## Unreleased
 
 ### Changed
-- The skills and agents are about a quarter of their former length (15,692 words down to 4,318; the charter 5,126 down to 1,366), so each session spends far less context on plumb. All 19 rules, every step and the report stay. The eval suite scores the same as before.
+- The skills and agents are about a quarter of their former length (15,692 words down to 4,352; the charter 5,126 down to 1,366), so each session spends far less context on plumb. All 19 rules, every step and the report stay. The eval suite scores the same as before.
 - Rules are stated as the principle, most with a one-line reason. The special-case procedure around them is gone, and the agent is expected to decide those cases from the rule's reason.
 
 ### Removed

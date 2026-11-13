@@ -21,6 +21,10 @@ It goes through the surface a real caller uses and asserts on outcomes; it has b
 
 Assertions on internals or log wording; expected values computed the way the code computes them; tests of the language or a library; trivial accessors; near-duplicates.
 
+## Test-driven loop
+
+When asked for: list the behaviours the floor requires; write one test and see it fail for the reason you expect; write the simplest honest code that passes; simplify; repeat.
+
 ## When a test fails
 
 Decide whether the test or the code is wrong from the requirement. Never weaken or delete a test to go green.
