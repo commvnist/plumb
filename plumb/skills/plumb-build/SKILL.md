@@ -7,9 +7,9 @@ description: Implements a feature or change as the smallest complete, reviewable
 
 ## Steps
 
-1. **Size it.** Too big for one diff: plumb-plan first.
+1. **Size it.** Too big for one diff: load plumb-plan first.
 2. **Define done.** Name the check that proves it.
-3. **Read before writing:** the code, its tests, its callers, a nearby example. In a large codebase, send the plumb-scout agent.
+3. **Read before writing:** the code, its tests, its callers, a nearby example. In a large or unfamiliar codebase, send the plumb-scout agent.
 4. **Baseline.** Run the project's checks.
 5. **Climb the ladder** (charter rule 5).
 6. **Make the change.**

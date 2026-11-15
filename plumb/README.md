@@ -26,8 +26,8 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 
 | Agent | Used by | Why a separate agent |
 |---|---|---|
-| `plumb-scout` | build | Maps what a change touches without flooding the main context |
-| `plumb-reviewer` | on request | Fresh eyes: never sees the author's reasoning |
+| `plumb-scout` | build, auto | Maps what a change touches without flooding the main context |
+| `plumb-reviewer` | auto, or on request | Fresh eyes: never sees the author's reasoning |
 | `plumb-auditor` | audit | One per area, run in parallel |
 
 ## Flow
@@ -71,7 +71,7 @@ Plumb names no model for its agents. Unless you choose, each one runs on your to
 What each role needs, to help you spend where it counts:
 
 - **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
-- **Reviewer** is the last independent check before you merge, and runs only when you ask for it. This is where a stronger model pays off, if your budget has one.
+- **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one.
 
 Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
 

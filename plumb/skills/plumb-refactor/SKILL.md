@@ -1,6 +1,6 @@
 ---
 name: plumb-refactor
-description: Restructures code without changing behaviour, in small verified steps. Use for "refactor", "clean up", "simplify", "extract", "rename", "remove dead code", "reduce duplication".
+description: Restructures code without changing behaviour, in small verified steps. Use for "refactor", "clean up", "simplify", "extract", "rename", "remove dead code", "reduce duplication". A change to stored data or an outside contract is plumb-plan's.
 ---
 
 # Plumb: refactor
@@ -14,7 +14,7 @@ A refactor changes structure, never behaviour.
 3. **Pin the behaviour:** see the tests that cover it go red with the code briefly broken.
 4. **Plan the moves.**
 5. **Move in small steps,** checks green after each.
-6. **Report** with `Behaviour: unchanged — <checks> pass before and after`.
+6. **Report** with the charter's template plus `Behaviour: unchanged — <checks> pass before and after`.
 
 ## Rules
 

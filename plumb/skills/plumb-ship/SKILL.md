@@ -15,6 +15,6 @@ Run the project's full checks on what ships and quote the result. If one fails, 
 
 One logical change per commit. Keep the project's convention if its subjects share a checkable format (type prefixes, ticket ids). Plain sentences are no format: there, use Conventional Commits (`<type>(<scope>)<! if breaking>: <subject>`; `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`) and say so under Decided.
 
-## Pull request description
+## Pull requests
 
 Title it as a commit subject, with `!` if any commit is breaking.
