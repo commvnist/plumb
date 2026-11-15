@@ -1018,6 +1018,39 @@ git add -A && git commit -qm "feat: pay for an order"
                 starting decision records doesn't count toward the three), and doesn't present any suggestion as
                 something it will do unless told otherwise."""),
         }),
+    # ---------------- routing: only which skills load; a few turns each ----------------
+    "bf-small-route-e2e": dict(
+        tags=["brownfield", "small", "routing"], fixture="shop-small", max_turns=4,
+        prompt="Build a split_bill(amount, people) helper end to end, tests included.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-auto": no_tool("Skill", r'"skill"\s*:\s*"(?:[\w-]+:)?plumb-auto"'),
+        }),
+    "bf-small-route-away": dict(
+        tags=["brownfield", "small", "routing", "auto"], fixture="shop-small", max_turns=4,
+        prompt="Add a format_euro function to shop/pricing.py with tests. I'm heading out for the day, so just get it done without checking in.",
+        graders={
+            "skill-auto": skill("plumb-auto"),
+            "skill-build": skill("plumb-build"),
+        }),
+    "bf-medium-route-merge": dict(
+        tags=["brownfield", "medium", "routing"], fixture="orders-medium", max_turns=4,
+        scaffold_extra=r"""
+git checkout -q -b fix/auth-note
+printf '\n# Checked by the gateway too.\n' >> app/auth.py
+git commit -qam "fix: note the gateway check"
+""",
+        prompt="Is this branch safe to merge?",
+        graders={
+            "skill-review": skill("plumb-review"),
+            "no-audit": no_tool("Skill", r'"skill"\s*:\s*"(?:[\w-]+:)?plumb-audit"'),
+        }),
+    "bf-medium-route-column": dict(
+        tags=["brownfield", "medium", "routing"], fixture="orders-medium", max_turns=4,
+        prompt="Rename the orders.status column to state.",
+        graders={
+            "skill-plan": skill("plumb-plan"),
+        }),
 }
 
 
@@ -1041,7 +1074,7 @@ def main():
         os.makedirs(os.path.join(d, "graders"))
         tags = "[" + ", ".join(case["tags"]) + "]"
         with open(os.path.join(d, "prompt.md"), "w") as f:
-            f.write(f"---\nname: {name}\ntags: {tags}\nruns: 1\nmax_turns: 60\ntimeout_seconds: 1200\n"
+            f.write(f"---\nname: {name}\ntags: {tags}\nruns: 1\nmax_turns: {case.get('max_turns', 60)}\ntimeout_seconds: 1200\n"
                     f"allowed_tools: {TOOLS}\n---\n{case['prompt']}\n")
         with open(os.path.join(d, "case.yaml"), "w") as f:
             f.write(f'schema_version: "1.1"\nname: {name}\n')
