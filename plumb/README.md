@@ -20,6 +20,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
 | `plumb-explain` | any | Walks you through code, a diff or a decision until you could defend it; changes nothing |
+| `plumb-auto` | all | Runs a whole task without stopping, checks pinned first and an independent review last, then one report of every commit, choice and assumption |
 
 ## Agents
 
@@ -33,7 +34,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 
 ```
 plan → build → (test · debug · refactor as needed) → review → ship
-                 audit · explain any time
+                 audit · explain any time · auto runs the whole line
 ```
 
 Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats.
@@ -45,7 +46,7 @@ Every change's report has a `Decided` line for the choices a reviewer could have
 Each of these is on purpose:
 
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
-- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time.
+- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.

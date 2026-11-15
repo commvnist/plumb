@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Added
+- `plumb-auto`, for a task you want carried to the end without being asked anything. It writes the checks that define done before the code and sees them fail, tackles the riskiest unknown first, takes the best-supported reading where the request is unclear instead of asking, gets an independent review of the whole branch, and tries to break the result before reporting. It stops only for what needs your yes or can't be undone. Each diff is its own commit on a new local branch, nothing is pushed, and the report adds `Assumed:` (each reading taken without asking) and `Reviewed:` lines.
+
 ## 0.12.0
 
 ### Changed

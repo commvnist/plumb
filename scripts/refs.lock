@@ -21,6 +21,15 @@
     "19": "Failures must be findable"
   },
   "steps": {
+    "plumb-auto": {
+      "1": "Pin done first",
+      "2": "Read until nothing surprises you",
+      "3": "Plan the diffs",
+      "4": "Decide instead of asking",
+      "5": "Build each diff",
+      "6": "Get an independent review",
+      "7": "Try to break it"
+    },
     "plumb-build": {
       "1": "Size it",
       "2": "Define done",
