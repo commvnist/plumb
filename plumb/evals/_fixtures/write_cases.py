@@ -636,7 +636,7 @@ git add -A && git commit -qm "feat: query orders by status"
                 sort text is formatted in with its only check in another function or file.""", path="app/store.py"),
             "existing-defect": llm("""
                 Pass if the reply either says it changed orders_with_status so that status is no longer formatted
-                into its SQL, or reports (for example under Noticed) that orders_with_status formats status into
+                into its SQL, or reports (for example under Suggestions) that orders_with_status formats status into
                 its SQL text, an injection risk."""),
         }),
     "bf-small-split": dict(

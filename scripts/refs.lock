@@ -80,7 +80,7 @@
     "plumb-review": {
       "1": "Learn the intent",
       "2": "Read the whole diff, then what it touches",
-      "3": "Run the checks",
+      "3": "Run the project's checks",
       "4": "Judge in this order"
     }
   }

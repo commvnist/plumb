@@ -7,7 +7,7 @@ description: Read-only health report on a codebase, an area of it, or its test s
 
 An audit changes nothing. Mode: `code`, `tests` or `both`. For a repository too large for one session, run one plumb-auditor agent per area and merge their findings; say which you did, or why it fits one session.
 
-Code mode: bugs the system can actually produce, security holes, leaked secrets (location, never value), untested logic, dead code. Tests mode: classify each test by plumb-test's "Keep, merge, rewrite or delete", and find gaps by risk, not coverage.
+Code mode: bugs the system can actually produce, security holes, leaked secrets (location, never value), untested logic, dead code. Tests mode: load plumb-test, classify each test by its "Keep, merge, rewrite or delete", and find gaps by risk, not coverage.
 
 ## Output
 

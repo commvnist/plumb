@@ -11,7 +11,7 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 1. **Learn the intent.**
 2. **Read the whole diff, then what it touches.**
-3. **Run the checks**; claims in the description are unverified until you do.
+3. **Run the project's checks**; claims in the description are unverified until you do.
 4. **Judge in this order:** correctness, safety, proof (was a test weakened or deleted), simplicity, scope.
 
 ## Findings
@@ -20,4 +20,4 @@ Each gives a location, a scenario the system can actually produce (trace its inp
 
 ## Output
 
-A `Verdict:` line (approve | approve with suggestions | request changes, with the reason), then `Blocking:` and `Should:` findings, then `Verified:` with what you ran.
+A `Verdict:` line (approve | approve with suggestions | request changes, with the reason), then `Blocking:` and `Suggestions:` findings, then `Verified:` with what you ran.

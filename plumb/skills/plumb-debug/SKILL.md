@@ -14,4 +14,4 @@ description: Finds the root cause of a bug from evidence and fixes it at its ori
 5. **Fix at the origin,** with the smallest diff, never a suppression.
 6. **Lock it** with one test that fails without the fix.
 7. **Clean up** instrumentation and scratch files.
-8. **Report** the cause with the observation that established it, by command or file:line; list other places with the same fault under Noticed, unfixed.
+8. **Report** with the charter's template: under Why, the cause and the observation that established it, by command or file:line; under Suggestions, other places with the same fault, unfixed.
