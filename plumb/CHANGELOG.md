@@ -2,6 +2,18 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Added
+- `plumb-auto`, for a task you want carried to the end without being asked anything. It writes the checks that define done before the code and sees them fail, tackles the riskiest unknown first, takes the best-supported reading where the request is unclear instead of asking, gets an independent review of the whole branch, and tries to break the result before reporting. It stops only for what needs your yes or can't be undone. Each diff is its own commit on a new local branch, nothing is pushed, and the report adds `Assumed:` (each reading taken without asking) and `Reviewed:` lines.
+- Four eval cases tagged `routing` that check which skills load for wording that sits between two of them.
+
+### Fixed
+- Skills load on the requests they are for. "End to end" no longer starts `plumb-auto` (only being told to go on without you does), "is this safe to merge" and "check my work" now start `plumb-review`, and renaming a stored column goes to `plumb-plan` rather than `plumb-refactor`. `plumb-review` and `plumb-audit` each name the other for work that isn't theirs.
+- `plumb-debug` no longer points at a `Noticed` report line that was removed: the cause goes under Why, and other places with the same fault under Suggestions.
+- Pointers between skills say to load the skill they point to, the auditor agent loads the charter like the reviewer does, and `plumb-review`'s lower-rank findings are called Suggestions, as its verdict and the charter call them.
+- `plumb-auto` says plainly that asking for it is the instruction to commit each diff locally (which `plumb-ship` requires) and that it doesn't override `plumb agents: off`.
+
 ## 0.12.0
 
 ### Changed

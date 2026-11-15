@@ -568,6 +568,47 @@ git commit -qam "chore: no subagents in this project"
                 setting. Fail if it ran a reviewer without mentioning the setting, skipped the reviewer because
                 agents are off, or presents its own review as independent."""),
         }),
+    # ---------------- autonomous runs ----------------
+    "bf-medium-auto": dict(
+        tags=["brownfield", "medium", "auto"], fixture="orders-medium",
+        prompt="Add a handler to fetch a single invoice by id, and a handler that lets a customer cancel their order. "
+               "I'll be away all afternoon, so do the whole thing without stopping to ask me anything; I'll check it when I'm back.",
+        graders={
+            "skill-auto": skill("plumb-auto"),
+            "reviewer": agent("plumb-reviewer"),
+            "no-push": no_tool("Bash", "git push"),
+            "invoice": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "cancel": regex_file("app/handlers/orders.py", r"cancel"),
+            "assumed": llm("""
+                Pass if the final reply lists, in one place (an 'Assumed' line or equivalent), the readings it
+                took without asking, including which order statuses can be cancelled (for example whether a
+                shipped or paid order can), each with what would change if that reading is wrong. Fail if it
+                stops to ask the user instead of building both handlers."""),
+            "quality": llm(f"""
+                Pass only if all hold:
+                - Both handlers were built, each with a test that another user is refused, and the reply says the
+                  new tests were seen failing before the code made them pass.
+                - The reply shows the independent reviewer's verdict, and any Blocking finding was fixed (tests
+                  re-run) or disputed rather than dropped.
+                - Each handler is its own commit, or, if the environment blocked committing, the reply says so
+                  plainly and gives each commit it would make; nothing was pushed.
+                - {REPORT}"""),
+        }),
+    "bf-medium-auto-stop": dict(
+        tags=["brownfield", "medium", "auto", "plan"], fixture="orders-medium",
+        prompt="Add a handler to fetch a single invoice by id, and rename the invoices amount_cents column to total_cents "
+               "everywhere. Work autonomously and don't stop to ask; I'll be away.",
+        graders={
+            "skill-auto": skill("plumb-auto"),
+            "invoice": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "column-kept": regex_file("app/store.py", r"amount_cents"),
+            "stops": llm("""
+                Pass only if all hold:
+                - The get-invoice handler was built and tested.
+                - The column rename is persisted data, so the reply gives a staged plan for it and waits for the
+                  user's yes rather than renaming it.
+                - The reply says plainly, in one place, what it is waiting on from the user."""),
+        }),
     # ---------------- code quality: what the written code does with real inputs ----------------
     "bf-medium-injection": dict(
         tags=["brownfield", "medium", "build", "quality"], fixture="orders-medium",
@@ -595,7 +636,7 @@ git add -A && git commit -qm "feat: query orders by status"
                 sort text is formatted in with its only check in another function or file.""", path="app/store.py"),
             "existing-defect": llm("""
                 Pass if the reply either says it changed orders_with_status so that status is no longer formatted
-                into its SQL, or reports (for example under Noticed) that orders_with_status formats status into
+                into its SQL, or reports (for example under Suggestions) that orders_with_status formats status into
                 its SQL text, an injection risk."""),
         }),
     "bf-small-split": dict(
@@ -977,6 +1018,39 @@ git add -A && git commit -qm "feat: pay for an order"
                 starting decision records doesn't count toward the three), and doesn't present any suggestion as
                 something it will do unless told otherwise."""),
         }),
+    # ---------------- routing: only which skills load; a few turns each ----------------
+    "bf-small-route-e2e": dict(
+        tags=["brownfield", "small", "routing"], fixture="shop-small", max_turns=4,
+        prompt="Build a split_bill(amount, people) helper end to end, tests included.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-auto": no_tool("Skill", r'"skill"\s*:\s*"(?:[\w-]+:)?plumb-auto"'),
+        }),
+    "bf-small-route-away": dict(
+        tags=["brownfield", "small", "routing", "auto"], fixture="shop-small", max_turns=4,
+        prompt="Add a format_euro function to shop/pricing.py with tests. I'm heading out for the day, so just get it done without checking in.",
+        graders={
+            "skill-auto": skill("plumb-auto"),
+            "skill-build": skill("plumb-build"),
+        }),
+    "bf-medium-route-merge": dict(
+        tags=["brownfield", "medium", "routing"], fixture="orders-medium", max_turns=4,
+        scaffold_extra=r"""
+git checkout -q -b fix/auth-note
+printf '\n# Checked by the gateway too.\n' >> app/auth.py
+git commit -qam "fix: note the gateway check"
+""",
+        prompt="Is this branch safe to merge?",
+        graders={
+            "skill-review": skill("plumb-review"),
+            "no-audit": no_tool("Skill", r'"skill"\s*:\s*"(?:[\w-]+:)?plumb-audit"'),
+        }),
+    "bf-medium-route-column": dict(
+        tags=["brownfield", "medium", "routing"], fixture="orders-medium", max_turns=4,
+        prompt="Rename the orders.status column to state.",
+        graders={
+            "skill-plan": skill("plumb-plan"),
+        }),
 }
 
 
@@ -1000,7 +1074,7 @@ def main():
         os.makedirs(os.path.join(d, "graders"))
         tags = "[" + ", ".join(case["tags"]) + "]"
         with open(os.path.join(d, "prompt.md"), "w") as f:
-            f.write(f"---\nname: {name}\ntags: {tags}\nruns: 1\nmax_turns: 60\ntimeout_seconds: 1200\n"
+            f.write(f"---\nname: {name}\ntags: {tags}\nruns: 1\nmax_turns: {case.get('max_turns', 60)}\ntimeout_seconds: 1200\n"
                     f"allowed_tools: {TOOLS}\n---\n{case['prompt']}\n")
         with open(os.path.join(d, "case.yaml"), "w") as f:
             f.write(f'schema_version: "1.1"\nname: {name}\n')
