@@ -1,6 +1,6 @@
 ---
 name: plumb-auto
-description: Carries a task to a finished, verified result without stopping for the operator, and leaves a record they can check every choice against. Use for "do it all", "work autonomously", "don't stop to ask", "one-shot this", "I'll be away", "end to end".
+description: Carries a task to a finished, verified result without stopping for the operator, and leaves a record they can check every choice against. Use when the operator says to go on without them or won't be there to answer: "do it all", "work autonomously", "don't stop to ask", "one-shot this", "take it from here", "I'll be away". Load it with the skill for the work itself.
 ---
 
 # Plumb: auto

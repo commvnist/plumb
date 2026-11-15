@@ -1,6 +1,6 @@
 ---
 name: plumb-audit
-description: One-shot, read-only health report on a codebase or its test suite, ranked by what to fix first. Use for "audit this repo", "tech debt", "what can I delete", "audit the tests", "prune the tests", "find test gaps".
+description: Read-only health report on a codebase, an area of it, or its test suite, ranked by what to fix first. Use for "audit this repo", "tech debt", "security check", "what can I delete", "audit the tests", "prune the tests", "find test gaps". For a diff, branch or pull request, use plumb-review.
 ---
 
 # Plumb: audit

@@ -1,6 +1,6 @@
 ---
 name: plumb-refactor
-description: Restructures code without changing behaviour, in small verified steps. Use for "refactor", "clean up", "simplify", "extract", "rename", "remove dead code", "reduce duplication".
+description: Restructures code without changing behaviour, in small verified steps. Use for "refactor", "clean up", "simplify", "extract", "rename", "remove dead code", "reduce duplication". A change to stored data or an outside contract is plumb-plan's.
 ---
 
 # Plumb: refactor

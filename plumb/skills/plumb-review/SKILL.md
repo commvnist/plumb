@@ -1,6 +1,6 @@
 ---
 name: plumb-review
-description: Reviews a diff, commit or pull request and returns a verdict with ranked, concrete findings. Changes nothing. Use for "review this", "code review", "review my PR", "check before merge".
+description: Reviews a diff, commit, branch or pull request and returns a verdict with ranked, concrete findings. Changes nothing. Use for "review this", "code review", "review my PR", "check my work", "is this safe to merge". For a whole codebase, use plumb-audit.
 ---
 
 # Plumb: review
