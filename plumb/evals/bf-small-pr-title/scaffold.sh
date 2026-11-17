@@ -26,3 +26,4 @@ PY
 git commit -qam "feat(cart)!: drop Cart.item_count
 
 BREAKING CHANGE: callers count items themselves from Cart.items."
+git remote add origin https://github.com/example-shop/shop.git

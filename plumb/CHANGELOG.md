@@ -2,6 +2,13 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Fixed
+- When a commit or pull request can't be sent, plumb gives the complete text ready to send as is, instead of a summary of what it would say. Commit and pull request bodies lead with why the change exists.
+- Rule 21 now points the record at the file the next agent reads before starting (the repo's existing AGENTS.md or CLAUDE.md), whatever else is updated for people.
+- The `bf-small-pr-title` eval repo has a remote, and `bf-medium-agent-file` now separates plumb from no plumb (3/3 vs 0/3).
+
 ## 0.14.0
 
 ### Changed
