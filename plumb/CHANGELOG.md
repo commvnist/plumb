@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.14.1
 
 ### Fixed
 - When a commit or pull request can't be sent, plumb gives the complete text ready to send as is, instead of a summary of what it would say. Commit and pull request bodies lead with why the change exists.
