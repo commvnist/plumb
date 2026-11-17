@@ -1,5 +1,7 @@
 ---
 type: llm
+focus: {source: file, path: tests/test_pricing.py}
 ---
-Pass if each test the agent added is named for the behaviour and the condition it checks (for
-example test_total_with_tax_rounds_half_up_to_the_cent), not a bare name like test_total_with_tax.
+Pass if each test of total_with_tax in this file is named for the behaviour and the condition it
+checks (such as rounding half up to the cent, or rejecting a negative rate), not a bare name like
+test_total_with_tax.

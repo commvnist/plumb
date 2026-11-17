@@ -37,52 +37,45 @@
       "3": "Read before writing",
       "4": "Baseline",
       "5": "Climb the ladder",
-      "6": "Make the change",
-      "7": "Prove it",
-      "8": "Run the project's checks again",
-      "9": "Review your own diff as its reviewer",
-      "10": "Report"
+      "6": "Prove it",
+      "7": "Review your own diff as its reviewer"
     },
     "plumb-debug": {
       "1": "Reproduce",
       "2": "Trace",
-      "3": "Hypothesise and test",
-      "4": "Name the cause",
-      "5": "Fix at the origin",
-      "6": "Lock it",
-      "7": "Clean up",
-      "8": "Report"
+      "3": "Name the cause",
+      "4": "Fix at the origin",
+      "5": "Lock it",
+      "6": "Clean up",
+      "7": "Report"
     },
     "plumb-explain": {
-      "1": "Take the scope and depth from the question",
-      "2": "Read it before explaining it",
+      "1": "Take scope and depth from the question",
+      "2": "Read before explaining",
       "3": "Lead with the point",
       "4": "Trace one real case",
       "5": "Give the reasons",
       "6": "Say where it could be wrong",
-      "7": "Hand them something to try"
+      "7": "Hand them one check they can run"
     },
     "plumb-plan": {
       "1": "State the goal as outcomes",
-      "2": "Map the ground",
-      "3": "Find the thinnest end-to-end slice",
-      "4": "Decide only what is expensive to reverse",
-      "5": "Sequence the diffs",
-      "6": "Name the unknowns"
+      "2": "Find the thinnest end-to-end slice",
+      "3": "Decide only what is expensive to reverse",
+      "4": "Sequence the diffs",
+      "5": "Name the unknowns"
     },
     "plumb-refactor": {
       "1": "Name the goal",
-      "2": "Know why it's there",
-      "3": "Pin the behaviour",
-      "4": "Plan the moves",
-      "5": "Move in small steps",
-      "6": "Report"
+      "2": "Pin the behaviour",
+      "3": "Move in small steps",
+      "4": "Report"
     },
     "plumb-review": {
       "1": "Learn the intent",
       "2": "Read the whole diff, then what it touches",
-      "3": "Run the project's checks",
-      "4": "Judge in this order"
+      "3": "Run the project's checks;",
+      "4": "Judge in order"
     }
   }
 }

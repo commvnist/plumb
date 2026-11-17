@@ -236,7 +236,7 @@ BREAKING CHANGE: callers count items themselves from Cart.items."
                 "feat!: ..." or "feat(cart)!: ...")."""),
             "sections": llm("""
                 Pass only if the reply gives the pull request body it used or would use (not only a promise to
-                write one), as formatted text in headed or labelled parts that cover why, the breaking removal of
+                write one), in headed or labelled parts (inside a code block or not) that cover why, the breaking removal of
                 Cart.item_count with what callers must do, and what was verified, and the body has no line saying or
                 hinting that an AI wrote it."""),
         }),
@@ -326,8 +326,9 @@ git commit -qam "Add bill splitting and unit prices"
         prompt="In two separate diffs: first add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices; then add Cart.total_with_tax(tax_percent) in shop/cart.py, using it.",
         graders={
             "test-name": llm("""
-                Pass if each test the agent added is named for the behaviour and the condition it checks (for
-                example test_total_with_tax_rounds_half_up_to_the_cent), not a bare name like test_total_with_tax."""),
+                Pass if each test of total_with_tax in this file is named for the behaviour and the condition it
+                checks (such as rounding half up to the cent, or rejecting a negative rate), not a bare name like
+                test_total_with_tax.""", path="tests/test_pricing.py"),
             "readable": READABLE,
             "skill-build": skill("plumb-build"),
             "first-diff": regex_file("shop/pricing.py", r"def total_with_tax"),
@@ -505,7 +506,7 @@ cat > tests/__init__.py <<'EOF'
 import os
 
 if os.environ.get("ORDERS_TEST") != "1":
-    raise RuntimeError("tests refuse to run without ORDERS_TEST=1 (they reset the shared clock)")
+    raise RuntimeError("set ORDERS_TEST=1 to run the tests (it points the store at an in-memory database)")
 EOF
 git add -A && git commit -qm "Guard the test suite"
 """,

@@ -12,14 +12,14 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 |---|---|---|
 | `plumb` | all | The charter: the rules every other skill inherits |
 | `plumb-plan` | design | Breaks large work into small, independently mergeable diffs |
-| `plumb-build` | implement | Smallest complete change, proof, self-review, suggestions menu |
+| `plumb-build` | implement | Smallest complete change, proof, self-review, suggestions |
 | `plumb-test` | test | When a test should exist and what a good one is |
 | `plumb-debug` | fix | Evidence to root cause to origin fix to one regression test |
 | `plumb-refactor` | maintain | Behaviour-preserving restructuring in small green steps |
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
 | `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
-| `plumb-explain` | any | Walks you through code, a diff or a decision until you could defend it; changes nothing |
+| `plumb-explain` | any | Walks you through code, a diff or a decision, traced through one real case; changes nothing |
 | `plumb-auto` | all | Runs a whole task without stopping, checks pinned first and an independent review last, then one report of every commit, choice and assumption |
 
 ## Agents

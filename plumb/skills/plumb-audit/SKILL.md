@@ -7,13 +7,13 @@ description: Read-only health report on a codebase, an area of it, or its test s
 
 An audit changes nothing. Mode: `code`, `tests` or `both`. For a repository too large for one session, run one plumb-auditor agent per area and merge and re-rank their findings; say which you did, or why it fits one session.
 
-Code mode: bugs the system can actually produce, security holes, leaked secrets (location, never value), untested logic, dead code. Tests mode: load plumb-test, classify each test by its "Keep, merge, rewrite or delete", and find gaps by risk, not coverage.
+Code: bugs the system can actually produce, security holes, leaked secrets (location, never value), untested logic, dead code. Tests: load plumb-test, classify each test by plumb-test's "Keep, merge, rewrite or delete", and find gaps by risk, not coverage.
 
 ## Output
 
-- **Fix first:** <findings: at most 15, ranked, then "N more on request">
-- **Delete:** <items, each with the search that shows it unused (charter rule 1)>
+- **Fix first:** <findings, at most 15, ranked, then "N more on request">
+- **Delete:** <items, each with the search that shows it unused>
 - **Tests:** keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>
-- **Verified:** <what you ran> → <result>
+- **Verified:** <command> → <result>
 
 No generic advice.
