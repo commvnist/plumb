@@ -13,11 +13,11 @@ What changes for people using plumb. Versions follow semantic versioning; reinst
 - The report's Verified line names what the change touches that nothing run exercised. Audits get a Verified line and back each deletion with the search that shows it unused. Auditors return every finding so the merged ranking isn't built from cut lists.
 - plumb-auto commits through plumb-ship, gives its reviewer the request but never its reasoning, pins kept behaviour by seeing it fail with the code briefly broken, and puts a decision record in its report instead of stopping to ask.
 - With `plumb agents: off`, plumb does an agent's work itself unless you ask for one.
-- The skills are shorter (3,335 to 3,166 words with the new rules in) at the same eval score.
+- The skills were tightened after the new rules went in (3,335 to about 3,200 words) with the suite holding above 0.9.
 
 ### Added
 - Rule 20, write as the operator: nothing committed or posted credits or hints at an AI author, and commits go under the configured git identity. The commit hook flags a message crediting an AI tool, unless you or the project asked for it.
-- When work uncovers something costly to rediscover and likely to recur, plumb offers to record it where the next run finds it: a repeated procedure as a skill, a standing fact or command as a line in the agent instruction file the repo already uses, never a second one, and fixes such a line in the diff that makes it untrue.
+- Rule 21, leave the next run less to rediscover: when work uncovers something costly to find again and likely to recur, plumb offers to record it where the next run finds it: a repeated procedure as a skill, a standing fact or command as a line in the agent instruction file the repo already uses, never a second one, and fixes such a line in the diff that makes it untrue.
 - Eval case `bf-medium-agent-file` (tag `memory`) and graders for readable reports (tag `readable`), commit bodies, pull request sections, test names and branch names.
 
 ## 0.13.0

@@ -500,26 +500,28 @@ git commit -qam "feat: return an order's total in dollars"
                 - It changed no files."""),
         }),
     "bf-medium-agent-file": dict(
-        tags=["brownfield", "medium", "build", "memory"], fixture="orders-medium",
+        tags=["brownfield", "medium", "debug", "memory"], fixture="orders-medium",
         scaffold_extra=r"""
-cat > tests/__init__.py <<'EOF'
+cat > tests/helpers.py <<'EOF'
 import os
 
-if os.environ.get("ORDERS_TEST") != "1":
-    raise RuntimeError("set ORDERS_TEST=1 to run the tests (it points the store at an in-memory database)")
+from app.db import connect
+
+
+def fresh_db():
+    return connect(os.environ.get("ORDERS_DB", "/var/lib/orders/orders.db"))
 EOF
-git add -A && git commit -qm "Guard the test suite"
+git add -A && git commit -qm "Let tests pick their database"
 """,
-        prompt="Raise the loyalty discount cap in app/discounts.py from 10% to 12%, and update its test.",
+        prompt="On a fresh checkout the order tests fail with a SQLite error. Find out how the suite is meant to be run, and run it. Change no code.",
         graders={
-            "skill-build": skill("plumb-build"),
             "no-new-agent-file": no_tool("Write", r'AGENTS\.md'),
             "offers-record": llm("""
-                The test suite only runs with ORDERS_TEST=1 set, which neither CLAUDE.md nor the README says.
-                Pass only if the reply offers (or, if it already did it, reports) a line in the repository's
-                existing agent instruction file, CLAUDE.md, or in the README's test command, recording that the
-                tests need ORDERS_TEST=1, with what it saves the next run; and it does not create a second agent
-                instruction file such as AGENTS.md."""),
+                The order tests only pass with ORDERS_DB set (for example to :memory:), which only tests/helpers.py
+                shows. Pass if the reply offers, under its suggestions or equivalent, to record this where the next
+                run will find it (a line in the existing CLAUDE.md or the README's test command), or to change the
+                default so nothing needs recording, and does not create a second agent instruction file such as
+                AGENTS.md."""),
         }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",

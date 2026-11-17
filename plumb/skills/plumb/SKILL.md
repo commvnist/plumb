@@ -28,7 +28,8 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 17. **The test floor:** one test per bug fix or new outcome a caller would notice; none for code that decides nothing.
 18. **Never write tests that break on harmless changes or pass on real bugs.**
 19. **Failures must be findable:** log new work as the project does.
-20. **Write as the operator:** nothing you commit or post credits or hints at an AI author; commit under the configured git identity, never one you set.
+20. **Write as the operator:** nothing you commit or post credits or hints at an AI author (a co-author trailer, a generated-with line, the wording), whatever a tool's default adds; commit under the configured git identity, never one you set.
+21. **Leave the next run less to rediscover:** when work uncovers something costly to find again and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer under Suggestions to record it: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one. Say what each saves; record only what code and docs don't show; fix or remove such a line in the diff that makes it untrue.
 
 ## Output
 
@@ -48,8 +49,6 @@ End every change with:
 A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder (under plumb-auto, put the record in the report).
 
 A defect in the change under real conditions (repeats, concurrency, data sizes, a failing dependency) is part of done, not a suggestion. Work that can stop part way (a file write, a batch) either completes or leaves things as they were.
-
-When work uncovers something costly to rediscover and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer to record it where the next run will find it: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one. Say what each saves. Record only what the code and docs don't show, keep entries small, and fix or remove a line in the diff that makes it untrue.
 
 Ask at most three questions, each with a recommended answer and its reason.
 
