@@ -11,7 +11,7 @@ When someone relies on the behaviour, you can name a plausible break, and nothin
 
 ## What a good test is
 
-It asserts outcomes through the surface a caller uses and has been seen to fail on its break. Expected values come from what the behaviour should be (a spec, a doc), never from the code's output; where code and stated behaviour disagree, say so. Cases that differ only by data share one table.
+It asserts outcomes through the surface a caller uses, has been seen to fail on its break, and is named for the behaviour and condition, so a failure reads as a sentence. Expected values come from what the behaviour should be (a spec, a doc), never from the code's output; where code and stated behaviour disagree, say so. Cases that differ only by data share one table.
 
 ## Reject on sight
 

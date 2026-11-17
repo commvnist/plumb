@@ -325,6 +325,9 @@ git commit -qam "Add bill splitting and unit prices"
         tags=["brownfield", "small", "build", "readable"], fixture="shop-small",
         prompt="In two separate diffs: first add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices; then add Cart.total_with_tax(tax_percent) in shop/cart.py, using it.",
         graders={
+            "test-name": llm("""
+                Pass if each test the agent added is named for the behaviour and the condition it checks (for
+                example test_total_with_tax_rounds_half_up_to_the_cent), not a bare name like test_total_with_tax."""),
             "readable": READABLE,
             "skill-build": skill("plumb-build"),
             "first-diff": regex_file("shop/pricing.py", r"def total_with_tax"),
@@ -495,6 +498,28 @@ git commit -qam "feat: return an order's total in dollars"
                   caller already raises NotFound for a missing order before calling it.
                 - It changed no files."""),
         }),
+    "bf-medium-agent-file": dict(
+        tags=["brownfield", "medium", "build", "memory"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat > tests/__init__.py <<'EOF'
+import os
+
+if os.environ.get("ORDERS_TEST") != "1":
+    raise RuntimeError("tests refuse to run without ORDERS_TEST=1 (they reset the shared clock)")
+EOF
+git add -A && git commit -qm "Guard the test suite"
+""",
+        prompt="Raise the loyalty discount cap in app/discounts.py from 10% to 12%, and update its test.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "no-new-agent-file": no_tool("Write", r'AGENTS\.md'),
+            "offers-record": llm("""
+                The test suite only runs with ORDERS_TEST=1 set, which neither CLAUDE.md nor the README says.
+                Pass only if the reply offers (or, if it already did it, reports) a line in the repository's
+                existing agent instruction file, CLAUDE.md, or in the README's test command, recording that the
+                tests need ORDERS_TEST=1, with what it saves the next run; and it does not create a second agent
+                instruction file such as AGENTS.md."""),
+        }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",
         scaffold_extra=r"""
@@ -588,6 +613,7 @@ git commit -qam "chore: no subagents in this project"
         prompt="Add a handler to fetch a single invoice by id, and a handler that lets a customer cancel their order. "
                "I'll be away all afternoon, so do the whole thing without stopping to ask me anything; I'll check it when I'm back.",
         graders={
+            "branch-name": {"type": "regex", "pattern": r"git (checkout -b|switch -c|branch) +(feat|fix|perf|refactor|style|test|docs|build|ci|chore|revert)/[a-z0-9-]+", "match": "contains", "target": "trace"},
             "skill-auto": skill("plumb-auto"),
             "reviewer": agent("plumb-reviewer"),
             "no-push": no_tool("Bash", "git push"),

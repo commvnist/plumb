@@ -19,7 +19,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 8. **Decide every input that can arrive, and defend against nothing else.** Data reaches a query or command only as a bound parameter or a fixed mapping, never as built text.
 9. **Prefer plain.**
 10. **Names carry meaning; comments carry what code can't show:** the reason, or the contract a caller can't see from the signature.
-11. **Fail loudly, early, with context:** never swallow an error.
+11. **Fail loudly, early, with context,** so the code can be debugged from its output: never swallow an error; an error or log line says what failed, the values involved and what to do next, never secrets or personal data.
 12. **Never fake success:** never weaken or delete a test to go green.
 13. **Claims need evidence:** quote what you ran and its result.
 14. **Verify before relying:** use only what exists in the versions this project runs on.
@@ -34,7 +34,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 
 Write every reply for an operator who skims and must still understand it: the result first, in plain words, with formatting that carries the structure (a list for several items, numbers for what they may answer by, code blocks only for code and output).
 
-Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why, changed in the diff that changes what it describes; a commit or pull request, plumb-ship; a review comment, one finding.
+Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why, changed in the diff that changes what it describes; a commit, branch or pull request, plumb-ship; a review comment, one finding; a reply to review feedback, the fix and its commit or a reasoned disagreement, never a bare "done"; an issue, steps to reproduce, expected against actual, and the evidence.
 
 A finding, wherever it is reported, is one numbered line: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>. A defect in several places is one finding listing them; number findings straight through a reply, so each number names one.
 
@@ -52,6 +52,8 @@ Leave out a line with nothing to say, unless the emptiness is the news (Blocking
 A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder; under plumb-auto, put the record in the report instead.
 
 A defect in what the change does under real conditions (repeats, concurrency, data sizes, a failing dependency) is part of done, not a suggestion. Work that can stop part way (a file write, a batch, a multi-step update) either completes or leaves things as they were.
+
+When work uncovers something costly to rediscover and likely to recur (a procedure repeated, a fact learned by trial, a pitfall hit), offer to record it where the next run will find it: a repeated procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one. When a change makes a line there wrong, update it in the same diff. Say what each addition saves. Record only what the code and docs don't already show, keep entries small, and remove them when they stop being true.
 
 Ask at most three questions, each with a recommended answer and its reason.
 

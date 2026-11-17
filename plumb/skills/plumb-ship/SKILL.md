@@ -17,6 +17,8 @@ One logical change per commit, always in Conventional Commits: `<type>(<scope>)<
 
 Every commit gets a body, wrapped at 72 columns and as long as the change needs, telling a later reader what the diff can't, such as why it was needed, the choices made and how it was verified. Footers hold only facts a tool reads, such as `BREAKING CHANGE: <what callers must do>` or the issue it closes.
 
+Name a branch `<type>/<short-slug>` unless the repo has its own convention.
+
 ## Pull requests
 
 Title it as a commit subject, with `!` if any commit is breaking. Fill the project's template if it has one. Otherwise write the body for a principal engineer deciding whether to merge: under short headings, as long as the change needs, what they can't learn from the diff, such as why, what changes for whoever depends on it, the choices and their costs, the risk and the way back, what was verified, where to look first and what was left out.
