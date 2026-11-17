@@ -226,6 +226,7 @@ PY
 git commit -qam "feat(cart)!: drop Cart.item_count
 
 BREAKING CHANGE: callers count items themselves from Cart.items."
+git remote add origin https://github.com/example-shop/shop.git
 """,
         prompt="Open a pull request for this branch.",
         graders={
@@ -502,6 +503,11 @@ git commit -qam "feat: return an order's total in dollars"
     "bf-medium-agent-file": dict(
         tags=["brownfield", "medium", "debug", "memory"], fixture="orders-medium",
         scaffold_extra=r"""
+git mv CLAUDE.md AGENTS.md
+python3 - <<'EOF'
+p = "README.md"
+open(p, "w").write(open(p).read().replace(" Run the tests with `python3 -m unittest discover -s tests -t .`.", ""))
+EOF
 cat > tests/helpers.py <<'EOF'
 import os
 
@@ -515,13 +521,13 @@ git add -A && git commit -qm "Let tests pick their database"
 """,
         prompt="On a fresh checkout the order tests fail with a SQLite error. Find out how the suite is meant to be run, and run it. Change no code.",
         graders={
-            "no-new-agent-file": no_tool("Write", r'AGENTS\.md'),
+            "no-claude-md": no_tool("Write", r'CLAUDE\.md'),
             "offers-record": llm("""
                 The order tests only pass with ORDERS_DB set (for example to :memory:), which only tests/helpers.py
-                shows. Pass if the reply offers, under its suggestions or equivalent, to record this where the next
-                run will find it (a line in the existing CLAUDE.md or the README's test command), or to change the
-                default so nothing needs recording, and does not create a second agent instruction file such as
-                AGENTS.md."""),
+                shows. The repository keeps its agent instructions in AGENTS.md. Pass only if the reply offers (or
+                reports making) a line in AGENTS.md recording how to run the tests, and says what it saves the
+                next run. Fail if it only suggests the README or a code change, or proposes creating CLAUDE.md or
+                another agent instruction file."""),
         }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",
