@@ -2,6 +2,17 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Reports, plans, reviews and audits are written to be skimmed: formatted text instead of a code block, the result first, one item per line, and numbered wherever you might pick or answer by number. Each format is now shown as a short list rather than a code-block template, and plans open with their goal.
+- Commits always use Conventional Commits, even over a history with another style; a ticket id goes in the scope or a `Refs:` footer. Every commit gets a body that tells a later reader what the diff can't, such as why it was needed, the choices made and how it was verified.
+- Pull request bodies are written for a principal engineer deciding whether to merge: short headed sections for what the diff can't show, such as why, what changes for whoever depends on it, the choices and their costs, the risk and the way back, the evidence, where to look first and what was left out. A project's own template still wins.
+
+### Added
+- Charter rule 20, write as the operator: nothing committed or posted credits or hints at an AI author, whether in trailers, wording or the committing identity. The commit hook now also flags a message that credits an AI tool.
+- Eval graders for readable reports (tag `readable`), commit bodies, and pull request sections.
+
 ## 0.13.0
 
 ### Added

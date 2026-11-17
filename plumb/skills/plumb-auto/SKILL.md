@@ -19,9 +19,7 @@ Asking for this is the go-ahead for the whole task and the instruction to commit
 
 ## Output
 
-The charter's report, with every commit under Done and every diff's choices under Decided, plus:
+The charter's report, with every commit under Done and every diff's choices under Decided, plus after Decided:
 
-```
-Assumed:  <each reading taken without asking, and what changes if it is wrong>
-Reviewed: <verdict, reviewer model, what was fixed or disputed>
-```
+- **Assumed:** <each reading taken without asking, and what changes if it is wrong>
+- **Reviewed:** <verdict, reviewer model, what was fixed or disputed>

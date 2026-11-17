@@ -53,6 +53,17 @@ class CheckCommit(unittest.TestCase):
                 git(self.repo, "commit", "-q", "--allow-empty", "-m", subject)
                 self.assertEqual(run_hook(self.repo, command), flagged)
 
+    def test_flags_a_trailer_crediting_an_ai_tool(self):
+        cases = [
+            ("feat: add tax\n\nCo-Authored-By: Claude <noreply@anthropic.com>", True),
+            ("feat: add tax\n\nGenerated with Claude Code", True),
+            ("feat: add tax\n\nWhy: carts need tax.\n\nCo-Authored-By: Sam <sam@example.com>", False),
+        ]
+        for message, flagged in cases:
+            with self.subTest(message=message):
+                git(self.repo, "commit", "-q", "--allow-empty", "-m", message)
+                self.assertEqual("credits an AI tool" in hook_output(self.repo, "git commit -F msg"), flagged)
+
     def test_ignores_a_commit_only_mentioned_in_the_output(self):
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "Made by the user")
         self.assertFalse(run_hook(self.repo, "git status", "no changes added to commit"))

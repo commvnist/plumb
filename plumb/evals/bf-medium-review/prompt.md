@@ -1,6 +1,6 @@
 ---
 name: bf-medium-review
-tags: [brownfield, medium, review]
+tags: [brownfield, medium, review, readable]
 runs: 1
 max_turns: 60
 timeout_seconds: 1200

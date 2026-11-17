@@ -18,7 +18,8 @@
     "16": "A test earns its place",
     "17": "The test floor",
     "18": "Never write tests that break on harmless changes or pass on real bugs",
-    "19": "Failures must be findable"
+    "19": "Failures must be findable",
+    "20": "Write as the operator"
   },
   "steps": {
     "plumb-auto": {

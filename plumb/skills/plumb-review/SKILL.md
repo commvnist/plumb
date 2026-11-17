@@ -20,4 +20,7 @@ Each gives a location, a scenario the system can actually produce (trace its inp
 
 ## Output
 
-A `Verdict:` line (approve | approve with suggestions | request changes, with the reason), then `Blocking:` and `Suggestions:` findings, then `Verified:` with what you ran.
+- **Verdict:** approve | approve with suggestions | request changes, with the reason
+- **Blocking:** <numbered findings — or none>
+- **Suggestions:** <numbered findings — or omit>
+- **Verified:** <what you ran> → <result>

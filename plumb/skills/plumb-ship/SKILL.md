@@ -13,8 +13,10 @@ Run the project's full checks on what ships and quote the result. If one fails, 
 
 ## Commits
 
-One logical change per commit. Keep the project's convention if its subjects share a checkable format (type prefixes, ticket ids). Plain sentences are no format: there, use Conventional Commits (`<type>(<scope>)<! if breaking>: <subject>`; `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`) and say so under Decided.
+One logical change per commit, always in Conventional Commits: `<type>(<scope>)<! if breaking>: <subject>`, with `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `build`, `ci` or `chore`. Whatever the history's own format carries, such as a ticket id, goes in the scope or a footer.
+
+Every commit gets a body, wrapped at 72 columns, telling a later reader what the diff can't, such as why it was needed, the choices made and how it was verified. Footers last, such as `BREAKING CHANGE: <what callers must do>`.
 
 ## Pull requests
 
-Title it as a commit subject, with `!` if any commit is breaking.
+Title it as a commit subject, with `!` if any commit is breaking. Fill the project's template if it has one. Otherwise write the body for a principal engineer deciding whether to merge: under short headings, what they can't learn from the diff, such as why, what changes for whoever depends on it, the choices and their costs, the risk and the way back, the evidence, where to look first and what was left out.

@@ -11,12 +11,8 @@ Code mode: bugs the system can actually produce, security holes, leaked secrets 
 
 ## Output
 
-```
-Fix first:
-1. <location> — <finding> — <consequence> — action: <what to do>
-Then: …   (at most 15, ranked; then "N more on request")
-Delete: <items>
-Tests:  keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>
-```
+- **Fix first:** at most 15, ranked, then "N more on request"; each numbered: <finding> at <location>: <consequence>. Fix: <action>
+- **Delete:** <items>
+- **Tests:** keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>
 
 No generic advice. A defect repeated across locations is one finding that lists them.

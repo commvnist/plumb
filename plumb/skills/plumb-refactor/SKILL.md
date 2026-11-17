@@ -14,7 +14,7 @@ A refactor changes structure, never behaviour.
 3. **Pin the behaviour:** see the tests that cover it go red with the code briefly broken.
 4. **Plan the moves.**
 5. **Move in small steps,** checks green after each.
-6. **Report** with the charter's template plus `Behaviour: unchanged — <checks> pass before and after`.
+6. **Report** with the charter's template plus **Behaviour:** unchanged — <checks> pass before and after.
 
 ## Rules
 

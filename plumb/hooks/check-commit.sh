@@ -1,7 +1,7 @@
 #!/bin/sh
 # Runs after each shell command. Skill text alone can't guarantee a commit's
 # format, so this catches a commit just made whose subject isn't Conventional
-# Commits and asks the agent to fix it while it's still unpushed and cheap.
+# Commits, or that credits an AI tool, and asks the agent to fix it while it's still unpushed and cheap.
 input=$(cat)
 
 # Only the command counts: a command's output can mention commits too.
@@ -23,11 +23,18 @@ made=$(printf '%s' "$entry" | sed 's/^[^{]*{\([0-9]*\)}.*/\1/')
 [ $(( $(date +%s) - made )) -le 120 ] || exit 0
 
 subject=$(git -C "$dir" log -1 --format=%s)
-if printf '%s\n' "$subject" | grep -Eq '^(feat|fix|perf|refactor|test|docs|build|ci|chore|style|revert)(\([^()]+\))?!?: [^ ]'; then
-  exit 0
+body=$(git -C "$dir" log -1 --format=%b)
+note=""
+if ! printf '%s\n' "$subject" | grep -Eq '^(feat|fix|perf|refactor|test|docs|build|ci|chore|style|revert)(\([^()]+\))?!?: [^ ]'; then
+  note=" Its subject isn't Conventional Commits."
 fi
+# A trailer or line crediting an AI tool, which plumb's charter rule 20 rules out.
+if printf '%s\n' "$body" | grep -Eiq '^(co-authored-by|generated-by|assisted-by|[a-z]+-session):.*(claude|anthropic|openai|codex|copilot|gemini|cursor|\bai\b)|generated (with|by) .*(claude|codex|copilot|gemini|cursor|\bai\b)'; then
+  note="$note It credits an AI tool (a co-author, generated-by or session line); rule 20 says to remove it."
+fi
+[ -n "$note" ] || exit 0
 
-note="plumb: the commit just made has a subject that isn't Conventional Commits. Unless the user asked for this exact message or the project has its own commit convention (a format its subjects follow, such as type prefixes or ticket ids; plain imperative subjects are not one, since adding a type continues them), load plumb-ship and amend the message to its format, keeping the body. If the commit is already pushed, don't rewrite it: tell the user and propose the corrected message."
+note="plumb: check the commit just made.$note Unless the user asked for this exact message or the project's written rules set another format, load plumb-ship and amend the message to its format, keeping the rest of the body. If the commit is already pushed, don't rewrite it: tell the user and propose the corrected message."
 # Copilot CLI reads context only from a top-level field; Claude Code from hookSpecificOutput.
 if [ -n "$COPILOT_PLUGIN_ROOT" ]; then
   printf '{"additionalContext":"%s"}\n' "$note"

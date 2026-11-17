@@ -18,10 +18,9 @@ A plan is a proposal in the reply. It changes no code and waits for a go-ahead.
 
 ## Output
 
-```
-Decisions: <decision — options — choice — reason — what it gives up — record>
-Steps:     <numbered: diff title — what it delivers — ~n lines>
-Questions: <at most three, each with a recommended answer and its reason>
-```
+- **Goal:** <the outcomes>
+- **Steps:** one numbered line per diff: <title> — <what it delivers> — ~<n> lines
+- **Decisions:** one line each: <decision>: <choice>, because <reason>; gives up <what the alternative offered>; record: <its decision record>
+- **Questions:** <at most three, numbered, each with a recommended answer and its reason>
 
 No time estimates.
