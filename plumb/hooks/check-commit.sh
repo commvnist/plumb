@@ -30,7 +30,7 @@ if ! printf '%s\n' "$subject" | grep -Eq '^(feat|fix|perf|refactor|test|docs|bui
 fi
 # A trailer or line crediting an AI tool, which plumb's charter rule 20 rules out.
 if printf '%s\n' "$body" | grep -Eiq '^(co-authored-by|generated-by|assisted-by|[a-z]+-session):.*(claude|anthropic|openai|codex|copilot|gemini|cursor|\bai\b)|generated (with|by) .*(claude|codex|copilot|gemini|cursor|\bai\b)'; then
-  note="$note It credits an AI tool (a co-author, generated-by or session line); remove that, as charter rule 20 says."
+  note="$note It credits an AI tool (a co-author, generated-by or session line); remove that, as charter rule 20 says, unless the user or the project's written rules asked for it."
 fi
 [ -n "$note" ] || exit 0
 

@@ -28,7 +28,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 17. **The test floor:** one test per bug fix or new outcome a caller would notice; none for code that decides nothing.
 18. **Never write tests that break on harmless changes or pass on real bugs.**
 19. **Failures must be findable:** log new work as the project does.
-20. **Write as the operator:** what you commit or post is the operator's work, with nothing that credits or hints at an AI author (trailers, wording, the committing identity).
+20. **Write as the operator:** what you commit or post is the operator's work, with nothing that credits or hints at an AI author (trailers, wording); commits go under the configured git identity, never one you set.
 
 ## Output
 
@@ -36,18 +36,20 @@ Write every reply for an operator who skims and must still understand it: the re
 
 Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why, changed in the diff that changes what it describes; a commit or pull request, plumb-ship; a review comment, one finding.
 
-A finding, wherever it is reported, is one numbered line: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>. A defect in several places is one finding listing them. Leave out a line with nothing to say, unless the emptiness is the news (Blocking: none).
+A finding, wherever it is reported, is one numbered line: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>. A defect in several places is one finding listing them; number findings straight through a reply, so each number names one.
 
 End every change with:
 
 - **Done:** <commit subject>
 - **Why:** <for a fix, the cause>
 - **Decided:** <each choice a reviewer could have made differently, with its reason>
-- **Verified:** <command run> → <result>; each new test: <the break it was seen red on>
+- **Verified:** <command run> → <result>; each new test: <the break it was seen red on>; unchecked: <what the change touches that nothing you ran exercised>
 - **Waiting on:** <what you need from the operator>
 - **Suggestions:** <findings, unapplied>
 
-A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder.
+Leave out a line with nothing to say, unless the emptiness is the news (Blocking: none).
+
+A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder; under plumb-auto, put the record in the report instead.
 
 A defect in what the change does under real conditions (repeats, concurrency, data sizes, a failing dependency) is part of done, not a suggestion. Work that can stop part way (a file write, a batch, a multi-step update) either completes or leaves things as they were.
 

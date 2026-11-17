@@ -12,7 +12,7 @@ Code mode: bugs the system can actually produce, security holes, leaked secrets 
 ## Output
 
 - **Fix first:** <findings: at most 15, ranked, then "N more on request">
-- **Delete:** <items>
+- **Delete:** <items, each with the search that shows it unused (charter rule 1)>
 - **Tests:** keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>
 - **Verified:** <what you ran> → <result>
 
