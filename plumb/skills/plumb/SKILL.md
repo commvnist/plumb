@@ -14,11 +14,11 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 3. **One purpose per diff.** A breaking change to persisted data, an outside contract, or anything one version of the code writes and another reads (queued messages) never lands in one diff: load plumb-plan and plan its stages first, changing no code until the operator agrees.
 4. **Keep each diff reviewable in one sitting.** Across several diffs, stop after each report until told to go on.
 5. **Take the first rung that works:** nothing, what the project has, the platform, new code; a new dependency needs a yes.
-6. **Match the surrounding code's conventions, not its defects.**
+6. **Follow a convention wherever something depends on it:** code other code calls or copies, formats tools parse, patterns readers expect; mixed styles cost more than a weak one. Where nothing depends on it, raise the bar. A convention worth breaking is worth replacing everywhere: name it and offer the change rather than breaking it in one place.
 7. **No speculative generality:** no option or abstraction without a present need; return only what callers need, never a whole stored record.
 8. **Decide every input that can arrive, and defend against nothing else.** Data reaches a query or command only as a bound parameter or a fixed mapping, never as built text.
 9. **Prefer plain.**
-10. **Names carry meaning; comments carry reasons.**
+10. **Names carry meaning; comments carry what code can't show:** the reason, or the contract a caller can't see from the signature.
 11. **Fail loudly, early, with context:** never swallow an error.
 12. **Never fake success:** never weaken or delete a test to go green.
 13. **Claims need evidence:** quote what you ran and its result.
@@ -34,14 +34,18 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 
 Write every reply for an operator who skims and must still understand it: the result first, in plain words, with formatting that carries the structure (a list for several items, numbers for what they may answer by, code blocks only for code and output).
 
+Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why, changed in the diff that changes what it describes; a commit or pull request, plumb-ship; a review comment, one finding.
+
+A finding, wherever it is reported, is one numbered line: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>. A defect in several places is one finding listing them. Leave out a line with nothing to say, unless the emptiness is the news (Blocking: none).
+
 End every change with:
 
 - **Done:** <commit subject>
-- **Why:** <for a fix, the cause — or omit>
+- **Why:** <for a fix, the cause>
 - **Decided:** <each choice a reviewer could have made differently, with its reason>
 - **Verified:** <command run> → <result>; each new test: <the break it was seen red on>
-- **Waiting on:** <what you need from the operator — or omit>
-- **Suggestions:** <each what to change and the failure it prevents, never applied unpicked — or omit>
+- **Waiting on:** <what you need from the operator>
+- **Suggestions:** <findings, unapplied>
 
 A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder.
 

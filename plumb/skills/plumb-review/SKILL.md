@@ -16,11 +16,11 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 ## Findings
 
-Each gives a location, a scenario the system can actually produce (trace its input to where it enters), and the smallest fix. A defect repeated in several places is one finding.
+In the charter's shape; trace each scenario's input to where it enters.
 
 ## Output
 
 - **Verdict:** approve | approve with suggestions | request changes, with the reason
-- **Blocking:** <numbered findings — or none>
-- **Suggestions:** <numbered findings — or omit>
+- **Blocking:** <findings, or none>
+- **Suggestions:** <findings>
 - **Verified:** <what you ran> → <result>

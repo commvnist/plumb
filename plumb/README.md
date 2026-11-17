@@ -39,7 +39,7 @@ plan → build → (test · debug · refactor as needed) → review → ship
 
 Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
 
-Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), Commits always follow Conventional Commits, with a body that says why, what changes, what was decided and how it was verified. Pull requests get the sections a principal engineer reviews by: why, what changes, decisions, risk and rollback, what was verified, where to look first, and what was left out.
+Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format). Commits follow Conventional Commits, and commits and pull requests carry what the diff can't show, for a reviewer deciding whether to merge (see plumb-ship).
 
 ## What surprises people
 
