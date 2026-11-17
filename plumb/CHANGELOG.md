@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
-## Unreleased
+## 0.14.0
 
 ### Changed
 - Reports, plans, reviews and audits are written to be skimmed: the result first, plain words, formatting that carries the structure, and code blocks only for code and output. Each format is now a short list instead of a code-block template. Plans open with their goal and end on Waiting on, like every report.
