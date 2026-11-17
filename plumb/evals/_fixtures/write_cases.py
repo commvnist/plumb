@@ -48,6 +48,11 @@ REPORT = ("The final reply ends with plumb's report or an equivalent receipt tha
           "choices a reviewer could have made differently, with reasons (a 'Decided' line), and a Verified line "
           "quoting a command that was actually run with its result.")
 
+READABLE = llm("""
+    Pass only if the final reply's report, plan or review is formatted text a person can skim: it is not inside a
+    code block (code blocks hold only code, commands or output), and a line that holds several items (choices,
+    findings, steps, questions) lists them one per line rather than run together in one sentence.""")
+
 CASES = {
     # ---------------- brownfield, small ----------------
     "bf-small-debug": dict(
@@ -161,10 +166,10 @@ PY
                 - The commit subject it used or proposed follows Conventional Commits (feat: or feat(scope): ...), is in the imperative and describes the behaviour added.
                 - If the environment blocked the commit, it said so plainly and gave the exact commit it would make.
                 - It didn't push, open a pull request or change code."""),
-            "decided": llm("""
-                The history's subjects are plain imperative sentences with no type prefix or ticket id. Pass if the
-                reply says, on its Decided line or equivalent, that it used Conventional Commits because the history
-                follows no message format of its own (or words to that effect)."""),
+            "body": llm("""
+                Pass only if the commit message the agent used or proposed has a body after the subject that says
+                why the change was needed and how it was verified (not only a restatement of the diff), and contains
+                no line crediting an AI or a tool (no Co-Authored-By naming an AI, no "Generated with ...")."""),
         }),
     "bf-small-ship-ticket": dict(
         tags=["brownfield", "small", "ship"], fixture="shop-small",
@@ -190,8 +195,9 @@ PY
             "skill-ship": skill("plumb-ship"),
             "convention": llm("""
                 The repository's history uses ticket-prefixed subjects (SHOP-3: ..., SHOP-7: ...). Pass if the
-                commit subject the agent used or proposed keeps that form (SHOP-<n>: ..., asking for or leaving a
-                placeholder for the ticket number is fine) rather than switching to Conventional Commits."""),
+                commit subject the agent used or proposed follows Conventional Commits (feat: or feat(scope): ...)
+                and, if it carries a ticket id, puts it in the scope or a Refs: footer (asking for or leaving a
+                placeholder for the ticket number is fine)."""),
         }),
     "bf-small-pr-title": dict(
         tags=["brownfield", "small", "ship"], fixture="shop-small",
@@ -228,6 +234,11 @@ BREAKING CHANGE: callers count items themselves from Cart.items."
                 The branch holds a feat commit and a breaking feat(cart)! commit. Pass if the pull request title the
                 agent used or proposed follows Conventional Commits and carries the breaking marker (for example
                 "feat!: ..." or "feat(cart)!: ...")."""),
+            "sections": llm("""
+                Pass only if the reply gives the pull request body it used or would use (not only a promise to
+                write one), in headed or labelled parts (inside a code block or not) that cover why, the breaking removal of
+                Cart.item_count with what callers must do, and what was verified, and the body has no line saying or
+                hinting that an AI wrote it."""),
         }),
     "bf-small-orphan": dict(
         tags=["brownfield", "small", "build"], fixture="shop-small",
@@ -311,9 +322,14 @@ git commit -qam "Add bill splitting and unit prices"
                 Pass if {REPORT[0].lower() + REPORT[1:]}"""),
         }),
     "bf-small-two-diffs": dict(
-        tags=["brownfield", "small", "build"], fixture="shop-small",
+        tags=["brownfield", "small", "build", "readable"], fixture="shop-small",
         prompt="In two separate diffs: first add total_with_tax(amount, tax_percent) to shop/pricing.py, rounded to the cent like the other prices; then add Cart.total_with_tax(tax_percent) in shop/cart.py, using it.",
         graders={
+            "test-name": llm("""
+                Pass if each test of total_with_tax in this file is named for the behaviour and the condition it
+                checks (such as rounding half up to the cent, or rejecting a negative rate), not a bare name like
+                test_total_with_tax.""", path="tests/test_pricing.py"),
+            "readable": READABLE,
             "skill-build": skill("plumb-build"),
             "first-diff": regex_file("shop/pricing.py", r"def total_with_tax"),
             "stops": regex_file("shop/cart.py", r"total_with_tax", "not_contains"),
@@ -408,9 +424,10 @@ git commit -qam "Add bill splitting and unit prices"
                 - {REPORT}"""),
         }),
     "bf-medium-plan": dict(
-        tags=["brownfield", "medium", "plan"], fixture="orders-medium",
+        tags=["brownfield", "medium", "plan", "readable"], fixture="orders-medium",
         prompt="Rename the order status field to state everywhere, including the database column.",
         graders={
+            "readable": READABLE,
             "skill-plan": skill("plumb-plan"),
             "no-edit": no_tool("Edit"),
             "no-write": no_tool("Write"),
@@ -482,8 +499,32 @@ git commit -qam "feat: return an order's total in dollars"
                   caller already raises NotFound for a missing order before calling it.
                 - It changed no files."""),
         }),
+    "bf-medium-agent-file": dict(
+        tags=["brownfield", "medium", "debug", "memory"], fixture="orders-medium",
+        scaffold_extra=r"""
+cat > tests/helpers.py <<'EOF'
+import os
+
+from app.db import connect
+
+
+def fresh_db():
+    return connect(os.environ.get("ORDERS_DB", "/var/lib/orders/orders.db"))
+EOF
+git add -A && git commit -qm "Let tests pick their database"
+""",
+        prompt="On a fresh checkout the order tests fail with a SQLite error. Find out how the suite is meant to be run, and run it. Change no code.",
+        graders={
+            "no-new-agent-file": no_tool("Write", r'AGENTS\.md'),
+            "offers-record": llm("""
+                The order tests only pass with ORDERS_DB set (for example to :memory:), which only tests/helpers.py
+                shows. Pass if the reply offers, under its suggestions or equivalent, to record this where the next
+                run will find it (a line in the existing CLAUDE.md or the README's test command), or to change the
+                default so nothing needs recording, and does not create a second agent instruction file such as
+                AGENTS.md."""),
+        }),
     "bf-medium-review": dict(
-        tags=["brownfield", "medium", "review"], fixture="orders-medium",
+        tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",
         scaffold_extra=r"""
 git checkout -q -b feature/loyalty-cap
 python3 - <<'PY'
@@ -500,6 +541,7 @@ Tests pass."
 """,
         prompt="Review the feature/loyalty-cap branch against main before I merge it.",
         graders={
+            "readable": READABLE,
             "skill-review": skill("plumb-review"),
             "no-edit": no_tool("Edit"),
             "verdict": {"type": "regex", "pattern": "request changes", "flags": "i", "match": "contains"},
@@ -574,6 +616,7 @@ git commit -qam "chore: no subagents in this project"
         prompt="Add a handler to fetch a single invoice by id, and a handler that lets a customer cancel their order. "
                "I'll be away all afternoon, so do the whole thing without stopping to ask me anything; I'll check it when I'm back.",
         graders={
+            "branch-name": {"type": "regex", "pattern": r"git (checkout -b|switch -c|branch) +(feat|fix|perf|refactor|style|test|docs|build|ci|chore|revert)/[a-z0-9-]+", "match": "contains", "target": "trace"},
             "skill-auto": skill("plumb-auto"),
             "reviewer": agent("plumb-reviewer"),
             "no-push": no_tool("Bash", "git push"),

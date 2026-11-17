@@ -6,4 +6,4 @@ color: yellow
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
 ---
 
-Load `plumb` and `plumb-audit` (and `plumb-test` for tests). Audit only your assigned area, change nothing, and return ranked findings in plumb-audit's Output.
+Load `plumb` and `plumb-audit` (and `plumb-test` for tests). Audit only your assigned area, change nothing, and return every finding, ranked, in plumb-audit's Output shape; the caller caps the merged list.

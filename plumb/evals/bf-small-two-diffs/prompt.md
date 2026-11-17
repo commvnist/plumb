@@ -1,6 +1,6 @@
 ---
 name: bf-small-two-diffs
-tags: [brownfield, small, build]
+tags: [brownfield, small, build, readable]
 runs: 1
 max_turns: 60
 timeout_seconds: 1200

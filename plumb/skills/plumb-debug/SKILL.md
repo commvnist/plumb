@@ -8,10 +8,9 @@ description: Finds the root cause of a bug from evidence and fixes it at its ori
 ## Steps
 
 1. **Reproduce** the exact error.
-2. **Trace** backward from the symptom.
-3. **Hypothesise and test** each candidate cause.
-4. **Name the cause** in one sentence.
-5. **Fix at the origin,** with the smallest diff, never a suppression.
-6. **Lock it** with one test that fails without the fix.
-7. **Clean up** instrumentation and scratch files.
-8. **Report** with the charter's template: under Why, the cause and the observation that established it, by command or file:line; under Suggestions, other places with the same fault, unfixed.
+2. **Trace** backward from the symptom; test each candidate cause.
+3. **Name the cause** in one sentence.
+4. **Fix at the origin** with the smallest diff, never a suppression.
+5. **Lock it** with one test that fails without the fix.
+6. **Clean up** instrumentation and scratch files.
+7. **Report:** under Why, the cause and the observation that established it (command or file:line); under Suggestions, other places with the same fault, unfixed.

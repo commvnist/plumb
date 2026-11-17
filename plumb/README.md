@@ -12,14 +12,14 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 |---|---|---|
 | `plumb` | all | The charter: the rules every other skill inherits |
 | `plumb-plan` | design | Breaks large work into small, independently mergeable diffs |
-| `plumb-build` | implement | Smallest complete change, proof, self-review, suggestions menu |
+| `plumb-build` | implement | Smallest complete change, proof, self-review, suggestions |
 | `plumb-test` | test | When a test should exist and what a good one is |
 | `plumb-debug` | fix | Evidence to root cause to origin fix to one regression test |
 | `plumb-refactor` | maintain | Behaviour-preserving restructuring in small green steps |
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
 | `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
-| `plumb-explain` | any | Walks you through code, a diff or a decision until you could defend it; changes nothing |
+| `plumb-explain` | any | Walks you through code, a diff or a decision, traced through one real case; changes nothing |
 | `plumb-auto` | all | Runs a whole task without stopping, checks pinned first and an independent review last, then one report of every commit, choice and assumption |
 
 ## Agents
@@ -37,9 +37,9 @@ plan → build → (test · debug · refactor as needed) → review → ship
                  audit · explain any time · auto runs the whole line
 ```
 
-Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats.
+Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
 
-Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format), and commits follow Conventional Commits unless the project has its own convention.
+Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format). Commits follow Conventional Commits, and commits and pull requests carry what the diff can't show, for a reviewer deciding whether to merge (see plumb-ship).
 
 ## What surprises people
 
@@ -48,6 +48,7 @@ Each of these is on purpose:
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
 - **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
+- **Nothing it writes says an AI wrote it.** Code, commits and pull requests use neutral wording, carry no co-author or generated-by lines, and are committed under your own git identity.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
 - **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and where else the same mistake appears. If what you ask rests on a fact about the code that isn't true, it shows you the line and waits. Ask for something it can see failing and it follows you, naming the risk once.

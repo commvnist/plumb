@@ -11,13 +11,12 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 1. **Learn the intent.**
 2. **Read the whole diff, then what it touches.**
-3. **Run the project's checks**; claims in the description are unverified until you do.
-4. **Judge in this order:** correctness, safety, proof (was a test weakened or deleted), simplicity, scope.
-
-## Findings
-
-Each gives a location, a scenario the system can actually produce (trace its input to where it enters), and the smallest fix. A defect repeated in several places is one finding.
+3. **Run the project's checks;** the description's claims are unverified until you do.
+4. **Judge in order:** correctness, safety, proof (charter rules 12 and 16 to 18), simplicity, scope. Trace each finding's input to where it enters.
 
 ## Output
 
-A `Verdict:` line (approve | approve with suggestions | request changes, with the reason), then `Blocking:` and `Suggestions:` findings, then `Verified:` with what you ran.
+- **Verdict:** approve | approve with suggestions | request changes, with the reason
+- **Blocking:** <findings, or none>
+- **Suggestions:** <findings>
+- **Verified:** <command> → <result>

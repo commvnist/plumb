@@ -1,6 +1,6 @@
 ---
 name: bf-medium-plan
-tags: [brownfield, medium, plan]
+tags: [brownfield, medium, plan, readable]
 runs: 1
 max_turns: 60
 timeout_seconds: 1200

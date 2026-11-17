@@ -2,6 +2,24 @@
 
 What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Reports, plans, reviews and audits are written to be skimmed: the result first, plain words, formatting that carries the structure, and code blocks only for code and output. Each format is now a short list instead of a code-block template. Plans open with their goal and end on Waiting on, like every report.
+- Every artifact plumb writes keeps one shape, set by what its reader can't get elsewhere: comments (the reason, or a contract the signature hides), docs, commits, branches, pull requests, review comments, replies to review feedback and issues. A finding has one shape everywhere (location, a scenario the system can produce, smallest fix), numbered through the reply.
+- Commits always use Conventional Commits, with a body saying what the diff can't; footers hold only facts a tool reads, such as `BREAKING CHANGE:`. Branches are named `<type>/<slug>` unless the repo has its own convention. Pull request bodies are written for a principal engineer deciding whether to merge. A blocked ship still gives the exact text it would have sent.
+- Rule 6 now says when to follow a convention (wherever something depends on it) and when to raise the bar (where nothing does), and to replace a weak convention everywhere rather than break it in one place.
+- Rule 11: code is debuggable from its output. An error or log line says what failed, the values involved and what to do next, never secrets or personal data. Test names state the behaviour and condition.
+- The report's Verified line names what the change touches that nothing run exercised. Audits get a Verified line and back each deletion with the search that shows it unused. Auditors return every finding so the merged ranking isn't built from cut lists.
+- plumb-auto commits through plumb-ship, gives its reviewer the request but never its reasoning, pins kept behaviour by seeing it fail with the code briefly broken, and puts a decision record in its report instead of stopping to ask.
+- With `plumb agents: off`, plumb does an agent's work itself unless you ask for one.
+- The skills were tightened after the new rules went in (3,335 to about 3,200 words) with the suite holding above 0.9.
+
+### Added
+- Rule 20, write as the operator: nothing committed or posted credits or hints at an AI author, and commits go under the configured git identity. The commit hook flags a message crediting an AI tool, unless you or the project asked for it.
+- Rule 21, leave the next run less to rediscover: when work uncovers something costly to find again and likely to recur, plumb offers to record it where the next run finds it: a repeated procedure as a skill, a standing fact or command as a line in the agent instruction file the repo already uses, never a second one, and fixes such a line in the diff that makes it untrue.
+- Eval case `bf-medium-agent-file` (tag `memory`) and graders for readable reports (tag `readable`), commit bodies, pull request sections, test names and branch names.
+
 ## 0.13.0
 
 ### Added
