@@ -13,4 +13,5 @@ jobs:
       - run: python3 scripts/build_codex.py --check
       - run: python3 scripts/test_check_commit.py
       - run: python3 scripts/test_session_start.py
+      - run: python3 scripts/test_charter_gate.py
       - run: python3 scripts/test_release.py

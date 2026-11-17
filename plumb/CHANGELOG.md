@@ -1,6 +1,14 @@
 # Changelog
 
-What changes for people using plumb. Versions follow semantic versioning; reinstall or run `/plugin marketplace update plumb-marketplace` to pick up a new one.
+What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
+
+## Unreleased
+
+### Added
+- The plumb charter is much harder to skip. Each new request gets a one-line reminder to load plumb, and the first edit, commit or push in a session where the charter isn't loaded is held once with a note to load it; repeating the call lets it through, so work that isn't code goes on. On Copilot CLI these two do nothing, since it drops the reminder and gives the hook no transcript.
+
+### Fixed
+- The install notes give the full update steps: refreshing the marketplace alone left the old version installed.
 
 ## 0.14.1
 
