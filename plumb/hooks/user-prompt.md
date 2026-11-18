@@ -1,1 +1,1 @@
-plumb: if this request touches code, load the plumb skill for each phase it names before acting, and the plumb charter if it isn't loaded yet. Write every reply and artifact in a neutral technical voice: "Added the test", never "I added".
+plumb: if this request touches code, load the plumb skill for each phase it names before acting, and the plumb charter if it isn't loaded yet.

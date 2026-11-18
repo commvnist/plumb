@@ -5,7 +5,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ## Unreleased
 
 ### Changed
-- Everything plumb writes, its reports included, is in a neutral technical voice: no "I", "we" or other first person, and nothing that credits, implies or mentions AI authorship or use. Charter rule 20 is now "Write in a neutral technical voice". The per-request reminder repeats it, since reports kept slipping into "I" with the rule alone.
+- Everything plumb commits or posts (code comments, commits, pull requests, review comments) is in a neutral technical voice: no "I", "we" or other first person, and nothing that credits, implies or mentions AI authorship or use. Charter rule 20 is now "Write in a neutral technical voice". Its replies to you in the session are not filtered.
 - Nothing outside the diff changes without a yes: a shared or live system (such as a database a config file points at), or the operator's uncommitted work.
 - A bug that won't reproduce gets evidence, not a fix, and an intermittent one is made to fail every time by forcing its cause before it is fixed.
 - The report's Suggestions line asks what a principal engineer sharing the charter would still insist on, so material risks outside the diff are offered rather than left unsaid.

@@ -60,10 +60,6 @@ NEUTRAL = llm("""
     (no co-author or generated-with line, no mention of an assistant, model or AI tool writing or helping). The
     agent's own messages to the user are not judged.""")
 
-VOICE = llm("""
-    Pass if the final reply is written in a neutral technical voice: no first person (I, me, my, we, us, our),
-    as in "Added the test" rather than "I added the test". Quoted code, commands and output don't count.""")
-
 CASES = {
     # ---------------- brownfield, small ----------------
     "bf-small-debug": dict(
@@ -988,7 +984,6 @@ git add -A && git commit -qm "feat: list the names in a cart"
             "forced": {"type": "tool_used", "tool": "Bash", "input_match": r"PYTHONHASHSEED", "min": 1},
             "fixed-in-code": regex_file("shop/cart.py", r"return list\(\{", "not_contains"),
             "test-kept": regex_file("tests/test_cart.py", r'\["mug", "pen"\]'),
-            "voice": VOICE,
             "cause": llm("""
                 Pass only if the reply names the cause: names() builds a set, and a set of strings iterates in an
                 order that depends on per-process hash randomisation, so the order changes between runs. It backs
@@ -1009,7 +1004,6 @@ git add -A && git commit -qm "feat: list the names in a cart"
                 a payment, or recording who cancelled. Fail if there are no suggestions, if they are only style,
                 naming or more tests of the same code, or if such a change was made in the diff without being
                 asked for."""),
-            "voice": VOICE,
             "in-scope": llm("""
                 Pass if the change only adds the cancel handler (with its ownership check, status check, event and
                 tests) and leaves invoices, payments and the schema unchanged."""),
