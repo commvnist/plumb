@@ -7,7 +7,7 @@ description: Finds the root cause of a bug from evidence and fixes it at its ori
 
 ## Steps
 
-1. **Reproduce** the exact error.
+1. **Reproduce** the exact error; an intermittent one by forcing its cause. What won't reproduce gets evidence, not a fix.
 2. **Trace** backward from the symptom; test each candidate cause.
 3. **Name the cause** in one sentence.
 4. **Fix at the origin** with the smallest diff, never a suppression.

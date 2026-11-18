@@ -19,7 +19,7 @@
     "17": "The test floor",
     "18": "Never write tests that break on harmless changes or pass on real bugs",
     "19": "Failures must be findable",
-    "20": "Write as the operator",
+    "20": "Write in a neutral technical voice",
     "21": "Leave the next run less to rediscover"
   },
   "steps": {
