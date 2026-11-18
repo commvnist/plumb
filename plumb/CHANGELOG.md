@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.16.0
 
 ### Changed
 - Everything plumb commits or posts (code comments, commits, pull requests, review comments) is in a neutral technical voice: no "I", "we" or other first person, and nothing that credits, implies or mentions AI authorship or use. Charter rule 20 is now "Write in a neutral technical voice". Its replies to you in the session are not filtered.
