@@ -1,6 +1,6 @@
 ---
 name: bf-medium-reviewed
-tags: [brownfield, medium, build, review]
+tags: [brownfield, medium, build, review, agents]
 runs: 1
 max_turns: 60
 timeout_seconds: 1200

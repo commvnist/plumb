@@ -4,7 +4,7 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 
 ## How a rule is written
 
-- **A principle and its reason, not a patch.** Each rule states the general judgement an agent should make and why, so it covers cases nobody listed. "Judge the cost of reversing a choice by what will come to depend on it" is a principle. "Write an ADR when choosing SQLite" is a patch. *A patch fixes one case and teaches the model to look for lists. A principle fixes the class.*
+- **A principle, not a patch.** Each rule states the general judgement an agent should make, so it covers cases nobody listed. Its reason goes in the commit, changelog or ADR that adds it, and into the rule itself only when an eval shows the reason changes what agents do: every word is loaded in every session. "Judge the cost of reversing a choice by what will come to depend on it" is a principle. "Write an ADR when choosing SQLite" is a patch. *A patch fixes one case and teaches the model to look for lists. A principle fixes the class.*
 - **Examples illustrate; they never define.** A parenthetical example ("such as a renamed column") helps the reader see the principle. Don't make it the trigger. If removing the example would change what the rule requires, the rule is too narrow.
 - **No named technologies, products or one-off scenarios** in a rule, unless the rule is about that thing (for example, the Conventional Commits default).
 - **Say it once.** A rule lives in one place, usually the charter. Other skills point to it by name or number rather than restating it, and `scripts/check_refs.py` keeps those pointers honest.
@@ -12,7 +12,7 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 
 ## How a change lands
 
-- A change to skill text comes with evidence: an eval case that shows the failure it fixes (`plumb/evals/`), or an existing case that already covers it.
+- A change to skill text comes with evidence: an eval case that fails without the text and passes with it (`plumb/evals/`). Text and its case live and die together: a clause whose case passes without it goes, and so does a case that passes as often without plumb as with it, since it tests the model rather than plumb.
 - After changing an agent, `plumb/.claude-plugin/plugin.json` or the marketplace, run `python3 scripts/build_codex.py` to regenerate the Codex files; CI fails while they're out of date.
 - Run `python3 scripts/check_refs.py`, and `python3 scripts/test_check_commit.py`, `python3 scripts/test_session_start.py` and `python3 scripts/test_charter_gate.py` after changing a hook. A hook's output reaches the agent only in the shape each tool reads, so check both shapes. If you renumbered a rule or step, re-read every reference to it, then run it with `--update`.
 - Run the evals (see `plumb/evals/README.md`) and compare the score with the last run. Expect about ±0.1 between runs.
