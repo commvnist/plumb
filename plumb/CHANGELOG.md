@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.18.2
 
 ### Fixed
 - The commit check no longer tells the agent to amend the operator's own recent commit when the agent's commit failed: it now checks that the commit is the one this command made.
