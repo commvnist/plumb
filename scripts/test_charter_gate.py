@@ -17,8 +17,8 @@ def charter_opening():
     return next(line for line in lines if line.strip())
 
 
-def run(tool, tool_input, transcript_lines):
-    with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as t:
+def run(tool, tool_input, transcript_lines, prefix=None):
+    with tempfile.NamedTemporaryFile("w", prefix=prefix, suffix=".jsonl", delete=False) as t:
         for line in transcript_lines:
             t.write(json.dumps({"message": {"content": [line]}}) + "\n")
     try:
@@ -58,6 +58,11 @@ class CharterGate(unittest.TestCase):
         first = run("Write", {"file_path": "notes.md"}, ["write notes"])
         refusal = {"type": "tool_result", "is_error": True, "content": first["permissionDecisionReason"]}
         self.assertFalse(held("Write", {"file_path": "notes.md"}, ["write notes", refusal]))
+
+    def test_reads_a_transcript_path_that_json_escapes(self):
+        # A Windows path's backslashes arrive escaped in the hook's JSON input.
+        decision = run("Edit", {"file_path": "a.py"}, ["fix the bug"], prefix="C:\\Users\\dev\\")
+        self.assertTrue(decision and HELD in decision["permissionDecisionReason"])
 
     def test_lets_the_call_through_without_a_transcript(self):
         # Copilot CLI gives no transcript here, and a failing hook would refuse the call.

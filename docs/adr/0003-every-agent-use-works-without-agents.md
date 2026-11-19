@@ -27,3 +27,7 @@ Requiring agents would shut out the smallest budgets plumb is meant to fit. Drop
 - No rule in the charter may depend on an agent existing; a new agent needs a stated fallback.
 - With agents off, a whole-repository audit runs in one context and costs more of it; very large repositories may need the operator to name areas.
 - Eval cases `bf-large-audit-off` (no agent started) and `bf-medium-reviewed-off` (an explicit request overriding the setting, named in the reply) check both paths.
+
+## Update, 2026-11-19
+
+Two details above no longer match the skills since the 0.11.0 trim, though the decision stands. The report has no Unverified line: what nothing exercised goes under Verified as "unchecked", and plumb-auto with agents off re-reads the request, then the diff, as a stranger's. "plumb's Authority" is now the charter's closing precedence line.

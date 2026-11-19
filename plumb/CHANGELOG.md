@@ -4,8 +4,14 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ## Unreleased
 
+### Fixed
+- The commit check finds a commit made in another repository (`git -C` or a `cd` first), flags a commit that skipped the project's hooks (`--no-verify`), and holds pull request and issue text posted with `gh` to the same voice as a commit.
+- The charter gate reads a transcript path with escaped backslashes (Windows), and also watches `apply_patch`, so Codex edits are held like Claude Code's.
+
 ### Changed
 - Removed six passages evals showed change nothing, each ablated alone at three runs: plumb-test's "Reject on sight" list and its "seen to fail on its break" (rule 16 says both), plumb-ship's list of pull request sections (the why, the risk and the way back, and where to look first stay), and three reasons inside rules (plumb-ship's "since a summary leaves the operator to write it", rule 6's "mixed styles cost more than a weak one", rule 11's "so the code can be debugged from its output").
+- The README says what plumb's rules can't stop and which settings can (permission deny lists, the attribution setting), that Codex agents must be copied again after each update, and that a `plumb agents:` line can live in a personal instruction file.
+- Four decisions that were only in project notes are now records: no "Try it" line in reports, one principal-engineer lens for suggestions, artifacts in the operator's voice, and skill text living and dying with its eval.
 
 ## 0.18.0
 

@@ -30,6 +30,8 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb-reviewer` | auto, or on request | Fresh eyes: never sees the author's reasoning |
 | `plumb-auditor` | audit | One per area, run in parallel |
 
+All three are told to change nothing, and Claude Code gives them no edit tools, but each can run shell commands (to run checks and read history), so "read-only" is an instruction for the shell.
+
 ## Flow
 
 ```
@@ -39,6 +41,17 @@ plan → build → (test · debug · refactor as needed) → review → ship
 
 Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
 
+A report for a small change reads like this:
+
+- **Done:** fix(pricing): accept thousands separators in typed prices (uncommitted)
+- **Why:** `Decimal("1,200.50")` raises; `parse_price` passed the text to `Decimal` with the comma still in it (shop/pricing.py:6).
+- **Decided:** strip every comma rather than check group positions, over a stricter parse that rejects "1,2,3": the smaller change covers the reported input.
+- **Verified:** `python3 -m unittest` → 5 tests OK; the new test failed on the old code with the same error.
+- **Waiting on:** a yes to commit.
+- **Suggestions:** 1. "1,50" (a European decimal comma) now parses as 150; if those customers exist, reject a comma not followed by three digits.
+
+Read Decided and Suggestions first: they are where you agree, overrule, or pick what comes next, by number.
+
 Every change's report has a `Decided` line for the choices a reviewer could have made differently, with the reason for each. Decisions that are expensive to reverse are kept as decision records (Nygard ADRs in `docs/adr/` unless the project has its own format). Commits follow Conventional Commits, and commits and pull requests carry what the diff can't show, for a reviewer deciding whether to merge (see plumb-ship).
 
 ## What surprises people
@@ -46,7 +59,7 @@ Every change's report has a `Decided` line for the choices a reviewer could have
 Each of these is on purpose:
 
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
-- **It stops after each diff.** A multi-step plan waits for you to commit each step (or tell it to go on), so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
+- **It stops after each diff.** A multi-step plan waits for you after each step: commit it yourself or tell it to, then say to go on, so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
 - **Nothing it writes says an AI wrote it.** Code, comments, commits and pull requests are written in a neutral technical voice, never "I" or "we", never mention AI help, carry no co-author or generated-by lines, and are committed under your own git identity.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
@@ -75,6 +88,8 @@ What each role needs, to help you spend where it counts:
 - **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one.
 
 Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
+
+A model choice that is yours rather than the project's (your budget, your subscription) can go in your own instruction file instead of the shared one: in Claude Code, `CLAUDE.local.md` in the project or `~/.claude/CLAUDE.md`. Plumb reads the line wherever your tool loads it.
 
 To run without subagents, because your budget or tool has none, write `- plumb agents: off`. Plumb then does each agent's work in the session, except when you ask for an agent yourself: it then starts one and says that it did despite the setting.
 
