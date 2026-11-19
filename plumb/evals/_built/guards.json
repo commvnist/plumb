@@ -17,5 +17,12 @@
    "holding only files the change wrote, staged by name",
    "staged-by-name"
   ]
+ ],
+ "auto-commits": [
+  [
+   "plumb-auto",
+   "the instruction to commit each diff",
+   "per-handler"
+  ]
  ]
 }

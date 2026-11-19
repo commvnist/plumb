@@ -266,11 +266,6 @@
    "plumb-auto",
    "**Assumed:**",
    "assumed"
-  ],
-  [
-   "plumb",
-   "marked uncommitted if it is",
-   "commits"
   ]
  ],
  "bf-medium-auto-stop": [
