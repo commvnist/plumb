@@ -2,6 +2,13 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- The report's Decided line puts the choice that costs most to undo first, so the one worth an operator's challenge isn't read last.
+- A commit holds only files the change wrote, staged by name. Without it, 6 of 18 runs of a small refactor committed build output or rewrote a commit to take it out; with it, none.
+- A commit body gives the evidence the project's checks don't hold, in place of "how it was verified", which drew a line repeating that the suite passed (13 of 18 bodies on main, none with this).
+
 ## 0.18.3
 
 ### Changed

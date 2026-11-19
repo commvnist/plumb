@@ -1,0 +1,21 @@
+{
+ "edit-title": [
+  [
+   "plumb",
+   "costliest to undo first",
+   "costliest-first"
+  ]
+ ],
+ "inline-commit": [
+  [
+   "plumb-ship",
+   "the evidence the project's checks don't hold",
+   "no-suite-echo"
+  ],
+  [
+   "plumb-ship",
+   "holding only files the change wrote, staged by name",
+   "staged-by-name"
+  ]
+ ]
+}

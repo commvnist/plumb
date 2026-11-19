@@ -10,8 +10,9 @@ title of every numbered rule and step is pinned in scripts/refs.lock. When a tit
 changes, the check fails until you have re-read every reference to it and run with --update.
 
 Each eval case names the skill text it is evidence for (plumb/evals/_fixtures/guards.json, written by
-write_cases.py), optionally with the grader that measures it. When that text is gone, the check fails
-until the case is changed or removed with it.
+write_cases.py), optionally with the grader that measures it. The cases that grade what a session built
+name theirs by hand in plumb/evals/_built/guards.json. When that text is gone, the check fails until the
+case is changed or removed with it.
 
 Every numbered rule and step that no case guards is listed in scripts/unguarded.txt, so a new line
 without a case is seen in review: the check fails until the list matches, which --update rewrites.
@@ -28,6 +29,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 PLUGIN = os.path.join(ROOT, "plumb")
 LOCK = os.path.join(ROOT, "scripts", "refs.lock")
 GUARDS = os.path.join(PLUGIN, "evals", "_fixtures", "guards.json")
+BUILT_GUARDS = os.path.join(PLUGIN, "evals", "_built", "guards.json")
 UNGUARDED = os.path.join(ROOT, "scripts", "unguarded.txt")
 NUMBERED = re.compile(r"^(\d+)\. \*\*(.+?)\*\*")
 DASH = r"[–-]"
@@ -101,6 +103,7 @@ def main(update):
                     errors.append(f"{where}: {m.group(1)} has no section \"{m.group(2)}\"")
 
     guards = json.load(open(GUARDS))
+    guards.update({f"_built/{case}": entries for case, entries in json.load(open(BUILT_GUARDS)).items()})
     for case, entries in guards.items():
         for name, phrase, *_ in entries:
             if phrase not in texts.get(name, ""):
