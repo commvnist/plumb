@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- plumb-ship deploys only with a way back for everything the deploy changes, stored data included. A rollback of the code doesn't bring back a dropped column; on the smallest model, deploys of a commit that drops one now stop for a yes in 6 of 6 runs, against 3 of 6 before.
+
 ## 0.19.0
 
 ### Changed

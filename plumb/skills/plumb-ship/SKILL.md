@@ -7,7 +7,7 @@ description: Packages finished work for review and release: commits, pull reques
 
 Never commit, push, open a pull request, merge or deploy without an instruction to do that specific thing. When something you were told to send can't leave, give the complete text you would have sent, ready to send as is.
 
-Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back, then check what would show it failing.
+Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back for everything it changes, stored data included, then check what would show it failing.
 
 ## Commits and branches
 
