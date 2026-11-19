@@ -2,6 +2,13 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Fixed
+- The commit check no longer tells the agent to amend the operator's own recent commit when the agent's commit failed: it now checks that the commit is the one this command made.
+- The commit check flags every way of skipping the project's hooks (`-n`, `-nm`, `core.hooksPath`), and checks text posted by `gh pr review`, `gh pr merge --body`, `--body-file` and `gh api` as well as first person opening a later paragraph. `--assignee @me` and a `(us)` scope are no longer flagged.
+- A change to the skills, agents or hooks releases at least a patch whatever its commit type, and a release is built only from the commit its checks passed on.
+
 ## 0.18.1
 
 ### Fixed

@@ -1,8 +1,9 @@
 """Works out plumb's next release from the commits since the last tag, and writes it into the files.
 
 The bump comes from each commit's Conventional Commits subject: a `!` or a BREAKING CHANGE
-footer is major, feat is minor, fix and perf are patch, anything else releases nothing. A
-`release:major|minor|patch|none` label on the commit's pull request overrides its subject.
+footer is major, feat is minor, fix and perf are patch. Any other commit that changes text the
+plugin ships (skills, agents, hooks) is patch, since users install from main; the rest release
+nothing. A `release:major|minor|patch|none` label on the commit's pull request overrides both.
 The largest bump across the commits wins. When the version in the files has no tag yet (it was
 bumped by hand), that version is released as it is.
 
@@ -26,9 +27,10 @@ SUBJECT = re.compile(r"^(\w+)(\([^)]*\))?(!)?: ")
 BREAKING = re.compile(r"^BREAKING[ -]CHANGE: ", re.M)
 TYPE_BUMPS = {"feat": "minor", "fix": "patch", "perf": "patch"}
 ORDER = [None, "patch", "minor", "major"]
+SHIPPED = ("plumb/skills/", "plumb/agents/", "plumb/hooks/", "plumb/codex/")
 
 
-def bump_for(subject, body, labels):
+def bump_for(subject, body, labels, files=()):
     """The bump one commit asks for: major, minor, patch or None."""
     for label in labels:
         if label.startswith("release:"):
@@ -37,11 +39,12 @@ def bump_for(subject, body, labels):
                 sys.exit(f"unknown label {label!r}; use release:major, minor, patch or none")
             return None if bump == "none" else bump
     match = SUBJECT.match(subject)
-    if not match:
-        return None
-    if match.group(3) or BREAKING.search(body):
+    if match and (match.group(3) or BREAKING.search(body)):
         return "major"
-    return TYPE_BUMPS.get(match.group(1))
+    bump = TYPE_BUMPS.get(match.group(1)) if match else None
+    if not bump and any(f.startswith(SHIPPED) for f in files):
+        return "patch"
+    return bump
 
 
 def next_version(version, bump):
@@ -95,7 +98,8 @@ def main(notes_path):
     last_tag = git("describe", "--tags", "--abbrev=0", "--match", "v*").strip()
     log = git("log", "--format=%H%x00%s%x00%b%x1e", f"{last_tag}..HEAD")
     commits = [entry.strip("\n").split("\0") for entry in log.split("\x1e") if entry.strip()]
-    bumps = [(subject, bump_for(subject, body, pr_labels(sha))) for sha, subject, body in commits]
+    bumps = [(subject, bump_for(subject, body, pr_labels(sha), git("show", "--name-only", "--format=", sha).split()))
+             for sha, subject, body in commits]
     released = [subject for subject, bump in bumps if bump]
 
     if git("tag", "--list", f"v{current}").strip():

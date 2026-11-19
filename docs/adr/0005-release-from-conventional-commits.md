@@ -17,7 +17,7 @@ Options considered:
 
 ## Decision
 
-Bump on each merge. `scripts/release.py` reads the commits since the last tag: a `!` or a `BREAKING CHANGE:` footer is major, `feat` minor, `fix` and `perf` patch, any other type releases nothing; a `release:major|minor|patch|none` label on the commit's pull request overrides its subject, and the largest bump wins. Semantic versioning's rule is applied as written below 1.0 too, so the first breaking change releases 1.0.0. The changelog stays hand-written: the `## Unreleased` section becomes the version's section and the release notes, and commit subjects are listed only when there is none. A version already in the files without a tag is released as it is, which releases v0.6.0 and lets a failed run, or a bump made by hand, finish on the next merge.
+Bump on each merge. `scripts/release.py` reads the commits since the last tag: a `!` or a `BREAKING CHANGE:` footer is major, `feat` minor, `fix` and `perf` patch, any other type patch when it changes shipped text (skills, agents, hooks; users install from main) and nothing otherwise; a `release:major|minor|patch|none` label on the commit's pull request overrides its subject, and the largest bump wins. Semantic versioning's rule is applied as written below 1.0 too, so the first breaking change releases 1.0.0. The changelog stays hand-written: the `## Unreleased` section becomes the version's section and the release notes, and commit subjects are listed only when there is none. A version already in the files without a tag is released as it is, which releases v0.6.0 and lets a failed run, or a bump made by hand, finish on the next merge.
 
 ## Consequences
 
@@ -25,3 +25,7 @@ Bump on each merge. `scripts/release.py` reads the commits since the last tag: a
 - The workflow pushes a `chore(release)` commit to main with its own token, which needs main to accept that push; branch protection that requires pull requests would block it.
 - The cleaned zip is attached by calling its workflow from the release workflow, since the release event from the workflow's token doesn't trigger it. A release published by hand still triggers it directly.
 - A pull request whose title has the wrong type releases the wrong bump; the label is the fix before merging.
+
+## Update, 2026-11-19
+
+A `refactor:` that trimmed skill text released nothing, so users on a tagged version missed it until the next fix released. Any commit that changes shipped text now releases at least a patch. The release job also builds only the commit its checks passed on, and stands down when main has moved past it, so two quick merges can't publish a commit the checks never saw.
