@@ -45,8 +45,8 @@
       "1": "Reproduce",
       "2": "Trace",
       "3": "Name the cause",
-      "4": "Fix at the origin",
-      "5": "Lock it",
+      "4": "Lock it",
+      "5": "Fix at the origin",
       "6": "Clean up",
       "7": "Report"
     },
