@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.18.1
 
 ### Fixed
 - The commit check finds a commit made in another repository (`git -C` or a `cd` first), flags a commit that skipped the project's hooks (`--no-verify`), and holds pull request and issue text posted with `gh` to the same voice as a commit.
