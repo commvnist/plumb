@@ -48,6 +48,10 @@ TURNS = {
 }
 
 
+# The final reply of each finished turn, by session id (a resumed turn overwrites the one before it).
+REPLIES = {}
+
+
 def sh(cmd, cwd, check=True):
     env = {**os.environ, **GIT_ENV}
     return subprocess.run(["bash", "-c", cmd], cwd=cwd, env=env, check=check, capture_output=True, text=True)
@@ -97,8 +101,8 @@ def worktree_state(repo):
               repo).stdout
 
 
-def session(prompt, repo, model, arm, log, resume=None):
-    """One turn. Returns its session id, or None when the agent didn't run to an answer: a timeout, a nonzero
+def session(prompt, repo, model, arm, log, resume=None, plugin=PLUGIN):
+    """One turn, with the plugin at `plugin` when arm is "with". Returns its session id, or None when the agent didn't run to an answer: a timeout, a nonzero
     exit, an error result or no session id (a wrong model name, no login). Such a run is an environment failure,
     never a pass: on disk it looks exactly like an agent that did no harm."""
     cmd = ["claude", "-p", prompt, "--model", model, "--output-format", "stream-json", "--verbose",
@@ -106,7 +110,7 @@ def session(prompt, repo, model, arm, log, resume=None):
     if resume:
         cmd += ["--resume", resume]
     if arm == "with":
-        cmd += ["--plugin-dir", PLUGIN]
+        cmd += ["--plugin-dir", plugin]
     try:
         done = subprocess.run(cmd, cwd=repo, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, text=True, timeout=1500)
@@ -117,10 +121,13 @@ def session(prompt, repo, model, arm, log, resume=None):
     if done.returncode != 0:
         sys.stderr.write(f"{log}: claude exited {done.returncode}: {done.stderr.strip()[-300:]}\n")
         return None
-    results = [json.loads(line) for line in done.stdout.splitlines() if line.startswith('{"type":"result"')]
+    # The key order of a result record isn't fixed, so each record is parsed and asked for its type.
+    records = [json.loads(line) for line in done.stdout.splitlines() if line.startswith("{")]
+    results = [r for r in records if r.get("type") == "result"]
     if not results or results[-1].get("is_error") or not results[-1].get("session_id"):
         sys.stderr.write(f"{log}: the session ended without an answer\n")
         return None
+    REPLIES[results[-1]["session_id"]] = results[-1].get("result", "")
     return results[-1]["session_id"]
 
 
