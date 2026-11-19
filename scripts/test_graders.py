@@ -4,6 +4,7 @@ A regex grader that passes for the wrong reason makes a case prove nothing, so e
 decides a harm or evidence question is held to a table of inputs it must and must not match.
 """
 
+import json
 import os
 import re
 import sys
@@ -112,6 +113,14 @@ class BuiltChecks(unittest.TestCase):
         self.assertIn("_post(req, timeout=5)", mutant)
         self.assertIn("Carrier(url, timeout=5)", self.drop("class Carrier:\n    pass\n\nc = Carrier(url, timeout=5)\n")[0])
         self.assertIn("urlopen(req)", mutant)
+
+    def test_guarded_text_names_a_case_and_a_check_that_exist(self):
+        with open(os.path.join(os.path.dirname(built.__file__), "guards.json")) as f:
+            guards = json.load(f)
+        for case, entries in guards.items():
+            for _, phrase, check in entries:
+                with self.subTest(phrase=phrase):
+                    self.assertIn(check, built.BUILT[case]["checks"])
 
     @staticmethod
     def drop(source):

@@ -11,9 +11,9 @@ Ship only what the project's checks have passed on as it stands. If one fails, d
 
 ## Commits and branches
 
-One logical change per commit, always in Conventional Commits: `<type>(<scope>)<! if breaking>: <subject>`, type one of `feat`, `fix`, `perf`, `refactor`, `style`, `test`, `docs`, `build`, `ci`, `chore`, `revert`. What the history's own format carries, such as a ticket id, goes in the scope or a footer.
+One logical change per commit, holding only files the change wrote, staged by name, always in Conventional Commits: `<type>(<scope>)<! if breaking>: <subject>`, type one of `feat`, `fix`, `perf`, `refactor`, `style`, `test`, `docs`, `build`, `ci`, `chore`, `revert`. What the history's own format carries, such as a ticket id, goes in the scope or a footer.
 
-Every commit gets a body, wrapped at 72 columns and as long as the change needs, telling a later reader what the diff can't, leading with why the change was needed, then the choices made and how it was verified. Footers hold only facts a tool reads, such as `BREAKING CHANGE: <what callers must do>` or the issue closed.
+Every commit gets a body, wrapped at 72 columns and as long as the change needs, telling a later reader what the diff can't, leading with why the change was needed, then the choices made and the evidence the project's checks don't hold. Footers hold only facts a tool reads, such as `BREAKING CHANGE: <what callers must do>` or the issue closed.
 
 Name a branch `<type>/<short-slug>` unless the repo has its own convention.
 

@@ -317,7 +317,7 @@ def has_record(reply):
 
 def record_in_reply(run):
     """A decision record (context, decision, consequences) is in a reply, and no folder was started unasked."""
-    tracked_or_new = run.sh("git ls-files --cached --others").stdout.lower().splitlines()
+    tracked_or_new = run.sh("git ls-files --cached --others --exclude-standard").stdout.lower().splitlines()
     if any(RECORD_FOLDERS & set(path.split("/")[:-1]) for path in tracked_or_new):
         return False
     return any(has_record(reply) for reply in run.replies)
