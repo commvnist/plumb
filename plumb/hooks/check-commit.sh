@@ -32,7 +32,9 @@ dir=$(printf '%s' "$input" | grep -Eo '"cwd" *: *"([^"\\]|\\.)*"' | head -n 1 | 
 # whether it is written inline, read from a file, or sent through the API.
 if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
   posted=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//')
-  for file in $(printf '%s' "$posted" | sed -n 's/.*\(--body-file\|--input\|-F\)[[:space:]=]*\([^[:space:]";&|]*\).*/\2/p'); do
+  # A path may be quoted, and gh api -F reads a file named after =@.
+  for file in $(printf '%s' "$posted" | grep -Eo -- "(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?[^[:space:]\"'\\\\;&|]+" \
+    | sed -E "s/^(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?//; s/^[^=@]*=@//"); do
     case $file in /*) ;; *) file="$dir/$file" ;; esac
     [ -r "$file" ] && posted="$posted\\n$(sed 's/$/\\n/' "$file" | tr -d '\n')"
   done
@@ -67,14 +69,20 @@ case $entry in
 esac
 made=$(printf '%s' "$entry" | sed 's/^[^{]*{\([0-9]*\)}.*/\1/')
 [ $(( $(date +%s) - made )) -le 120 ] || exit 0
-# A recent commit may be the operator's, made just before this command failed. Git's success line
-# ("[main 1a2b3c4] subject") names the commit made; with no such line, a failure message means none was.
-response=$(printf '%s' "$input" | sed -n 's/.*"tool_response" *: *//p')
-made_sha=$(printf '%s' "$response" | grep -Eo '\[[^]"]* [0-9a-f]{7,40}\]' | head -n 1 | sed 's/.* \([0-9a-f]*\)\]$/\1/')
-if [ -n "$made_sha" ]; then
-  case $(git -C "$dir" rev-parse HEAD) in "$made_sha"*) ;; *) exit 0 ;; esac
-elif printf '%s' "$response" | grep -Eiq 'nothing to commit|nothing added to commit|no changes added|(^|[^[:alnum:]])(error|fatal):'; then
-  exit 0
+# A recent commit may be the operator's, made just before this command failed or made none. Where the tool
+# reports the command's output (Copilot CLI doesn't), git's success line ("[main 1a2b3c4] subject") must name
+# HEAD; a quiet commit prints none, so there only a failure message rules it out.
+if printf '%s' "$input" | grep -Eq '"tool_response" *:'; then
+  response=$(printf '%s' "$input" | sed -n 's/.*"tool_response" *: *//p')
+  head_sha=$(git -C "$dir" rev-parse HEAD)
+  mine=""
+  for sha in $(printf '%s' "$response" | grep -Eo '\[[^]"]* [0-9a-f]{7,40}\]' | sed 's/.* \([0-9a-f]*\)\]$/\1/'); do
+    case $head_sha in "$sha"*) mine=1 ;; esac
+  done
+  if [ -z "$mine" ]; then
+    printf '%s' "$command" | grep -Eq '[[:space:]](-q|--quiet|-[a-zA-Z]*q[a-zA-Z]*)([[:space:]]|\\|"|$)' || exit 0
+    printf '%s' "$response" | grep -Eiq 'nothing to commit|nothing added to commit|no changes added|failed|(^|[^[:alnum:]])(error|fatal):' && exit 0
+  fi
 fi
 
 subject=$(git -C "$dir" log -1 --format=%s)
@@ -93,11 +101,16 @@ fi
 if [ -z "$(printf '%s' "$body" | tr -d '[:space:]')" ]; then
   note="$note It has no body; add one saying why the change was needed, as plumb-ship says, unless the operator or the project's rules asked for another format."
 fi
-# --no-verify, -n alone or among commit's argument-free short flags, or hooks pointed elsewhere.
-commit_args=$(printf '%s' "$command" | sed 's/.*[[:space:]]commit\([[:space:]]\)/\1/; s/[;&|].*//')
-if printf '%s' "$commit_args" | grep -Eq '[[:space:]](--no-verify|-[aqsvem]*n[aqsvem]*)([[:space:]]|\\|"|$)' \
-  || printf '%s' "$command" | grep -Eq -- '-c[[:space:]]+core\.hooks[Pp]ath='; then
-  note="$note It skipped the project's commit hooks (--no-verify, -n or core.hooksPath); run them, unless the operator asked to skip them."
+# --no-verify, -n alone or among commit's argument-free short flags, or hooks pointed at nothing. Quoted
+# text (a message, a heredoc) is dropped first, so a message saying "commit" or "-n" doesn't count.
+Q=$(printf '\001')
+commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
+  | sed "s/\\\\\"/$Q/g; s/$Q[^$Q]*$Q//g; s/'[^']*'//g; s/\\\\n/;/g" | tr ';&|' '\n\n\n' \
+  | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
+  | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
+if printf '%s' "$commit_args" | grep -Eq '[[:space:]](--no-verify|-[aqsve]*n[aqsve]*m?)([[:space:]]|$)' \
+  || printf '%s' "$command" | grep -Eq -- "-c[[:space:]]*(\\\\\"|')?core\.hooks[Pp]ath=(/dev/null|\\\\\"|'|[[:space:]]|$)"; then
+  note="$note It skipped the project's commit hooks (--no-verify, -n or core.hooksPath set to nothing); run them, unless the operator asked to skip them."
 fi
 [ -n "$note" ] || exit 0
 
