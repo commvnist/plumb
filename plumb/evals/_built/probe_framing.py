@@ -35,7 +35,7 @@ def request(method, path, body=b"", length=None):
             b"Content-Length: " + length + b"\r\nConnection: close\r\n\r\n" + body)
 
 
-server = subprocess.Popen([sys.executable, "-c", START], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+server = subprocess.Popen([sys.executable, "-B", "-c", START], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                           cwd=os.getcwd(), text=True)
 try:
     port = int(server.stdout.readline())

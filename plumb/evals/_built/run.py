@@ -6,7 +6,9 @@ fixture in a temporary git repository, runs `claude -p` in it, then uses the res
 it calls the handler against a carrier that drips or truncates its answer, sends badly framed requests to
 the new route, puts the bug back and reruns the tests, moves a boundary by one, and reads the commits the
 session left. Checks that need judgement (a report's Suggestions, a commit body) go to a judge model with
-one question each.
+one question each. A few cases build nothing and are judged on the reply alone (a plan, a review, an audit):
+they are here because `claude plugin eval` can only compare plumb with no plumb, and these compare two
+wordings of plumb, some across two turns.
 
 Each arm is a copy of the plugin, so a wording change is measured against main directly:
 
@@ -18,9 +20,12 @@ passes over the runs that could be measured; a run where the probe couldn't reac
 handler, no commit) is left out of that check and counted, never scored as a pass or a fail.
 """
 import argparse
+import ast
+import importlib.util
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -30,8 +35,10 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 EVALS = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(EVALS, "_fixtures"))
-sys.path.insert(0, os.path.join(EVALS, "_harm"))
-import run as harm  # noqa: E402
+# Both runners are files named run.py, so the other is loaded by path, under a name of its own.
+_spec = importlib.util.spec_from_file_location("harm_run", os.path.join(EVALS, "_harm", "run.py"))
+harm = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(harm)
 from write_cases import CASES as SUITE  # noqa: E402
 
 TESTS = {"orders-medium": "python3 -m unittest discover -s tests -t .", "shop-small": "python3 -m unittest",
@@ -54,7 +61,8 @@ class Run:
             return subprocess.CompletedProcess(cmd, 124, "", "timed out")
 
     def probe(self, name, *args, timeout=120):
-        out = self.sh(f"{sys.executable} -B {os.path.join(HERE, name)} {' '.join(args)}", timeout=timeout).stdout
+        cmd = shlex.join([sys.executable, "-B", os.path.join(HERE, name), *args])
+        out = self.sh(cmd, timeout=timeout).stdout
         lines = [line for line in out.splitlines() if line.startswith("{")]
         return json.loads(lines[-1]) if lines else None
 
@@ -70,11 +78,14 @@ class Run:
     def tests_pass(self, cwd=None, env=None):
         return self.sh(TESTS[self.fixture], cwd=cwd, env=env).returncode == 0
 
-    def copy(self):
-        """A scratch copy of the repository, for a check that changes the code."""
-        dest = tempfile.mkdtemp(prefix="built-copy-")
-        shutil.copytree(self.repo, os.path.join(dest, "repo"), symlinks=True)
-        return os.path.join(dest, "repo")
+    def mutated(self, path, source, env=None):
+        """Whether the suite goes red in a scratch copy of the repository with `path` holding `source`."""
+        with tempfile.TemporaryDirectory(prefix="built-copy-") as scratch:
+            copy = os.path.join(scratch, "repo")
+            shutil.copytree(self.repo, copy, symlinks=True)
+            with open(os.path.join(copy, path), "w") as f:
+                f.write(source)
+            return not self.tests_pass(cwd=copy, env=env)
 
     def commits(self):
         """Full messages of the commits the session made, oldest first."""
@@ -133,19 +144,35 @@ def carrier_transport(run):
     return all(verdicts)
 
 
+class DropTimeout(ast.NodeTransformer):
+    """Removes the timeout argument from every call that passes one by name."""
+    dropped = 0
+
+    def visit_Call(self, node):
+        self.generic_visit(node)
+        kept = [k for k in node.keywords if k.arg != "timeout"]
+        self.dropped += len(node.keywords) - len(kept)
+        node.keywords = kept
+        return node
+
+
+def unchecked_names(reply, words):
+    """Whether the report's own unchecked line, and nothing after it, names one of the words."""
+    line = re.search(r"unchecked(.*?)(?=\n\s*(?:[-*]\s+)?\*\*|\Z)", reply, re.I | re.S)
+    return bool(line and re.search(words, line.group(1)[:800], re.I))
+
+
 def carrier_timeout_held(run):
-    """With the timeout argument deleted, a test goes red or the report lists the timeout as unchecked."""
+    """With the timeout dropped from the carrier call, a test goes red or the report lists it as unchecked."""
     path = "app/handlers/shipping.py"
-    source = open(os.path.join(run.repo, path)).read()
-    mutant = re.sub(r",\s*timeout\s*=\s*[^,)]+", "", source, count=1)
-    if mutant == source:
+    drop = DropTimeout()
+    try:
+        tree = drop.visit(ast.parse(open(os.path.join(run.repo, path)).read()))
+    except (OSError, SyntaxError):
         return None
-    copy = run.copy()
-    open(os.path.join(copy, path), "w").write(mutant)
-    red = not run.tests_pass(cwd=copy)
-    shutil.rmtree(os.path.dirname(copy), ignore_errors=True)
-    owned = re.search(r"unchecked.{0,600}?(time.?out|hang|slow|deadline)", run.replies[-1], re.I | re.S)
-    return red or bool(owned)
+    if not drop.dropped or not run.tests_pass():
+        return None
+    return run.mutated(path, ast.unparse(tree)) or unchecked_names(run.replies[-1], r"time.?out|hang|slow|deadline")
 
 
 def framing(run):
@@ -171,7 +198,7 @@ def call(params):
     try:
         r = list_orders(conn, Request(7, params=params))
     except Exception as e:
-        return "raised:" + type(e).__name__
+        return "raised:" + type(e).__module__ + "." + type(e).__name__
     return [r.status, len(r.body) if isinstance(r.body, list) else -1] if isinstance(r, Response) else "other"
 print(json.dumps({"good": call({"status": "paid"}), "misspelt": call({"statu": "paid"}),
                   "unknown": call({"status": "payed"})}))
@@ -184,9 +211,12 @@ def order_filter(run):
 
 
 def filter_told_apart(run):
-    """A misspelt filter name isn't answered with the unfiltered list as if it had been applied."""
+    """A misspelt filter name is refused (a 4xx or the project's own error), not answered as if applied."""
     got = order_filter(run)
-    return got and got["misspelt"] != [200, 3]
+    if not got:
+        return None
+    seen = got["misspelt"]
+    return seen[0] >= 400 if isinstance(seen, list) else seen.startswith("raised:app.")
 
 
 def filter_refuses_unknown(run):
@@ -206,10 +236,11 @@ store.create_invoice(conn, store.create_order(conn, 7, 1500), 7, 1500, "2026-11-
 conn.commit()
 fn = [f for n, f in vars(exports).items() if inspect.isfunction(f) and f.__module__ == exports.__name__
       and not n.startswith("_") and len(inspect.signature(f).parameters) == 2][0]
-target = os.path.join(tempfile.mkdtemp(), "invoices.csv")
 names = list(inspect.signature(fn).parameters)
-fn(*((target, conn) if "conn" in names[1] or "db" in names[1] else (conn, target)))
-print(json.dumps({"mode": oct(stat.S_IMODE(os.stat(target).st_mode))}))
+with tempfile.TemporaryDirectory() as scratch:
+    target = os.path.join(scratch, "invoices.csv")
+    fn(*((target, conn) if "conn" in names[1] or "db" in names[1] else (conn, target)))
+    print(json.dumps({"mode": oct(stat.S_IMODE(os.stat(target).st_mode))}))
 '''
 
 
@@ -219,13 +250,17 @@ def export_owner_only(run):
     return got and int(got["mode"], 8) & 0o077 == 0
 
 
+NAMES = re.compile(r"    def names\(self\):\n(?:(?: {8}.*)?\n)+")
+
+
 def red_every_run(run):
-    """With the bug put back, the suite fails under every one of twenty hash seeds."""
-    copy = run.copy()
-    run.sh(f"git show {run.start}:shop/cart.py > shop/cart.py", cwd=copy)
-    red = [not run.tests_pass(cwd=copy, env={"PYTHONHASHSEED": str(seed)}) for seed in range(20)]
-    shutil.rmtree(os.path.dirname(copy), ignore_errors=True)
-    return all(red)
+    """With only the names() bug put back, the suite fails under every one of twenty hash seeds."""
+    buggy = NAMES.search(run.sh(f"git show {run.start}:shop/cart.py").stdout)
+    fixed = open(os.path.join(run.repo, "shop", "cart.py")).read()
+    if not buggy or not NAMES.search(fixed) or not run.tests_pass():
+        return None
+    source = NAMES.sub(lambda _: buggy.group(0), fixed, count=1)
+    return all(run.mutated("shop/cart.py", source, env={"PYTHONHASHSEED": str(seed)}) for seed in range(20))
 
 
 BOUND = "if not 0 <= percent <= 100:"
@@ -235,17 +270,14 @@ NEAR = ["if not 0 <= percent < 100:", "if not 0 < percent <= 100:", "if not 0 <=
 
 def near_breaks(run):
     """Each bound of apply_discount moved by one turns the suite red."""
-    path = os.path.join(run.repo, "shop", "pricing.py")
-    source = open(path).read()
+    source = open(os.path.join(run.repo, "shop", "pricing.py")).read()
     if BOUND not in source or not run.tests_pass():
         return None
-    copy = run.copy()
-    red = []
-    for mutant in NEAR:
-        open(os.path.join(copy, "shop", "pricing.py"), "w").write(source.replace(BOUND, mutant))
-        red.append(not run.tests_pass(cwd=copy))
-    shutil.rmtree(os.path.dirname(copy), ignore_errors=True)
-    return all(red)
+    return all(run.mutated("shop/pricing.py", source.replace(BOUND, mutant)) for mutant in NEAR)
+
+
+# A reflog entry that replaces a commit already made. A stash writes "reset: moving to HEAD", which doesn't.
+REWRITE = re.compile(r"^(commit \(amend\)|rebase|filter-branch)|^reset: moving to (?!HEAD$)")
 
 
 def staged_by_name(run):
@@ -253,8 +285,8 @@ def staged_by_name(run):
     if not run.commits():
         return None
     files = run.sh(f"git log --name-only --format= {run.start}..HEAD").stdout
-    rewrites = run.sh("git reflog --format=%gs | grep -cE 'commit [(]amend[)]|rebase|filter-branch'").stdout.strip()
-    return "__pycache__" not in files and ".pyc" not in files and rewrites == "0"
+    rewritten = any(REWRITE.search(entry) for entry in run.sh("git reflog --format=%gs").stdout.splitlines())
+    return "__pycache__" not in files and ".pyc" not in files and not rewritten
 
 
 def doc_committed(run):
@@ -376,7 +408,7 @@ BUILT = {
     "edit-title": dict(fixture="todo-web",
                        turns=["Add a way to delete a todo from the list page.",
                               "Let people edit a todo's title in place on the list page."],
-                       checks={"framing": framing, "record-in-reply": record_in_reply, "one-home": ONE_HOME,
+                       checks={"framing": framing, "one-home": ONE_HOME,
                                "rerunnable": RERUNNABLE, "costliest-first": COSTLIEST_FIRST, "no-repeat": NO_REPEAT}),
     "flaky-commit": dict(fixture="shop-small", scaffold=SUITE["bf-small-flaky"]["scaffold_extra"],
                          turns=[SUITE["bf-small-flaky"]["prompt"] + " Commit the fix."],
@@ -475,6 +507,11 @@ def main():
         sys.exit("the claude CLI is not on PATH; install Claude Code first")
     os.makedirs(a.out, exist_ok=True)
     arms = [(arm.split("=", 1) + [None])[:2] for arm in a.arm]
+    for name, plugin in arms:
+        if plugin is None and name != "without":
+            sys.exit(f"--arm {name}: give its plugin directory as {name}=<dir>, or use 'without'")
+        if plugin is not None and not os.path.isdir(os.path.join(plugin, ".claude-plugin")):
+            sys.exit(f"--arm {name}: {plugin!r} is not a plugin directory (no .claude-plugin in it)")
     jobs = [(c, name, plugin and os.path.abspath(plugin), a.model, a.judge, n, a.out, a.keep)
             for c in (a.case or list(BUILT)) for name, plugin in arms for n in range(1, a.runs + 1)]
     with ThreadPoolExecutor(a.j) as pool:

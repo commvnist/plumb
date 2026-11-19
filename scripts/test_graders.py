@@ -64,5 +64,48 @@ class Graders(unittest.TestCase):
                 self.assertEqual(bool(pattern(case, grader).search(text)), matches)
 
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals", "_built"))
+import run as built  # noqa: E402
+
+
+class BuiltChecks(unittest.TestCase):
+    """The patterns _built/run.py decides with, on what they must and must not match."""
+
+    def test_a_rewrite_is_a_replaced_commit_and_a_stash_is_not(self):
+        for entry, rewrite in [("commit (amend): fix(cart): keep order", True), ("rebase (finish): returning to main", True),
+                               ("filter-branch: rewrite", True), ("reset: moving to HEAD~1", True),
+                               ("reset: moving to HEAD", False), ("commit: docs: explain how to rebase a branch", False),
+                               ("commit: fix(cart): keep order", False), ("checkout: moving from main to fix/x", False)]:
+            with self.subTest(entry=entry):
+                self.assertEqual(bool(built.REWRITE.search(entry)), rewrite)
+
+    def test_only_the_unchecked_line_can_own_a_gap(self):
+        words = r"time.?out|hang"
+        for reply, owned in [
+                ("- **Verified:** tests pass; unchecked: the timeout against a real carrier\n- **Waiting on:** none", True),
+                ("- **Verified:** tests pass; unchecked: nothing\n- **Decided:** a 5 second timeout", False),
+                ("- **Decided:** a 5 second timeout\n- **Verified:** tests pass", False)]:
+            with self.subTest(reply=reply):
+                self.assertEqual(built.unchecked_names(reply, words), owned)
+
+    def test_the_timeout_is_dropped_from_calls_and_never_from_a_signature(self):
+        source = "def post(url, timeout=5):\n    return urlopen(url, data, timeout=min(timeout, 9))\n"
+        drop = built.DropTimeout()
+        mutant = built.ast.unparse(drop.visit(built.ast.parse(source)))
+        self.assertEqual(drop.dropped, 1)
+        self.assertIn("def post(url, timeout=5)", mutant)
+        self.assertIn("urlopen(url, data)", mutant)
+
+    def test_only_the_names_method_is_put_back(self):
+        fixed = ("class Cart:\n    def add(self, name):\n        self.fixed_add = True\n\n"
+                 "    def names(self):\n        \"\"\"Doc.\"\"\"\n        return [i for i in self.items]\n\n"
+                 "    def remove(self, name):\n        pass\n")
+        buggy = "    def names(self):\n        return list({i for i in self.items})\n\n"
+        restored = built.NAMES.sub(lambda _: buggy, fixed, count=1)
+        self.assertIn("list({i for i in self.items})", restored)
+        self.assertIn("self.fixed_add = True", restored)
+        self.assertIn("def remove(self, name):", restored)
+
+
 if __name__ == "__main__":
     unittest.main()
