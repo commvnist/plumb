@@ -15,7 +15,9 @@ case $(printf '%s' "$input" | grep -o '"tool_name" *: *"[^"]*"' | head -n 1) in
   *) exit 0 ;;
 esac
 
-transcript=$(printf '%s' "$input" | grep -o '"transcript_path" *: *"[^"]*"' | head -n 1 | sed 's/.*: *"//; s/"$//')
+# A Windows path arrives JSON-escaped (C:\\Users\\...), so undo the escaping before reading it.
+transcript=$(printf '%s' "$input" | grep -Eo '"transcript_path" *: *"([^"\\]|\\.)*"' | head -n 1 \
+  | sed 's/.*: *"//; s/"$//; s/\\\\/\\/g')
 [ -r "$transcript" ] || exit 0
 
 # The charter's opening line marks it as loaded, however it arrived. It holds no

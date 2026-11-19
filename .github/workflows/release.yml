@@ -7,7 +7,8 @@ on:
   push:
     branches: [main]
 
-# One release at a time, so two quick merges can't both claim the same version.
+# One release at a time. Each run checks out main as it stands when the run starts, so a second
+# quick merge builds on the first one's bump instead of claiming the same version.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -17,13 +18,19 @@ permissions:
   pull-requests: read
 
 jobs:
+  # Nothing is published that the project's own checks haven't passed on.
+  checks:
+    uses: ./.github/workflows/check-refs.yml
+
   release:
+    needs: checks
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.next.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
       - name: Work out the next version
         id: next

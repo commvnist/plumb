@@ -23,5 +23,9 @@ It is how plumb is already tuned per project (README, "Tuning it"), both tools l
 ## Consequences
 
 - Operators will write this line into their projects, so its shape is a public interface: renaming a role or changing the syntax needs a staged change.
-- The model is passed by the agent following a rule, not by a parser, so it can be missed. An eval case (`bf-medium-reviewed-model`) checks it, and every reply that started an agent names the model it ran on, so a setting that didn't take is visible.
+- The model is passed by the agent following a rule, not by a parser, so it can be missed. An eval case (`bf-medium-reviewed`, which absorbed `bf-medium-reviewed-model` in 0.16.0) checks it, and every reply that started an agent names the model it ran on, so a setting that didn't take is visible.
 - Where a tool ignores a model passed when an agent starts (reported for Codex since July 2026), the operator falls back to that tool's own settings.
+
+## Update, 2026-11-19
+
+The line is read wherever the tool loads instructions, so an operator's own file (`CLAUDE.local.md`, `~/.claude/CLAUDE.md`) can hold a choice that is about their budget rather than the project's. The README says so; the decision is unchanged.

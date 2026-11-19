@@ -3,10 +3,16 @@ name: check references
 on:
   push:
   pull_request:
+  # The release workflow runs these before it publishes.
+  workflow_call:
 
 jobs:
   check-refs:
-    runs-on: ubuntu-latest
+    # The hooks are POSIX sh and run on users' Macs as well as Linux.
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/check_refs.py
@@ -17,3 +23,21 @@ jobs:
       - run: python3 scripts/test_session_start.py
       - run: python3 scripts/test_charter_gate.py
       - run: python3 scripts/test_release.py
+
+  # A pull request that releases says what changes for users, or the release notes fall back to commit subjects.
+  changelog:
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'release:none')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          case "$TITLE" in
+            feat*|fix*|perf*|*'!:'*) ;;
+            *) exit 0 ;;
+          esac
+          if ! awk '/^## Unreleased/ { inside = 1; next } /^## / { inside = 0 } inside && /^- / { n++ } END { exit n ? 0 : 1 }' plumb/CHANGELOG.md; then
+            echo "This pull request releases ($TITLE): add what changes for users under '## Unreleased' in plumb/CHANGELOG.md."
+            exit 1
+          fi

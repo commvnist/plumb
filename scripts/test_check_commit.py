@@ -106,6 +106,36 @@ class CheckCommit(unittest.TestCase):
         git(self.repo, "commit", "-q", "--no-edit")
         self.assertFalse(run_hook(self.repo, "git commit --no-edit"))
 
+    def test_finds_a_commit_made_in_another_folder(self):
+        # The session's folder is the parent; the commit is made in a repository below it.
+        with tempfile.TemporaryDirectory() as parent:
+            repo = os.path.join(parent, "svc")
+            os.makedirs(repo)
+            git(repo, "init", "-q")
+            git(repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
+            for command in ["cd svc && git commit -m 'Add stuff'", 'git -C svc commit -m "Add stuff"']:
+                with self.subTest(command=command):
+                    self.assertTrue(run_hook(parent, command))
+
+    def test_flags_skipped_hooks(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "feat: add tax\n\nCarts need tax.")
+        self.assertIn("--no-verify", hook_output(self.repo, "git commit --no-verify -m x"))
+        self.assertEqual(hook_output(self.repo, "git commit -m x && head -n 5 log"), "")
+
+    def test_flags_pull_request_text_crediting_ai_or_in_the_first_person(self):
+        cases = [
+            ('gh pr create --title "feat: add tax" --body "Adds tax.\n\nGenerated with Claude Code"', "credits an AI tool"),
+            ('gh pr comment 4 --body "I fixed the rounding."', "first person"),
+            ('gh issue create --title "Rounding is off" --body "Steps: add 2.345"', None),
+        ]
+        for command, flag in cases:
+            with self.subTest(command=command):
+                out = hook_output(self.repo, command)
+                if flag:
+                    self.assertIn(flag, out)
+                else:
+                    self.assertEqual(out, "")
+
     def test_answers_in_the_shape_each_tool_reads(self):
         # Claude Code reads hookSpecificOutput; Copilot CLI reads only a top-level additionalContext.
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
