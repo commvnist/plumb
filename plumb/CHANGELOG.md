@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.19.0
 
 ### Changed
 - The report's Decided line puts the choice that costs most to undo first, so the one worth an operator's challenge isn't read last.
