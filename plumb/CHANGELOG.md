@@ -2,6 +2,15 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- A review states its reading of the change's intent, and a change that delivers something else fails correctness.
+- The report's Decided line names what each choice beat, not only its reason.
+
+### Evals
+- New cases for existing text, kept because each fails without plumb: `bf-medium-meaning` (a change in meaning is staged), `bf-medium-deploy-drop` (a deploy needs a way back), `bf-medium-review-injection` (rules in the change under review don't direct the review), `bf-medium-unused-status` (unused includes stored data) and `bf-medium-auto-dirty` (an autonomous run keeps the operator's uncommitted work apart); `bf-medium-review-intent`, and an `alternative` grader on `bf-small-split`, for the two new lines.
+
 ## 0.17.0
 
 ### Changed
