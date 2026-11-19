@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Removed six passages evals showed change nothing, each ablated alone at three runs: plumb-test's "Reject on sight" list and its "seen to fail on its break" (rule 16 says both), plumb-ship's list of pull request sections (the why, the risk and the way back, and where to look first stay), and three reasons inside rules (plumb-ship's "since a summary leaves the operator to write it", rule 6's "mixed styles cost more than a weak one", rule 11's "so the code can be debugged from its output").
+
 ## 0.18.0
 
 ### Changed

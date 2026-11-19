@@ -5,7 +5,7 @@ description: Packages finished work for review and release: commits, pull reques
 
 # Plumb: ship
 
-Never commit, push, open a pull request, merge or deploy without an instruction to do that specific thing. When something you were told to send can't leave, give the complete text you would have sent, ready to send as is, since a summary leaves the operator to write it.
+Never commit, push, open a pull request, merge or deploy without an instruction to do that specific thing. When something you were told to send can't leave, give the complete text you would have sent, ready to send as is.
 
 Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back, then check what would show it failing.
 
@@ -19,7 +19,7 @@ Name a branch `<type>/<short-slug>` unless the repo has its own convention.
 
 ## Pull requests
 
-Title it as a commit subject, with `!` if any commit is breaking. Fill the project's template if it has one; otherwise write for a principal engineer deciding whether to merge, under short headings and as long as the change needs, what the diff can't show them, leading with why the change exists, then such things as what changes for dependents, the choices and their costs, the risk and the way back, what was verified, where to look first, what was left out.
+Title it as a commit subject, with `!` if any commit is breaking. Fill the project's template if it has one; otherwise write for a principal engineer deciding whether to merge, under short headings and as long as the change needs, what the diff can't show them, leading with why the change exists, then the risk and the way back, and where to look first.
 
 ## Changelogs and releases
 

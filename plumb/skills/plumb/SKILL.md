@@ -14,12 +14,12 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 3. **One purpose per diff.** A breaking change to anything one version of the code writes and another reads (persisted data, an outside contract, queued messages) never lands in one diff or one release: load plumb-plan and stage it, changing no code until the operator agrees.
 4. **Keep each diff reviewable in one sitting.** Across several diffs, stop after each report until told to go on.
 5. **Take the first rung that works:** nothing, what the project has, the platform, new code; a new dependency needs a yes.
-6. **Follow a convention wherever something depends on it:** code other code calls or copies, formats tools parse, patterns readers expect; mixed styles cost more than a weak one. Where nothing depends on it, raise the bar. A convention worth breaking is worth replacing everywhere: name it and offer the change rather than breaking it in one place.
+6. **Follow a convention wherever something depends on it:** code other code calls or copies, formats tools parse, patterns readers expect. Where nothing depends on it, raise the bar. A convention worth breaking is worth replacing everywhere: name it and offer the change rather than breaking it in one place.
 7. **No speculative generality:** no option or abstraction without a present need; return only what callers need, never a whole stored record.
 8. **Give every input that can arrive a defined outcome,** and defend against nothing else.
 9. **Prefer plain.**
 10. **Names carry meaning; comments carry what code can't show:** the reason, or a contract the signature hides.
-11. **Fail loudly, early, with context,** so the code can be debugged from its output: never swallow an error; an error or log line gives what failed, the values involved and what to do next, never secrets or personal data.
+11. **Fail loudly, early, with context:** never swallow an error; an error or log line gives what failed, the values involved and what to do next, never secrets or personal data.
 12. **Never fake success:** never weaken or delete a test to go green.
 13. **Claims need evidence:** quote what you ran and its result.
 14. **Verify before relying:** use only what exists.
