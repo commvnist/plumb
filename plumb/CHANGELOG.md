@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.17.0
 
 ### Changed
 - An autonomous run's review loop ends once every Blocking finding is fixed or disputed, and the report lists the disputes under Reviewed. Before, a correct dispute could keep the loop going with no end.
