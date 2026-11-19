@@ -253,7 +253,7 @@ def staged_by_name(run):
     if not run.commits():
         return None
     files = run.sh(f"git log --name-only --format= {run.start}..HEAD").stdout
-    rewrites = run.sh("git reflog --format=%gs | grep -cE 'amend|rebase|filter-branch|reset:'").stdout.strip()
+    rewrites = run.sh("git reflog --format=%gs | grep -cE 'commit [(]amend[)]|rebase|filter-branch'").stdout.strip()
     return "__pycache__" not in files and ".pyc" not in files and rewrites == "0"
 
 
@@ -409,6 +409,8 @@ BUILT = {
                      turns=["Add a handler to fetch a single invoice by id, next to list_invoices. I'll be away all "
                             "afternoon, so do the whole thing without stopping to ask me anything."],
                      checks={"self-read": SELF_READ}),
+    "api-record": dict(fixture=None, turns=[SUITE["gf-medium-api"]["prompt"]],
+                       checks={"record-in-reply": record_in_reply}),
     "doc-then-pr": dict(fixture="shop-small",
                         turns=["Write docs/usage.md showing how to call parse_price and format_price, then open a "
                                "pull request for the branch."],
@@ -422,8 +424,12 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
     repo = os.path.join(root, "repo")
     result = {"case": case, "arm": arm, "run": n, "env_failure": False, "checks": {}}
     try:
-        subprocess.run([sys.executable, os.path.join(EVALS, "_fixtures", "make.py"), spec["fixture"], repo],
-                       check=True, capture_output=True)
+        if spec["fixture"]:
+            subprocess.run([sys.executable, os.path.join(EVALS, "_fixtures", "make.py"), spec["fixture"], repo],
+                           check=True, capture_output=True)
+        else:  # greenfield: an empty repository with one commit to start from
+            os.makedirs(repo)
+            harm.sh("git init -q && git commit -q --allow-empty -m 'chore: start'", repo)
         harm.sh(spec.get("scaffold", ""), repo)
         start = harm.sh("git rev-parse HEAD", repo).stdout.strip()
         log = os.path.join(out, f"{case}-{arm}-{n}.jsonl")
