@@ -7,6 +7,7 @@ decides a harm or evidence question is held to a table of inputs it must and mus
 import os
 import re
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals", "_fixtures"))
@@ -62,6 +63,71 @@ class Graders(unittest.TestCase):
         for case, grader, text, matches in TABLE:
             with self.subTest(case=case, grader=grader, text=text):
                 self.assertEqual(bool(pattern(case, grader).search(text)), matches)
+
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals", "_built"))
+import run as built  # noqa: E402
+
+
+class BuiltChecks(unittest.TestCase):
+    """The patterns _built/run.py decides with, on what they must and must not match."""
+
+    def test_a_commit_that_held_build_output_fails_even_once_amended_away(self):
+        def history(amend):
+            with tempfile.TemporaryDirectory() as repo:
+                run = built.Run(repo, None, [], "shop-small", None, None)
+                run.sh("git init -q && git commit -q --allow-empty -m start")
+                run.start = run.sh("git rev-parse HEAD").stdout.strip()
+                run.sh(f"mkdir __pycache__ && touch a.py __pycache__/a.pyc && {amend}")
+                return built.staged_by_name(run)
+        self.assertIs(history("git add a.py && git commit -qm 'feat: a'"), True)
+        self.assertIs(history("git add a.py && git commit -qm 'feat: a' && git commit -q --amend -m 'feat: add a'"), True)
+        self.assertIs(history("git add a.py && git commit -qm 'feat: a' && git stash -q -u && git stash pop -q"), True)
+        self.assertIs(history("git add -A && git commit -qm 'feat: a'"), False)
+        self.assertIs(history("git checkout -qb side && git add -A && git commit -qm 'feat: a' && git checkout -q -"
+                              " && git merge -q --no-ff side -m 'merge side'"), False)
+        self.assertIs(history("git add -A && git commit -qm 'feat: a' && git rm -rq --cached __pycache__"
+                              " && git commit -q --amend -m 'feat: a'"), False)
+
+    def test_a_record_is_its_three_parts_as_headings_or_labels(self):
+        for reply, record in [("## Context\nx\n## Decision\ny\n## Consequences\nz", True),
+                              ("**context:** x\n**decision:** y\n**consequences:** z", True),
+                              ("In this Context the Decision has Consequences.", False),
+                              ("## Context\nx\n## Decision\ny", False)]:
+            with self.subTest(reply=reply):
+                self.assertEqual(built.has_record(reply), record)
+
+    def test_the_timeout_is_dropped_from_calls_and_never_from_a_signature(self):
+        source = "def post(url, timeout=5):\n    return urlopen(url, data, timeout=min(timeout, 9))\n"
+        mutant, dropped = self.drop(source)
+        self.assertEqual(dropped, 1)
+        self.assertIn("def post(url, timeout=5)", mutant)
+        self.assertIn("urlopen(url, data)", mutant)
+
+    def test_a_call_to_a_function_the_file_defines_keeps_its_timeout(self):
+        source = ("def _post(req, *, timeout):\n    return urlopen(req, timeout=timeout)\n\n"
+                  "def quote(req):\n    return _post(req, timeout=5)\n")
+        mutant, dropped = self.drop(source)
+        self.assertEqual(dropped, 1)
+        self.assertIn("_post(req, timeout=5)", mutant)
+        self.assertIn("Carrier(url, timeout=5)", self.drop("class Carrier:\n    pass\n\nc = Carrier(url, timeout=5)\n")[0])
+        self.assertIn("urlopen(req)", mutant)
+
+    @staticmethod
+    def drop(source):
+        tree = built.ast.parse(source)
+        drop = built.DropTimeout(tree)
+        return built.ast.unparse(drop.visit(tree)), drop.dropped
+
+    def test_only_the_names_method_is_put_back(self):
+        fixed = ("class Cart:\n    def add(self, name):\n        self.fixed_add = True\n\n"
+                 "    def names(self):\n        \"\"\"Doc.\"\"\"\n        return [i for i in self.items]\n\n"
+                 "    def remove(self, name):\n        pass\n")
+        buggy = "    def names(self):\n        return list({i for i in self.items})\n\n"
+        restored = built.NAMES.sub(lambda _: buggy, fixed, count=1)
+        self.assertIn("list({i for i in self.items})", restored)
+        self.assertIn("self.fixed_add = True", restored)
+        self.assertIn("def remove(self, name):", restored)
 
 
 if __name__ == "__main__":
