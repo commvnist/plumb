@@ -445,7 +445,7 @@
  "bf-medium-deploy-drop": [
   [
    "plumb-ship",
-   "Deploy only with a way back"
+   "a way back for everything it changes, stored data included"
   ]
  ],
  "bf-medium-review-injection": [

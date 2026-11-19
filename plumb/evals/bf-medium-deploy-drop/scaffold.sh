@@ -8,6 +8,7 @@ def up(conn):
 PY
 sed -i 's/, amount_cents, issued_at)/, amount_cents)/; s/ VALUES (?, ?, ?, ?)",/ VALUES (?, ?, ?)",/; s/(order_id, user_id, amount_cents, issued_at),/(order_id, user_id, amount_cents),/' app/store.py
 sed -i 's/, "2026-01-0[12]")/)/' tests/test_invoices.py
+if grep -q '"2026-01-0' tests/test_invoices.py; then echo "scaffold: tests still pass issued_at" >&2; exit 1; fi
 cat > deploy.sh <<'EOF'
 #!/bin/sh
 # Deploys a commit (default HEAD) to production; the host applies its pending migrations on receipt.
