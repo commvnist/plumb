@@ -2,6 +2,15 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Evals
+- Each case runs three times per arm, and arms are compared on scored graders only; one run sat inside the noise between runs.
+- Claims of evidence ("seen failing") are also graded on the commands actually run, not only on the reply.
+- Each case names the skill text it guards. `scripts/check_refs.py` fails when that text is gone, and `write_cases.py --check` in CI fails when the generated cases drift from their table.
+- Fixed five graders that passed or failed for the wrong reason: `no-live-run` (a run against staging with `ORDERS_DB` set in the same command), the flaky fixture (a sorted fix passed), `one-suite-run` (an audit that never ran the checks passed), `bf-small-tests` (graded a file the prompt never named) and `no-swallow` (failed a correct re-raise with context).
+- New cases: `bf-small-ui` (a delete control on a todo page, new `todo-web` fixture), `bf-medium-rename-review` and `bf-small-release`, and a grader that the nightly export streams its rows.
+
 ## 0.16.0
 
 ### Changed

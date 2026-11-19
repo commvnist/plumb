@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/check_refs.py
+      - run: python3 _fixtures/write_cases.py --check
+        working-directory: plumb/evals
       - run: python3 scripts/build_codex.py --check
       - run: python3 scripts/test_check_commit.py
       - run: python3 scripts/test_session_start.py

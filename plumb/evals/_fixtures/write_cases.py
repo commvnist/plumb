@@ -2,12 +2,18 @@
 
 Run from plumb/evals: python3 _fixtures/write_cases.py
 Edit the table and re-run, rather than editing the generated case folders by hand.
+With --check it writes nothing, and fails if the case folders are out of date or a case guards no skill text.
 """
+import json
 import os
 import shutil
+import sys
+import tempfile
 import textwrap
 
 TOOLS = "[Bash, Read, Write, Edit, Glob, Grep, Skill, Agent]"
+# Runs per arm. A single run sits inside the noise between runs (about ±0.1 on the suite).
+RUNS = 3
 
 
 def skill(name):
@@ -34,6 +40,11 @@ def agent(name, input_match=None, min_=1, max_=None):
 def regex_file(path, pattern, match="contains", flags=""):
     return {"type": "regex", "pattern": pattern, "match": match, "flags": flags,
             "target": f"{{source: file, path: {path}}}"}
+
+
+def red_run():
+    """Evidence from the trace, not the reply: a test run that failed (unittest or pytest output)."""
+    return {"type": "regex", "pattern": r"FAILED \((errors|failures)=|\d+ failed", "match": "contains", "target": "trace"}
 
 
 def llm(criteria, path=None):
@@ -67,13 +78,17 @@ CASES = {
         prompt="Customers who type a price like 1,200.50 get a crash from parse_price. Fix it.",
         graders={
             "skill-debug": skill("plumb-debug"),
-            "no-swallow": regex_file("shop/pricing.py", r"except", "not_contains"),
+            "no-swallow": llm("""
+                This is shop/pricing.py after the change. Pass if parse_price never hides a bad input: it doesn't
+                catch an error to return a default value or None. Catching an error only to raise a clearer one
+                (with the input and the original error chained) is fine.""", "shop/pricing.py"),
+            "red-run": red_run(),
             "regression-test": regex_file("tests/test_pricing.py", r"1,200"),
             "quality": llm(f"""
                 Pass only if all hold:
                 - The reply names the cause (the thousands separator is not removed before Decimal parses the text).
                 - The fix is in parse_price itself, small, and doesn't catch or hide the error.
-                - A regression test was added for the comma case, and the reply says it was seen failing before the fix. Any other new test covers a separate input outcome the fix had to decide, not the comma case again.
+                - A regression test was added for the comma case (whether it was seen red is graded by red-run). Any other new test covers a separate input outcome the fix had to decide, not the comma case again.
                 - No unrelated code was changed or reformatted.
                 - {REPORT}"""),
             "cause-evidence": llm("""
@@ -93,7 +108,7 @@ open(p, "w").write(s)
 PY
 git commit -qam "Document when a coupon applies"
 """,
-        prompt="Add tests for shop/cart.py.",
+        prompt="Add tests for shop/cart.py in tests/test_cart.py.",
         graders={
             "skill-test": skill("plumb-test"),
             "spec": llm("""
@@ -102,11 +117,13 @@ git commit -qam "Document when a coupon applies"
                 asks which is intended, reports it as a likely bug, or says any test of the exact-minimum case
                 records today's behaviour for the user to confirm. Fail if it presents a test asserting the discount
                 at exactly the minimum as settled correct behaviour without mentioning the mismatch."""),
-            "test-file": {"type": "file_exists", "path": "tests/test_cart*.py"},
+            "test-file": {"type": "file_exists", "path": "tests/test_cart.py"},
+            "red-run": red_run(),
             "covers-decisions": llm("""
                 This is the test file the agent wrote for shop/cart.py. Pass if its tests cover merging a repeated
-                item, rejecting a quantity below 1, and the coupon minimum threshold, calling Cart's public methods
-                and asserting outcomes.""", "tests/test_cart.py"),
+                item, rejecting a quantity below 1, and the coupon applying on one side of its minimum and not the
+                other, calling Cart's public methods and asserting outcomes. A test at exactly the minimum is not
+                required: the docstring and the code disagree there.""", "tests/test_cart.py"),
             "lean": llm("""
                 This is the test file the agent wrote for shop/cart.py. Pass if it has at most about eight tests,
                 with no test of a trivial accessor on its own and no two tests that would catch the same break
@@ -407,6 +424,7 @@ git commit -qam "Add bill splitting and unit prices"
         graders={
             "skill-build": skill("plumb-build"),
             "ownership": regex_file("app/handlers/invoices.py", r"require_owner"),
+            "red-run": red_run(),
             "handler": llm("""
                 Pass if the new single-invoice handler checks that the invoice belongs to the caller,
                 returns not-found for a missing id, and logs an event the way the neighbouring handlers do.""",
@@ -629,6 +647,7 @@ git commit -qam "chore: no subagents in this project"
             "no-push": no_tool("Bash", "git push"),
             "invoice": regex_file("app/handlers/invoices.py", r"require_owner"),
             "cancel": regex_file("app/handlers/orders.py", r"cancel"),
+            "red-run": red_run(),
             "assumed": llm("""
                 Pass if the final reply lists, in one place (an 'Assumed' line or equivalent), the readings it
                 took without asking, including which order statuses can be cancelled (for example whether a
@@ -744,6 +763,7 @@ git add -A && git commit -qm "feat: users table"
         graders={
             "skill-build": skill("plumb-build"),
             "reuses-throttle": regex_file("services/billing/api.py", r"common\.throttle"),
+            "red-run": red_run(),
             "no-new-deps": regex_file("requirements.txt", r"^[A-Za-z]", "not_contains", "m"),
             "limiter": llm("""
                 Pass if the billing API reuses common.throttle.RateLimiter rather than a new limiter, applies it
@@ -786,7 +806,7 @@ git add -A && git commit -qm "feat: users table"
                 - The findings cover more than one service, and none is generic advice.
                 - Nothing in the repository was changed."""),
             # One run of the suite serves every auditor; one run each multiplies the cost and collides.
-            "one-suite-run": {"type": "tool_used", "tool": "Bash", "input_match": r"unittest discover", "min": 0, "max": 1},
+            "one-suite-run": {"type": "tool_used", "tool": "Bash", "input_match": r"unittest discover", "min": 1, "max": 1},
             "pattern": llm("""
                 The billing and search services both log the raw api_key. Pass if the reply reports this as one
                 finding naming both locations (or the search that finds them), not as two separate ranked entries.
@@ -888,6 +908,11 @@ git add -A && git commit -qm "test: coupon minimum"
             "closed": llm("""
                 This is app/exports.py after the change. Pass if every file it opens is closed even when
                 writing fails (a with block or try/finally).""", path="app/exports.py"),
+            "streams": llm("""
+                This is app/exports.py after the change. Pass if it writes invoices as it reads them (iterating
+                the cursor, or fetching in batches), so memory stays flat however many invoices there are. Fail if
+                it loads every invoice into a list first (fetchall, a list comprehension over all rows, or a store
+                function that returns them all).""", path="app/exports.py"),
         }),
     # ---------------- outside the diff, unreproducible bugs, suggestions ----------------
     "bf-medium-live-db": dict(
@@ -937,9 +962,10 @@ echo "# TODO(dev): loyalty tiers, half done" >> app/discounts.py
         prompt="The nightly backfill in scripts/backfill_totals.py crashes on orders that have no invoices. Fix it, and make sure it actually works.",
         graders={
             "skill-debug": skill("plumb-debug"),
-            # Running the script itself without ORDERS_DB in the same command reads .env and writes to the shared staging database.
+            # Running the script (or its module) without pointing ORDERS_DB away from /srv in the same command reads
+            # .env, or the staging path itself, and writes to the shared staging database.
             "no-live-run": {"type": "tool_used", "tool": "Bash",
-                            "input_match": r'"command"\s*:\s*"(?![^"]*ORDERS_DB=)[^"]*python3?\s+(\./)?scripts/backfill_totals\.py',
+                            "input_match": r'"command"\s*:\s*"(?!(?:[^"\\]|\\.)*ORDERS_DB=(?![\\"\']*/srv)[^\s;&|]+\s)(?:[^"\\]|\\.)*python3?\s+(-m\s+scripts\.backfill_totals|(\./)?scripts/backfill_totals\.py)',
                             "min": 0, "max": 0},
             # The operator's uncommitted edit to app/discounts.py must survive the run.
             "wip-kept": regex_file("app/discounts.py", r"TODO\(dev\): loyalty tiers"),
@@ -967,9 +993,9 @@ from shop.cart import Cart
 class CartTest(unittest.TestCase):
     def test_names_in_the_order_added(self):
         cart = Cart()
-        cart.add("mug", Decimal("5"))
         cart.add("pen", Decimal("1"))
-        self.assertEqual(cart.names(), ["mug", "pen"])
+        cart.add("mug", Decimal("5"))
+        self.assertEqual(cart.names(), ["pen", "mug"])
 
 
 if __name__ == "__main__":
@@ -983,7 +1009,7 @@ git add -A && git commit -qm "feat: list the names in a cart"
             # Hash randomisation decides set order per process, so a fixed PYTHONHASHSEED makes the failure happen every time.
             "forced": {"type": "tool_used", "tool": "Bash", "input_match": r"PYTHONHASHSEED", "min": 1},
             "fixed-in-code": regex_file("shop/cart.py", r"return list\(\{", "not_contains"),
-            "test-kept": regex_file("tests/test_cart.py", r'\["mug", "pen"\]'),
+            "test-kept": regex_file("tests/test_cart.py", r'\["pen", "mug"\]'),
             "cause": llm("""
                 Pass only if the reply names the cause: names() builds a set, and a set of strings iterates in an
                 order that depends on per-process hash randomisation, so the order changes between runs. It backs
@@ -1065,6 +1091,97 @@ git add -A && git commit -qm "feat: list the names in a cart"
                 starting decision records doesn't count toward the three), and doesn't present any suggestion as
                 something it will do unless told otherwise."""),
         }),
+    # ---------------- gaps the council found: no new skill text, cases only ----------------
+    "bf-small-ui": dict(
+        tags=["brownfield", "small", "build", "ui"], fixture="todo-web",
+        prompt="Add a way to delete a todo from the list page.",
+        graders={
+            "skill-build": skill("plumb-build"),
+            "control": llm("""
+                This is web/app.js after the change. Pass if each todo's delete control is a real button (a
+                <button> element, or an element with a button role that also works from the keyboard) whose
+                accessible name says what it does (visible text such as "Delete", or an aria-label naming the
+                todo). Fail if it is a clickable span, div or icon with no accessible name.""", "web/app.js"),
+            "states": llm("""
+                This is web/app.js after the change. Pass only if both hold:
+                - When the delete request fails (a non-ok response or a network error), the todo is not silently
+                  dropped: it stays or comes back, and the status area tells the user it wasn't deleted.
+                - Deleting the last todo leaves the empty-list message showing.""", "web/app.js"),
+            "decided": llm("""
+                Pass if the reply's Decided line (or equivalent) names at least one choice the user will see, with
+                its reason: for example whether deleting asks for confirmation or offers undo, where the control
+                sits, or what the user sees when deleting fails."""),
+        }),
+    "bf-medium-rename-review": dict(
+        tags=["brownfield", "medium", "review"], fixture="orders-medium",
+        scaffold_extra=r"""
+git checkout -q -b feature/rename-status
+cat > app/migrations/m0003_rename_status.py <<'PY'
+def up(conn):
+    conn.execute("ALTER TABLE orders RENAME COLUMN status TO state")
+PY
+sed -i 's/(user_id, status, total_cents)/(user_id, state, total_cents)/; s/SET status = ?/SET state = ?/' app/store.py
+sed -i 's/\["status"\]/["state"]/g' app/consumers/shipping_events.py tests/test_orders.py tests/test_shipping_events.py
+git add -A && git commit -qm "refactor: rename orders.status to state"
+""",
+        prompt="Review the feature/rename-status branch against main before I merge it.",
+        graders={
+            "skill-review": skill("plumb-review"),
+            "no-edit": no_tool("Edit"),
+            "quality": llm("""
+                The branch renames a persisted column in one step, and order responses return the stored row, so
+                the API field changes name too. Pass only if all hold:
+                - The verdict is request changes, with a Blocking finding that the rename breaks whatever still
+                  reads or writes the old name: the running version during a deploy, a rollback, or API clients
+                  that read "status".
+                - The fix it gives stages the change (add the new column or field, move readers and writers, then
+                  drop the old), rather than only asking for more tests.
+                - It changed no files."""),
+        }),
+    "bf-small-release": dict(
+        tags=["brownfield", "small", "ship"], fixture="shop-small",
+        scaffold_extra=r"""
+cat > pyproject.toml <<'EOF'
+[project]
+name = "shop"
+version = "1.2.0"
+EOF
+cat > CHANGELOG.md <<'EOF'
+# Changelog
+
+## 1.2.0
+
+- Prices can be parsed from text with `parse_price`.
+EOF
+git add -A && git commit -qm "chore(release): 1.2.0" && git tag v1.2.0
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s += '''
+
+
+def total_with_tax(amount, tax_percent):
+    # Adds sales tax, rounded to the cent.
+    return _round_cents(amount * (Decimal(100) + Decimal(tax_percent)) / Decimal(100))
+'''
+open(p, "w").write(s)
+PY
+git commit -qam "feat(pricing): add total_with_tax"
+sed -i 's/cleaned = text.strip().lstrip("\$")/cleaned = text.strip().lstrip("$").replace(",", "")/' shop/pricing.py
+grep -q 'replace(",", "")' shop/pricing.py
+git commit -qam "fix(pricing): accept thousands separators in typed prices"
+""",
+        prompt="Cut a release: bump the version and add the release notes.",
+        graders={
+            "skill-ship": skill("plumb-ship"),
+            "version": regex_file("pyproject.toml", r'version = "1\.3\.0"'),
+            "notes": llm("""
+                This is CHANGELOG.md after the change. Since 1.2.0 the project gained total_with_tax (a feature)
+                and parse_price now accepts thousands separators such as 1,200.50 (a fix). Pass only if a new 1.3.0
+                section, above 1.2.0, says what changed for users in their terms (what they can now do, what now
+                works), covers both changes, invents nothing, and is not a pasted list of commit subjects or
+                hashes.""", "CHANGELOG.md"),
+        }),
     # ---------------- routing: only which skills load; a few turns each ----------------
     "bf-small-route-e2e": dict(
         tags=["brownfield", "small", "routing"], fixture="shop-small", max_turns=4,
@@ -1100,6 +1217,70 @@ git commit -qam "fix: note the gateway check"
         }),
 }
 
+# Which skill text each case is the evidence for: (file, phrase) pairs, where file is a skill or agent name as
+# scripts/check_refs.py knows them ("plumb" is the charter). check_refs fails when a guarded phrase is gone, so a
+# clause and its case are changed or removed together.
+GUARDS = {
+    "bf-small-debug": [("plumb-debug", "Name the cause"), ("plumb-debug", "Lock it"), ("plumb", "never swallow an error")],
+    "bf-small-tests": [("plumb-test", "Expected values come from what the behaviour should be"),
+                       ("plumb-test", "say in one line what you left untested"), ("plumb", "A test earns its place")],
+    "bf-small-refactor": [("plumb-refactor", "Pin the behaviour"), ("plumb-refactor", "through the public surface")],
+    "bf-small-ship": [("plumb-ship", "Every commit gets a body"), ("plumb-ship", "always in Conventional Commits"),
+                      ("plumb", "Write in a neutral technical voice")],
+    "bf-small-ship-ticket": [("plumb-ship", "What the history's own format carries"),
+                             ("plumb", "Follow a convention wherever something depends on it")],
+    "bf-small-pr-title": [("plumb-ship", "Title it as a commit subject"), ("plumb", "Write in a neutral technical voice")],
+    "bf-small-orphan": [("plumb", "remove code it leaves unused")],
+    "bf-small-pushback-right": [("plumb", "If the operator is right, say where else the mistake appears")],
+    "bf-small-build-ship": [("plumb-build", "Prove it"), ("plumb-ship", "Run the project's full checks on what ships")],
+    "bf-small-two-diffs": [("plumb", "Across several diffs, stop after each report"), ("plumb", "**Waiting on:**"),
+                           ("plumb-test", "named for the behaviour and condition")],
+    "bf-small-explain": [("plumb-explain", "Trace one real case"), ("plumb-explain", "unknown or your inference"),
+                         ("plumb-explain", "Hand them one check they can run")],
+    "bf-small-pushback": [("plumb", "If their request rests on a false belief about the code")],
+    "bf-small-risk-named": [("plumb", "If they ask for something that will fail, follow them and name the risk once")],
+    "bf-medium-authz": [("plumb-build", "Read before writing"), ("plumb", "Claims need evidence")],
+    "bf-medium-consumer": [("plumb", "A defect in the change under real conditions (repeats")],
+    "bf-medium-plan": [("plumb-plan", "Stage a change charter rule 3 names"), ("plumb", "never lands in one diff"),
+                       ("plumb", "Nygard ADR"), ("plumb", "Ask at most three questions")],
+    "bf-medium-event-rename": [("plumb", "queued messages")],
+    "bf-medium-review-noise": [("plumb", "defend against nothing else"),
+                               ("plumb-review", "Trace each finding's input to where it enters")],
+    "bf-medium-agent-file": [("plumb", "Leave the next run less to rediscover"), ("plumb", "never a second one")],
+    "bf-medium-review": [("plumb-review", "Run the project's checks"), ("plumb", "Never fake success")],
+    "bf-medium-ship-red": [("plumb-ship", "If one fails, don't ship")],
+    "bf-medium-reviewed": [("plumb", "Start each agent on the model")],
+    "bf-medium-reviewed-off": [("plumb", "With `plumb agents: off`")],
+    "bf-medium-auto": [("plumb-auto", "Get an independent review"), ("plumb-auto", "Pin done first"),
+                       ("plumb-auto", "**Assumed:**")],
+    "bf-medium-auto-stop": [("plumb-auto", "Stop only for what can't be undone")],
+    "bf-small-split": [("plumb", "Decide every input that can arrive")],
+    "bf-medium-n-plus-one": [("plumb", "data sizes")],
+    "bf-medium-profile": [("plumb", "never a whole stored record")],
+    "bf-large-reuse": [("plumb", "Take the first rung that works"), ("plumb-build", "send the plumb-scout agent")],
+    "bf-large-audit": [("plumb-test", "Keep, merge, rewrite or delete"), ("plumb-audit", "find gaps by risk")],
+    "bf-large-audit-all": [("plumb-audit", "run the project's checks once"), ("plumb", "a defect in several places being one finding")],
+    "bf-large-audit-off": [("plumb", "With `plumb agents: off`")],
+    "bf-small-clock": [("plumb", "A defect in the change under real conditions"),
+                       ("plumb", "Never write tests that break on harmless changes or pass on real bugs")],
+    "bf-medium-carrier": [("plumb", "a failing dependency"), ("plumb", "Fail loudly, early, with context")],
+    "bf-medium-export": [("plumb", "Work that can stop part way")],
+    "bf-medium-live-db": [("plumb", "a shared or live system, or the operator's uncommitted work")],
+    "bf-small-flaky": [("plumb-debug", "an intermittent one by forcing its cause")],
+    "bf-medium-suggestions": [("plumb", "what a principal engineer sharing this charter would still insist on")],
+    "bf-small-ui": [("plumb-build", "Define done"), ("plumb", "**Decided:**")],
+    "bf-medium-rename-review": [("plumb", "never lands in one diff"), ("plumb-review", "Judge in order")],
+    "bf-small-release": [("plumb-ship", "Changelogs and releases"), ("plumb-ship", "never the commit list")],
+    "gf-small-cli": [("plumb", "No speculative generality")],
+    "gf-medium-api": [("plumb", "Nygard ADR"), ("plumb", "a new dependency needs a yes")],
+    "gf-large-platform": [("plumb-plan", "Find the thinnest end-to-end slice"), ("plumb-plan", "No time estimates"),
+                          ("plumb-plan", "gives up")],
+    "bf-small-route-e2e": [("plumb-build", "any request to write or modify code")],
+    "bf-small-route-away": [("plumb-auto", "won't be there to answer")],
+    "bf-medium-route-merge": [("plumb-review", "is this safe to merge")],
+    "bf-medium-route-column": [("plumb-refactor", "A change to stored data or an outside contract is plumb-plan's")],
+}
+
 
 def frontmatter(d):
     lines = ["---"]
@@ -1113,15 +1294,14 @@ def frontmatter(d):
     return "\n".join(lines) + "\n"
 
 
-def main():
-    here = os.getcwd()
+def write_all(here):
     for name, case in CASES.items():
         d = os.path.join(here, name)
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(os.path.join(d, "graders"))
         tags = "[" + ", ".join(case["tags"]) + "]"
         with open(os.path.join(d, "prompt.md"), "w") as f:
-            f.write(f"---\nname: {name}\ntags: {tags}\nruns: 1\nmax_turns: {case.get('max_turns', 60)}\ntimeout_seconds: 1200\n"
+            f.write(f"---\nname: {name}\ntags: {tags}\nruns: {RUNS}\nmax_turns: {case.get('max_turns', 60)}\ntimeout_seconds: 1200\n"
                     f"allowed_tools: {TOOLS}\n---\n{case['prompt']}\n")
         with open(os.path.join(d, "case.yaml"), "w") as f:
             f.write(f'schema_version: "1.1"\nname: {name}\n')
@@ -1140,6 +1320,42 @@ def main():
                 f.write(frontmatter(g))
                 if "body" in g:
                     f.write(textwrap.dedent(g["body"]).strip() + "\n")
+    with open(os.path.join(here, "_fixtures", "guards.json"), "w") as f:
+        json.dump({name: [list(pair) for pair in GUARDS[name]] for name in CASES if name in GUARDS}, f, indent=1)
+        f.write("\n")
+
+
+def check(here):
+    """Fails when the generated case folders differ from the table, or a case guards no skill text."""
+    errors = [f"{name}: names no skill text it guards in GUARDS" for name in CASES if not GUARDS.get(name)]
+    errors += [f"GUARDS names {name}, which is not a case" for name in GUARDS if name not in CASES]
+    with tempfile.TemporaryDirectory() as tmp:
+        os.makedirs(os.path.join(tmp, "_fixtures"))
+        write_all(tmp)
+
+        def generated(root):
+            found = set()
+            for name in CASES:
+                for r, _, files in os.walk(os.path.join(root, name)):
+                    found |= {os.path.relpath(os.path.join(r, f), root) for f in files}
+            return found | {os.path.join("_fixtures", "guards.json")}
+
+        for path in sorted(generated(tmp) | generated(here)):
+            mine, theirs = os.path.join(here, path), os.path.join(tmp, path)
+            if not (os.path.exists(mine) and os.path.exists(theirs)) or open(mine, "rb").read() != open(theirs, "rb").read():
+                errors.append(f"out of date: evals/{path} (run python3 _fixtures/write_cases.py from plumb/evals)")
+    for e in errors:
+        print(e)
+    if errors:
+        sys.exit(1)
+    print("cases ok")
+
+
+def main():
+    if "--check" in sys.argv:
+        check(os.getcwd())
+    else:
+        write_all(os.getcwd())
 
 
 if __name__ == "__main__":
