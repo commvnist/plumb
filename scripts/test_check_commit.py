@@ -136,6 +136,61 @@ class CheckCommit(unittest.TestCase):
                 else:
                     self.assertEqual(out, "")
 
+    def test_ignores_an_operator_commit_when_this_command_failed(self):
+        # The operator committed a moment ago; the agent's own commit then failed or made another commit.
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
+        head = subprocess.run(["git", "-C", self.repo, "rev-parse", "--short", "HEAD"], check=True,
+                              capture_output=True, text=True).stdout.strip()
+        cases = [
+            ("nothing to commit, working tree clean", False),
+            ("error: pathspec 'x' did not match any file(s) known to git", False),
+            ("[main 0000000] feat: something else", False),
+            (f"[main {head}] Add stuff\n 1 file changed", True),
+            ("", True),
+        ]
+        for output, flagged in cases:
+            with self.subTest(output=output):
+                self.assertEqual(run_hook(self.repo, "git commit -m 'feat: x'", output), flagged)
+
+    def test_flags_every_way_of_skipping_hooks(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "feat: add tax\n\nCarts need tax.")
+        cases = [
+            ("git commit -n -m x", True),
+            ("git commit -nm x", True),
+            ("git commit -anm x", True),
+            ("git -c core.hooksPath=/dev/null commit -m x", True),
+            ("git commit -m 'bump -minor flag'", False),
+            ("git commit -am x", False),
+        ]
+        for command, flagged in cases:
+            with self.subTest(command=command):
+                self.assertEqual("skipped the project's commit hooks" in hook_output(self.repo, command), flagged)
+
+    def test_checks_text_posted_by_every_route(self):
+        body = os.path.join(self.repo, "body.md")
+        with open(body, "w") as f:
+            f.write("Adds tax.\n\nGenerated with Claude Code\n")
+        cases = [
+            ("gh api repos/o/r/pulls -f title='feat: tax' -f body='I added tax.'", "first person"),
+            ('gh pr review 4 --comment --body "We should round later."', "first person"),
+            ('gh pr merge 4 --squash --body "Merged after I checked it."', "first person"),
+            ("gh pr create --title 'feat: tax' --body-file body.md", "credits an AI tool"),
+            ('gh pr create --title "feat: tax" --body "Adds tax.\n\nI checked the rounding."', "first person"),
+            ('gh pr create --assignee @me --title "feat: tax" --body "Adds tax."', None),
+            ("gh api repos/o/r/commits/abc", None),
+        ]
+        for command, flag in cases:
+            with self.subTest(command=command):
+                out = hook_output(self.repo, command)
+                if flag:
+                    self.assertIn(flag, out)
+                else:
+                    self.assertEqual(out, "")
+
+    def test_a_scope_is_not_first_person(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "fix(us): use the US date format\n\nDates read month first.")
+        self.assertEqual(hook_output(self.repo, "git commit -m x"), "")
+
     def test_answers_in_the_shape_each_tool_reads(self):
         # Claude Code reads hookSpecificOutput; Copilot CLI reads only a top-level additionalContext.
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")

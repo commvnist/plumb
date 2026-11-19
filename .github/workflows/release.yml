@@ -7,8 +7,9 @@ on:
   push:
     branches: [main]
 
-# One release at a time. Each run checks out main as it stands when the run starts, so a second
-# quick merge builds on the first one's bump instead of claiming the same version.
+# One release at a time. Each run releases exactly the commit its checks passed on, and only while
+# that commit is still main's tip: after two quick merges the first run stands down and the second
+# releases both, so nothing reaches users that the checks didn't see.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -30,13 +31,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - name: Work out the next version
         id: next
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          git fetch -q origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "main has moved past $GITHUB_SHA; the run for the newer commit releases both."
+            exit 0
+          fi
           version=$(python3 scripts/release.py "$RUNNER_TEMP/notes.md")
           if [ -n "$version" ]; then echo "tag=v$version" >> "$GITHUB_OUTPUT"; fi
       - name: Commit the bump and publish the release
@@ -48,6 +54,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet; then
+            # The bump commit is checked like any other before it lands.
+            python3 scripts/check_refs.py
+            python3 scripts/build_codex.py --check
             git commit -qam "chore(release): ${TAG#v}"
             git push origin HEAD:main
           fi

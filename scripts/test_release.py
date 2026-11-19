@@ -46,6 +46,21 @@ class Bump(unittest.TestCase):
             with self.subTest(subject=subject, labels=labels):
                 self.assertEqual(bump_for(subject, body, labels), bump)
 
+    def test_shipped_text_releases_at_least_a_patch(self):
+        cases = [
+            # (subject, labels, files, bump)
+            ("refactor: trim the test skill", [], ["plumb/skills/plumb-test/SKILL.md"], "patch"),
+            ("docs: reword a hook note", [], ["plumb/hooks/user-prompt.md"], "patch"),
+            ("chore: tidy an agent", [], ["plumb/agents/plumb-scout.md"], "patch"),
+            ("docs: reword the README", [], ["README.md", "plumb/README.md"], None),
+            ("test(evals): add a case", [], ["plumb/evals/bf-x/case.yaml"], None),
+            ("refactor: trim the test skill", ["release:none"], ["plumb/skills/plumb-test/SKILL.md"], None),
+            ("feat: add a skill", [], ["plumb/skills/plumb-x/SKILL.md"], "minor"),
+        ]
+        for subject, labels, files, bump in cases:
+            with self.subTest(subject=subject, labels=labels):
+                self.assertEqual(bump_for(subject, "", labels, files), bump)
+
     def test_next_version(self):
         self.assertEqual(next_version("0.6.0", "patch"), "0.6.1")
         self.assertEqual(next_version("0.6.3", "minor"), "0.7.0")
