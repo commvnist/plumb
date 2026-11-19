@@ -4,6 +4,16 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ## Unreleased
 
+### Changed
+- An autonomous run's review loop ends once every Blocking finding is fixed or disputed, and the report lists the disputes under Reviewed. Before, a correct dispute could keep the loop going with no end.
+- The report's Done line says when the change isn't committed, and says first when the work stopped short.
+- A plan lists its unknowns, each with the step that settles it, and orders the diffs riskiest unknown first. An autonomous run reads the code before pinning what done means, and plans as plumb-plan does.
+- A walkthrough says what was inferred rather than read, and its closing check says what it should show.
+- A staged breaking change never lands in one release, not only one diff.
+- Shipping needs the project's checks to have passed on the code as it stands, so a recent passing run counts instead of a fresh full run per commit.
+- How to hand work to the reviewer agent now lives in its own description, so every caller sends the request and where the change is, never the author's reasoning.
+- Clearer wording for rule 8 (every input that can arrive gets a defined outcome) and rule 19 (new code logs as the project's code does), and a shorter per-request reminder that loads only skills not yet loaded.
+
 ### Evals
 - Each case runs three times per arm, and arms are compared on scored graders only; one run sat inside the noise between runs.
 - Claims of evidence ("seen failing") are also graded on the commands actually run, not only on the reply.

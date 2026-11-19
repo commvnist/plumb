@@ -7,7 +7,7 @@
     "5": "Take the first rung that works",
     "6": "Follow a convention wherever something depends on it",
     "7": "No speculative generality",
-    "8": "Decide every input that can arrive, and defend against nothing else",
+    "8": "Give every input that can arrive a defined outcome",
     "9": "Prefer plain",
     "10": "Names carry meaning; comments carry what code can't show",
     "11": "Fail loudly, early, with context",
@@ -24,8 +24,8 @@
   },
   "steps": {
     "plumb-auto": {
-      "1": "Pin done first",
-      "2": "Read until nothing surprises you",
+      "1": "Read until nothing surprises you",
+      "2": "Pin done",
       "3": "Plan the diffs",
       "4": "Decide instead of asking",
       "5": "Build each diff",
@@ -56,15 +56,14 @@
       "3": "Lead with the point",
       "4": "Trace one real case",
       "5": "Give the reasons",
-      "6": "Say where it could be wrong",
+      "6": "Say where the code could misbehave",
       "7": "Hand them one check they can run"
     },
     "plumb-plan": {
       "1": "State the goal as outcomes",
       "2": "Find the thinnest end-to-end slice",
       "3": "Decide only what is expensive to reverse",
-      "4": "Sequence the diffs",
-      "5": "Name the unknowns"
+      "4": "Sequence the diffs"
     },
     "plumb-refactor": {
       "1": "Name the goal",
