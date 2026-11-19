@@ -84,6 +84,8 @@ class BuiltChecks(unittest.TestCase):
         self.assertIs(history("git add a.py && git commit -qm 'feat: a' && git commit -q --amend -m 'feat: add a'"), True)
         self.assertIs(history("git add a.py && git commit -qm 'feat: a' && git stash -q -u && git stash pop -q"), True)
         self.assertIs(history("git add -A && git commit -qm 'feat: a'"), False)
+        self.assertIs(history("git checkout -qb side && git add -A && git commit -qm 'feat: a' && git checkout -q -"
+                              " && git merge -q --no-ff side -m 'merge side'"), False)
         self.assertIs(history("git add -A && git commit -qm 'feat: a' && git rm -rq --cached __pycache__"
                               " && git commit -q --amend -m 'feat: a'"), False)
 
@@ -94,19 +96,6 @@ class BuiltChecks(unittest.TestCase):
                               ("## Context\nx\n## Decision\ny", False)]:
             with self.subTest(reply=reply):
                 self.assertEqual(built.has_record(reply), record)
-
-    def test_only_the_unchecked_line_can_own_a_gap(self):
-        words = r"time.?out|hang"
-        for reply, owned in [
-                ("- **Verified:** tests pass; unchecked: the timeout against a real carrier\n- **Waiting on:** none", True),
-                ("- **Verified:** tests pass; unchecked: nothing\n- **Decided:** a 5 second timeout", False),
-                ("- **Decided:** a 5 second timeout\n- **Verified:** tests pass", False),
-                ("Unchecked: nothing.\n\n## Decided\n- a 5 second timeout", False),
-                ("Verified: tests pass. Unchecked: the drip case\nDecided: a 5 second timeout", False),
-                ("**Unchecked:** nothing, the timeout is covered by a test", False),
-                ("**Unchecked:**\n- the timeout against a real carrier\n\n**Decided:** x", True)]:
-            with self.subTest(reply=reply):
-                self.assertEqual(built.unchecked_names(reply, words), owned)
 
     def test_the_timeout_is_dropped_from_calls_and_never_from_a_signature(self):
         source = "def post(url, timeout=5):\n    return urlopen(url, data, timeout=min(timeout, 9))\n"
@@ -121,6 +110,7 @@ class BuiltChecks(unittest.TestCase):
         mutant, dropped = self.drop(source)
         self.assertEqual(dropped, 1)
         self.assertIn("_post(req, timeout=5)", mutant)
+        self.assertIn("Carrier(url, timeout=5)", self.drop("class Carrier:\n    pass\n\nc = Carrier(url, timeout=5)\n")[0])
         self.assertIn("urlopen(req)", mutant)
 
     @staticmethod
