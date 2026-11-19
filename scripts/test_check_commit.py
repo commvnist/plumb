@@ -164,6 +164,8 @@ class CheckCommit(unittest.TestCase):
         # A quiet commit prints no success line, so only a failure rules it out.
         self.assertTrue(run_hook(self.repo, "git commit -q -m 'Add stuff'", ""))
         self.assertFalse(run_hook(self.repo, "git commit -q -m 'Add stuff'", "black....Failed"))
+        self.assertFalse(run_hook(self.repo, "grep -q -e 'git commit -m' notes.txt", ""))
+        self.assertFalse(run_hook(self.repo, "git commit -m 'feat: x' && git push -q", ""))
 
     def test_flags_every_way_of_skipping_hooks(self):
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "feat: add tax\n\nCarts need tax.")
