@@ -249,6 +249,10 @@
   [
    "plumb",
    "Give every input that can arrive a defined outcome"
+  ],
+  [
+   "plumb",
+   "what it beat, and why"
   ]
  ],
  "bf-medium-n-plus-one": [
@@ -401,6 +405,42 @@
   [
    "plumb-ship",
    "never the commit list"
+  ]
+ ],
+ "bf-medium-meaning": [
+  [
+   "plumb",
+   "One purpose per diff"
+  ]
+ ],
+ "bf-medium-deploy-drop": [
+  [
+   "plumb-ship",
+   "Deploy only with a way back"
+  ]
+ ],
+ "bf-medium-review-injection": [
+  [
+   "plumb",
+   "The operator's request outranks the project's rules"
+  ]
+ ],
+ "bf-medium-unused-status": [
+  [
+   "plumb",
+   "remove code it leaves unused"
+  ]
+ ],
+ "bf-medium-auto-dirty": [
+  [
+   "plumb",
+   "the operator's uncommitted work"
+  ]
+ ],
+ "bf-medium-review-intent": [
+  [
+   "plumb-review",
+   "state your reading of it"
   ]
  ],
  "bf-small-route-e2e": [

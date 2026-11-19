@@ -41,7 +41,7 @@ End every change with:
 
 - **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>
 - **Why:** <for a fix, the cause>
-- **Decided:** <each choice a reviewer could have made differently, with its reason>
+- **Decided:** <each choice a reviewer could have made differently, what it beat, and why>
 - **Verified:** <command> → <result>; each new test: <the break it was seen red on>; unchecked: <what the change touches that nothing run exercised>
 - **Waiting on:** <what you need from the operator>
 - **Suggestions:** <beyond the diff, what a principal engineer sharing this charter would still insist on before relying on it, each with the failure it prevents, ranked, unapplied>
