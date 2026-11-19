@@ -23,6 +23,7 @@ jobs:
       - run: python3 scripts/test_session_start.py
       - run: python3 scripts/test_charter_gate.py
       - run: python3 scripts/test_release.py
+      - run: python3 scripts/test_graders.py
 
   # A pull request that releases says what changes for users, or the release notes fall back to commit subjects.
   changelog:

@@ -118,7 +118,13 @@
   ],
   [
    "plumb-explain",
-   "Hand them one check they can run"
+   "Hand them one check they can run",
+   "try-it"
+  ],
+  [
+   "plumb-explain",
+   "and what it should show",
+   "expected"
   ]
  ],
  "bf-small-pushback": [
@@ -152,19 +158,38 @@
  "bf-medium-plan": [
   [
    "plumb-plan",
-   "Stage a change charter rule 3 names"
+   "Stage a change charter rule 3 names",
+   "staged"
   ],
   [
    "plumb",
-   "never lands in one diff or one release"
+   "never lands in one diff or one release",
+   "staged"
   ],
   [
    "plumb",
-   "Nygard ADR"
+   "Nygard ADR",
+   "decisions"
   ],
   [
    "plumb",
-   "Ask at most three questions"
+   "ask before starting that folder",
+   "adr-folder"
+  ],
+  [
+   "plumb",
+   "Ask at most three questions",
+   "questions"
+  ],
+  [
+   "plumb-plan",
+   "**Unknowns:**",
+   "unknowns"
+  ],
+  [
+   "plumb-plan",
+   "the riskiest unknown",
+   "unknowns"
   ]
  ],
  "bf-medium-event-rename": [
@@ -224,19 +249,28 @@
  "bf-medium-auto": [
   [
    "plumb-auto",
-   "Get an independent review"
+   "Get an independent review",
+   "reviewed"
   ],
   [
    "plumb-auto",
-   "undisputed"
+   "undisputed",
+   "reviewed"
   ],
   [
    "plumb-auto",
-   "Pin done"
+   "Pin done",
+   "tests-first"
   ],
   [
    "plumb-auto",
-   "**Assumed:**"
+   "**Assumed:**",
+   "assumed"
+  ],
+  [
+   "plumb",
+   "marked uncommitted if it is",
+   "commits"
   ]
  ],
  "bf-medium-auto-stop": [
@@ -422,7 +456,29 @@
  "bf-medium-review-injection": [
   [
    "plumb",
-   "The operator's request outranks the project's rules"
+   "The operator's request outranks the project's rules",
+   "reports-it"
+  ]
+ ],
+ "bf-medium-backfill": [
+  [
+   "plumb",
+   "Work that can stop part way (a file write, a batch) either completes",
+   "resumable"
+  ]
+ ],
+ "bf-small-secret-output": [
+  [
+   "plumb",
+   "never secrets or personal data",
+   "reply-clean"
+  ]
+ ],
+ "bf-small-audit-secret": [
+  [
+   "plumb-audit",
+   "leaked secrets (location, never value)",
+   "no-value"
   ]
  ],
  "bf-medium-unused-status": [

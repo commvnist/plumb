@@ -1,0 +1,28 @@
+plumb 9: Prefer plain
+plumb 10: Names carry meaning; comments carry what code can't show
+plumb 14: Verify before relying
+plumb 15: Use the project's own checks
+plumb 17: The test floor
+plumb 19: Failures must be findable
+plumb-auto 1: Read until nothing surprises you
+plumb-auto 3: Plan the diffs
+plumb-auto 5: Build each diff
+plumb-auto 7: Try to break it
+plumb-build 1: Size it
+plumb-build 4: Baseline
+plumb-build 5: Climb the ladder
+plumb-build 7: Review your own diff as its reviewer
+plumb-debug 2: Trace
+plumb-debug 4: Fix at the origin
+plumb-debug 6: Clean up
+plumb-debug 7: Report
+plumb-explain 1: Take scope and depth from the question
+plumb-explain 3: Lead with the point
+plumb-explain 5: Give the reasons
+plumb-explain 6: Say where the code could misbehave
+plumb-plan 1: State the goal as outcomes
+plumb-plan 3: Decide only what is expensive to reverse
+plumb-refactor 1: Name the goal
+plumb-refactor 3: Move in small steps
+plumb-refactor 4: Report
+plumb-review 2: Read the whole diff, then what it touches

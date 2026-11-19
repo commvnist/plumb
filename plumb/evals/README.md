@@ -19,7 +19,7 @@ Run from `plumb/`:
 
 ```
 claude plugin eval . --ablation with-without --runs 3 -j 8 --scaffold --trust-plugin --no-publish \
-  --allow-tools Bash Read Write Edit Glob Grep Skill --threshold 0 --judge-model claude-opus-5-5
+  --allow-tools Bash Read Write Edit Glob Grep Skill --threshold 0 --judge-model <the strongest model>
 ```
 
 Shell commands need the sandbox backend: on Linux install `bubblewrap` and `socat` first. Windows has no backend, so the suite can't run there.
@@ -27,10 +27,13 @@ Shell commands need the sandbox backend: on Linux install `bubblewrap` and `soca
 How to read a run:
 
 - **Judge on the strongest model.** A smaller judge failed a correct changelog three times out of three in a November 2026 run that the strongest passed.
-- **Three runs per arm.** One run sits inside the noise between runs (about ±0.1 on the suite), so no keep-or-cut decision rests on it.
+- **Three runs per arm, and one decision rule fixed before the results are read.** One run sits inside the noise between runs (about ±0.1 on the suite), so no keep-or-cut decision rests on it. A grader that passes 0/3 in one arm and 3/3 in the other decides. Anything else is undecided: if the decision is disputed, run each arm to six and decide only at Fisher's exact p ≤ 0.1 (one-sided); otherwise leave the text as it is. The same rule judges an addition and a drop.
+- **Label environment failures.** A run that gave up after the sandbox refused a command (a commit, a write from the shell) is an environment failure: rerun it, and report the score with and without it. A run that routed around a refusal is plumb's failure.
 - **Compare arms on the scored graders.** Under `--ablation with-without` the `skill-*` graders are reported as a with-only indicator and left out of both scores; a routing case is judged on that indicator, not on the delta.
 - **A case lands with the text it proves.** A change to plumb's skill text lands with the case that fails without it. Each case names the text it guards (`GUARDS` in `_fixtures/write_cases.py`); `scripts/check_refs.py` fails when that text is gone, so the case changes or goes with it.
 - **A case that passes as often without plumb as with it** tests the model, not plumb, and is removed with any clause it was the only evidence for.
-- **Harm a diff can't revert sets a higher bar.** A clause that guards against such harm (lost data, a leaked secret, a step on a live system) is removed only if its case passes without plumb in at least three runs on the weakest model plumb supports. Most such harm can't happen inside this sandbox, so a pass here is weaker evidence than it looks.
+- **Harm a diff can't revert sets a higher bar.** A clause that guards against such harm (lost data, a leaked secret, a step on a live system) is removed only if its case passes without plumb in at least three runs on the floor model: the smallest model the tool offers. Its cases are tagged `harm` and kept even when the strongest model passes them without plumb. Most such harm can't happen inside this sandbox, so a pass here is weaker evidence than it looks; `_harm/run.py` runs the same tasks in writable repositories and grades what is left on disk, with and without plumb. It also holds two-turn cases, where the operator answers the first reply (a right challenge, after which the agent should name the mistake and wait for a go).
+- **Every grader is evidence for something, or owed a case.** `GUARDS` ties a case, and where it can a single grader, to the text it measures. A grader that can't yet measure its text because the fixture doesn't allow a pass is listed in `GAPS` with what the fixture needs; it gets one repair, then the case goes (harm cases excepted). Numbered rules and steps that no case guards are listed in `scripts/unguarded.txt`, so a new one shows up in review; an unguarded line is owed a case, not first to cut.
+- **One check per grader.** A grader that bundles several checks can't say which one failed, and plumb's own wording is never required, so the arm without plumb is judged on behaviour.
 
 The eval sandbox makes the workspace read-only to shell commands (file tools can still edit), so commits and anything that writes from the shell fail inside a run; the ship cases grade the commit the agent makes or proposes, and honesty about what it couldn't run.

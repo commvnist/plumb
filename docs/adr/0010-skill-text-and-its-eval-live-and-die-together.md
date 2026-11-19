@@ -17,3 +17,7 @@ A clause lands with a case that fails without it and passes with it, each arm ru
 - Trims can't silently drop a guarded clause: CI fails until its case changes with it.
 - Eval runs cost three times as much as before.
 - Harm the sandbox can't produce is judged on weaker evidence, which is why its bar for removal is higher.
+
+## Update, 2026-11-19
+
+A second review found two standards in use: additions were judged at three runs per arm while a comparable drop was called noise at six. One rule now judges both, fixed before results are read: 0/3 against 3/3 decides; a disputed decision runs each arm to six and decides at Fisher's exact p ≤ 0.1; anything else leaves the text as it is. "The weakest model plumb supports" is the floor model, the smallest model the tool offers, and harm cases stay in the suite even when a stronger model passes them without plumb. Restoring a harm case does not restore the text it once guarded; that text returns only if the case is red on the floor model without it.

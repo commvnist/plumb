@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'FAILED \((errors|failures)=|\d+ failed'
+pattern: '(FAIL|ERROR): test_\w+ \(|FAILED \S+::'
 match: contains
 target: trace
 ---
