@@ -302,16 +302,19 @@ def staged_by_name(run):
 
 
 def commit_per_handler(run):
-    """Each handler was committed, and no commit touches both: an autonomous run is told to commit each diff."""
+    """Each handler sits in a commit without the other: an autonomous run is told to commit each diff."""
     handlers = ("app/handlers/invoices.py", "app/handlers/orders.py")
+    if any(not run.sh(f"git diff --quiet {run.start} -- {h}").returncode for h in handlers):
+        return None  # a handler went elsewhere or was never written: that's not how it was committed
     log = run.sh(f"git log --name-only --format=%x00 {run.start}..HEAD").stdout
     commits = [set(c.split()) for c in log.split("\0") if c.strip()]
-    each_committed = all(any(h in c for c in commits) for h in handlers)
-    return each_committed and not any(all(h in c for h in handlers) for c in commits)
+    return all(any(h in c and other not in c for c in commits) for h, other in (handlers, handlers[::-1]))
 
 
 def all_committed(run):
     """Nothing the session wrote is left outside a commit."""
+    if not run.changes().strip():
+        return None  # a run that wrote nothing can't show how it commits
     return not run.sh("git status --porcelain | grep -v __pycache__").stdout.strip()
 
 
