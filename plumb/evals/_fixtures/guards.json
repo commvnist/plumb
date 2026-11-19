@@ -90,7 +90,7 @@
   ],
   [
    "plumb-ship",
-   "Run the project's full checks on what ships"
+   "Ship only what the project's checks have passed on"
   ]
  ],
  "bf-small-two-diffs": [
@@ -156,7 +156,7 @@
   ],
   [
    "plumb",
-   "never lands in one diff"
+   "never lands in one diff or one release"
   ],
   [
    "plumb",
@@ -228,7 +228,11 @@
   ],
   [
    "plumb-auto",
-   "Pin done first"
+   "undisputed"
+  ],
+  [
+   "plumb-auto",
+   "Pin done"
   ],
   [
    "plumb-auto",
@@ -244,7 +248,7 @@
  "bf-small-split": [
   [
    "plumb",
-   "Decide every input that can arrive"
+   "Give every input that can arrive a defined outcome"
   ]
  ],
  "bf-medium-n-plus-one": [

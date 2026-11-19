@@ -1,1 +1,1 @@
-plumb: if this request touches code, load the plumb skill for each phase it names before acting, and the plumb charter if it isn't loaded yet.
+plumb: if this request touches code, load each plumb skill it needs that isn't loaded yet, before acting.
