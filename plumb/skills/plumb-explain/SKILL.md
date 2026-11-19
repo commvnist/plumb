@@ -14,5 +14,5 @@ An explanation changes nothing.
 3. **Lead with the point.**
 4. **Trace one real case** by file:line, then where the path differs; say what you ran and read.
 5. **Give the reasons:** choice, alternative, cost.
-6. **Say where the code could misbehave,** and what you inferred.
+6. **Say where the code could misbehave.**
 7. **Hand them one check they can run,** and what it should show.

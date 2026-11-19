@@ -13,7 +13,7 @@ plumb-build 4: Baseline
 plumb-build 5: Climb the ladder
 plumb-build 7: Review your own diff as its reviewer
 plumb-debug 2: Trace
-plumb-debug 4: Fix at the origin
+plumb-debug 5: Fix at the origin
 plumb-debug 6: Clean up
 plumb-debug 7: Report
 plumb-explain 1: Take scope and depth from the question
