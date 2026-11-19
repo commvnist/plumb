@@ -214,9 +214,16 @@ ORDERS = {
 
 
         def apply_all(conn):
+            """Applies each migration not yet recorded in schema_migrations, in name order."""
+            conn.execute("CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY)")
+            done = {row[0] for row in conn.execute("SELECT name FROM schema_migrations")}
             names = sorted(m.name for m in pkgutil.iter_modules(__path__) if m.name.startswith("m0"))
             for name in names:
+                if name in done:
+                    continue
                 importlib.import_module(f"{__name__}.{name}").up(conn)
+                conn.execute("INSERT INTO schema_migrations (name) VALUES (?)", (name,))
+            conn.commit()
     ''',
     "app/migrations/m0001_orders.py": '''
         def up(conn):
@@ -708,8 +715,18 @@ TODO_WEB = {
         const list = document.getElementById("todos");
         const status = document.getElementById("status");
 
+        // fetch rejects when the network fails; a non-ok response is the server refusing.
+        async function request(url, options) {
+          try {
+            return await fetch(url, options);
+          } catch (error) {
+            console.error("request failed", url, error);
+            return {ok: false, error};
+          }
+        }
+
         async function load() {
-          const res = await fetch("/api/todos");
+          const res = await request("/api/todos");
           if (!res.ok) {
             status.textContent = "Could not load your todos. Try again.";
             return;
@@ -730,7 +747,7 @@ TODO_WEB = {
         document.getElementById("new-todo").addEventListener("submit", async (event) => {
           event.preventDefault();
           const input = document.getElementById("title");
-          const res = await fetch("/api/todos", {
+          const res = await request("/api/todos", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({title: input.value}),
