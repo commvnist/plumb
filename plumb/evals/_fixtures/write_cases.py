@@ -706,9 +706,6 @@ git commit -qam "chore: no subagents in this project"
                 Pass if the reply shows the independent reviewer's verdict, and every Blocking finding was fixed
                 (tests re-run) or disputed rather than dropped, with the review repeated until no Blocking finding
                 is left undisputed."""),
-            "commits": llm("""
-                Pass if each handler is its own commit, or, if the environment blocked committing, the reply says
-                so plainly, marks the work as uncommitted, and gives each commit it would make."""),
             "report": llm(REPORT),
         }),
     "bf-medium-auto-stop": dict(
@@ -1540,8 +1537,7 @@ GUARDS = {
     "bf-medium-reviewed": [("plumb", "Start each agent on the model")],
     "bf-medium-reviewed-off": [("plumb", "With `plumb agents: off`")],
     "bf-medium-auto": [("plumb-auto", "Get an independent review", "reviewed"), ("plumb-auto", "undisputed", "reviewed"),
-                       ("plumb-auto", "Pin done", "tests-first"), ("plumb-auto", "**Assumed:**", "assumed"),
-                       ("plumb", "marked uncommitted if it is", "commits")],
+                       ("plumb-auto", "Pin done", "tests-first"), ("plumb-auto", "**Assumed:**", "assumed")],
     "bf-medium-auto-stop": [("plumb-auto", "Stop only for what can't be undone")],
     "bf-small-split": [("plumb", "Give every input that can arrive a defined outcome"), ("plumb", "what it beat, and why")],
     "bf-medium-n-plus-one": [("plumb", "data sizes")],

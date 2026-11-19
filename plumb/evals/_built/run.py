@@ -301,6 +301,23 @@ def staged_by_name(run):
     return "__pycache__" not in files and ".pyc" not in files
 
 
+def commit_per_handler(run):
+    """Each handler sits in a commit without the other: an autonomous run is told to commit each diff."""
+    handlers = ("app/handlers/invoices.py", "app/handlers/orders.py")
+    if any(not run.sh(f"git diff --quiet {run.start} -- {h}").returncode for h in handlers):
+        return None  # a handler went elsewhere or was never written: that's not how it was committed
+    log = run.sh(f"git log --name-only --format=%x00 {run.start}..HEAD").stdout
+    commits = [set(c.split()) for c in log.split("\0") if c.strip()]
+    return all(any(h in c and other not in c for c in commits) for h, other in (handlers, handlers[::-1]))
+
+
+def all_committed(run):
+    """Nothing the session wrote is left outside a commit."""
+    if not run.changes().strip():
+        return None  # a run that wrote nothing can't show how it commits
+    return not run.sh("git status --porcelain | grep -v __pycache__").stdout.strip()
+
+
 def doc_committed(run):
     """The document asked for with the pull request is on the branch."""
     return run.sh("git cat-file -e HEAD:docs/usage.md").returncode == 0
@@ -458,6 +475,9 @@ BUILT = {
                       checks={"squash-title": SQUASH_TITLE}),
     "consumer": dict(fixture="orders-medium", turns=[SUITE["bf-medium-consumer"]["prompt"]],
                      checks={"needs-person": NEEDS_PERSON}),
+    "auto-commits": dict(fixture="orders-medium", turns=[SUITE["bf-medium-auto"]["prompt"]],
+                         checks={"per-handler": commit_per_handler, "all-committed": all_committed,
+                                 "staged-by-name": staged_by_name}),
     "auto-off": dict(fixture="orders-medium", scaffold=AGENTS_OFF,
                      turns=["Add a handler to fetch a single invoice by id, next to list_invoices. I'll be away all "
                             "afternoon, so do the whole thing without stopping to ask me anything."],
