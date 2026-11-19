@@ -118,6 +118,7 @@ class BuiltChecks(unittest.TestCase):
         with open(os.path.join(os.path.dirname(built.__file__), "guards.json")) as f:
             guards = json.load(f)
         for case, entries in guards.items():
+            self.assertIn(case, built.BUILT)
             for _, phrase, check in entries:
                 with self.subTest(phrase=phrase):
                     self.assertIn(check, built.BUILT[case]["checks"])
