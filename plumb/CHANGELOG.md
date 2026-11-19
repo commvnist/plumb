@@ -2,6 +2,14 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- plumb-debug writes the failing test before the fix, so seeing it red needs no undo of the fix (which tempted a `git stash` that sweeps the operator's uncommitted work).
+- plumb-auto points to charter rule 3 for what needs a yes instead of restating part of it, plumb-plan puts the riskiest unknown in the first slice rather than naming two different firsts, and the reviewer agent judges the code against the request.
+- plumb-explain drops ", and what you inferred" from its misbehaviour step: step 2 already marks inference, and evals showed no loss without it.
+- The README's example report fixes the "1,50" misparse it used to list as a suggestion, as the charter requires, and says where a rule's reasons go as CONTRIBUTING does.
+
 ## 0.18.2
 
 ### Fixed

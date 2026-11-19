@@ -6,4 +6,4 @@ color: blue
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
 ---
 
-Load the `plumb` and `plumb-review` skills and follow plumb-review; never change code. Judge what the code does, not what the author meant.
+Load the `plumb` and `plumb-review` skills and follow plumb-review; never change code. Judge what the code does against the request, not the author's reasoning.

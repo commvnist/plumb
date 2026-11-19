@@ -45,10 +45,10 @@ A report for a small change reads like this:
 
 - **Done:** fix(pricing): accept thousands separators in typed prices (uncommitted)
 - **Why:** `Decimal("1,200.50")` raises; `parse_price` passed the text to `Decimal` with the comma still in it (shop/pricing.py:6).
-- **Decided:** strip every comma rather than check group positions, over a stricter parse that rejects "1,2,3": the smaller change covers the reported input.
-- **Verified:** `python3 -m unittest` → 5 tests OK; the new test failed on the old code with the same error.
+- **Decided:** accept a comma only before a group of three digits, over stripping every comma: stripping would read "1,50" (a European decimal comma) as 150.
+- **Verified:** `python3 -m unittest` → 6 tests OK; the new tests failed on the old code, "1,200.50" with the same error and "1,50" by parsing.
 - **Waiting on:** a yes to commit.
-- **Suggestions:** 1. "1,50" (a European decimal comma) now parses as 150; if those customers exist, reject a comma not followed by three digits.
+- **Suggestions:** 1. The price field accepts any text; showing the expected format beside it would stop "1,50" before it reaches `parse_price`.
 
 Read Decided and Suggestions first: they are where you agree, overrule, or pick what comes next, by number.
 
@@ -101,4 +101,4 @@ Plumb's behaviour is checked by seeded tasks in [evals/](evals/README.md), and C
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
 
-To change plumb itself, see [CONTRIBUTING.md](../CONTRIBUTING.md): rules are general principles with their reasons, never case-specific patches.
+To change plumb itself, see [CONTRIBUTING.md](../CONTRIBUTING.md): rules are general principles, never case-specific patches, and their reasons go in the commit, changelog or ADR that adds them.
