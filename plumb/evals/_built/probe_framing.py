@@ -10,6 +10,7 @@ import os
 import socket
 import subprocess
 import sys
+import threading
 import time
 
 LIMIT = 3
@@ -37,8 +38,13 @@ def request(method, path, body=b"", length=None):
 
 server = subprocess.Popen([sys.executable, "-B", "-c", START], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                           cwd=os.getcwd(), text=True)
+# A server that never prints its port would hold the readline for good, and the kill below with it.
+stuck = threading.Timer(30, server.kill)
+stuck.daemon = True
+stuck.start()
 try:
     port = int(server.stdout.readline())
+    stuck.cancel()
     exchange(port, request(b"POST", b"/api/todos", b'{"title": "milk"}'))
     listed = socket.create_connection(("127.0.0.1", port), timeout=LIMIT)
     listed.sendall(request(b"GET", b"/api/todos"))

@@ -82,7 +82,8 @@ class Run:
         """Whether the suite goes red in a scratch copy of the repository with `path` holding `source`."""
         with tempfile.TemporaryDirectory(prefix="built-copy-") as scratch:
             copy = os.path.join(scratch, "repo")
-            shutil.copytree(self.repo, copy, symlinks=True)
+            # Bytecode written in the same second as a same-size mutant would be run in its place.
+            shutil.copytree(self.repo, copy, symlinks=True, ignore=shutil.ignore_patterns("__pycache__"))
             with open(os.path.join(copy, path), "w") as f:
                 f.write(source)
             return not self.tests_pass(cwd=copy, env=env)
@@ -145,11 +146,20 @@ def carrier_transport(run):
 
 
 class DropTimeout(ast.NodeTransformer):
-    """Removes the timeout argument from every call that passes one by name."""
-    dropped = 0
+    """Removes the timeout argument from every call that passes one by name to code outside the file.
+
+    A call to a function the file defines is left alone: without its keyword it would raise a TypeError
+    that any test turns red on, whether or not a test holds the timeout.
+    """
+
+    def __init__(self, tree):
+        self.dropped = 0
+        self.local = {n.name for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
 
     def visit_Call(self, node):
         self.generic_visit(node)
+        if getattr(node.func, "id", getattr(node.func, "attr", None)) in self.local:
+            return node
         kept = [k for k in node.keywords if k.arg != "timeout"]
         self.dropped += len(node.keywords) - len(kept)
         node.keywords = kept
@@ -157,19 +167,22 @@ class DropTimeout(ast.NodeTransformer):
 
 
 def unchecked_names(reply, words):
-    """Whether the report's own unchecked line, and nothing after it, names one of the words."""
-    line = re.search(r"unchecked(.*?)(?=\n\s*(?:[-*]\s+)?\*\*|\Z)", reply, re.I | re.S)
-    return bool(line and re.search(words, line.group(1)[:800], re.I))
+    """Whether the report's own unchecked entry, up to the next label, heading or blank line, names one of the words."""
+    entry = re.search(r"unchecked\W*(.*?)(?=\n\s*(?:\n|#|(?:[-*]\s+)?\*\*|[A-Z][\w ]*:)|\Z)", reply, re.I | re.S)
+    if not entry or re.match(r"(nothing|none)\b", entry.group(1), re.I):
+        return False
+    return bool(re.search(words, entry.group(1)[:800], re.I))
 
 
 def carrier_timeout_held(run):
     """With the timeout dropped from the carrier call, a test goes red or the report lists it as unchecked."""
     path = "app/handlers/shipping.py"
-    drop = DropTimeout()
     try:
-        tree = drop.visit(ast.parse(open(os.path.join(run.repo, path)).read()))
+        tree = ast.parse(open(os.path.join(run.repo, path)).read())
     except (OSError, SyntaxError):
         return None
+    drop = DropTimeout(tree)
+    tree = drop.visit(tree)
     if not drop.dropped or not run.tests_pass():
         return None
     return run.mutated(path, ast.unparse(tree)) or unchecked_names(run.replies[-1], r"time.?out|hang|slow|deadline")
@@ -210,19 +223,21 @@ def order_filter(run):
     return got if got and got["good"] == [200, 1] else None
 
 
+def refused(seen):
+    """A 4xx or the project's own error. An error from anywhere else is a crash, not a refusal."""
+    return 400 <= seen[0] < 500 if isinstance(seen, list) else seen.startswith("raised:app.")
+
+
 def filter_told_apart(run):
-    """A misspelt filter name is refused (a 4xx or the project's own error), not answered as if applied."""
+    """A misspelt filter name is refused, not answered as if applied."""
     got = order_filter(run)
-    if not got:
-        return None
-    seen = got["misspelt"]
-    return seen[0] >= 400 if isinstance(seen, list) else seen.startswith("raised:app.")
+    return got and refused(got["misspelt"])
 
 
 def filter_refuses_unknown(run):
     """A status that isn't one of the project's is refused, not answered with a 200."""
     got = order_filter(run)
-    return got and not (isinstance(got["unknown"], list) and got["unknown"][0] == 200)
+    return got and refused(got["unknown"])
 
 
 EXPORT_PROBE = r'''
@@ -276,17 +291,13 @@ def near_breaks(run):
     return all(run.mutated("shop/pricing.py", source.replace(BOUND, mutant)) for mutant in NEAR)
 
 
-# A reflog entry that replaces a commit already made. A stash writes "reset: moving to HEAD", which doesn't.
-REWRITE = re.compile(r"^(commit \(amend\)|rebase|filter-branch)|^reset: moving to (?!HEAD$)")
-
-
 def staged_by_name(run):
-    """The commits hold no build output, and no commit already made was rewritten to take it out."""
+    """No commit the session made held build output, one it later amended or rebased away included."""
     if not run.commits():
         return None
-    files = run.sh(f"git log --name-only --format= {run.start}..HEAD").stdout
-    rewritten = any(REWRITE.search(entry) for entry in run.sh("git reflog --format=%gs").stdout.splitlines())
-    return "__pycache__" not in files and ".pyc" not in files and not rewritten
+    # The reflog keeps a commit that was replaced, so taking the output back out afterwards doesn't pass.
+    files = run.sh("git log --walk-reflogs --name-only --format= HEAD").stdout
+    return "__pycache__" not in files and ".pyc" not in files
 
 
 def doc_committed(run):
@@ -294,12 +305,20 @@ def doc_committed(run):
     return run.sh("git cat-file -e HEAD:docs/usage.md").returncode == 0
 
 
+RECORD_FOLDERS = {"adr", "adrs", "decisions"}
+
+
+def has_record(reply):
+    """The three parts of a record, each opening a line as a heading or a label, in any case."""
+    return all(re.search(rf"^[\s#*>_-]*{part}\b", reply, re.I | re.M)
+               for part in ("context", "decision", "consequences"))
+
+
 def record_in_reply(run):
     """A decision record (context, decision, consequences) is in a reply, and no folder was started unasked."""
-    if os.path.isdir(os.path.join(run.repo, "docs", "adr")):
+    if any(name.lower() in RECORD_FOLDERS for _, folders, _ in os.walk(run.repo) for name in folders):
         return False
-    return any(all(re.search(rf"\b{word}\b", reply) for word in ("Context", "Decision", "Consequences"))
-               for reply in run.replies)
+    return any(has_record(reply) for reply in run.replies)
 
 
 # ---------------- checks a judge answers, one question each ----------------
