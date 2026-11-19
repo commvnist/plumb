@@ -1,7 +1,7 @@
 ---
 name: bf-medium-event-rename
 tags: [brownfield, medium, build, plan]
-runs: 1
+runs: 3
 max_turns: 60
 timeout_seconds: 1200
 allowed_tools: [Bash, Read, Write, Edit, Glob, Grep, Skill, Agent]

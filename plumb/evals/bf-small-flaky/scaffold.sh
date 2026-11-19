@@ -21,9 +21,9 @@ from shop.cart import Cart
 class CartTest(unittest.TestCase):
     def test_names_in_the_order_added(self):
         cart = Cart()
-        cart.add("mug", Decimal("5"))
         cart.add("pen", Decimal("1"))
-        self.assertEqual(cart.names(), ["mug", "pen"])
+        cart.add("mug", Decimal("5"))
+        self.assertEqual(cart.names(), ["pen", "mug"])
 
 
 if __name__ == "__main__":

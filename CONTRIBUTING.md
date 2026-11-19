@@ -12,10 +12,12 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 
 ## How a change lands
 
-- A change to skill text comes with evidence: an eval case that fails without the text and passes with it (`plumb/evals/`). Text and its case live and die together: a clause whose case passes without it goes, and so does a case that passes as often without plumb as with it, since it tests the model rather than plumb.
+- A change to skill text comes with evidence: an eval case that fails without the text and passes with it (`plumb/evals/`), each arm run at least three times. Text and its case live and die together: a clause whose case passes without it goes, and so does a case that passes as often without plumb as with it, since it tests the model rather than plumb. Each case names the text it guards, and `scripts/check_refs.py` holds the two together.
+- A clause that guards against harm a diff can't revert (lost data, a leaked secret, a step on a live system) is removed only if its case passes without plumb in at least three runs on the weakest model plumb supports.
+- A rewording that adds no requirement and no words lands when the cases that touch it still pass.
 - After changing an agent, `plumb/.claude-plugin/plugin.json` or the marketplace, run `python3 scripts/build_codex.py` to regenerate the Codex files; CI fails while they're out of date.
 - Run `python3 scripts/check_refs.py`, and `python3 scripts/test_check_commit.py`, `python3 scripts/test_session_start.py` and `python3 scripts/test_charter_gate.py` after changing a hook. A hook's output reaches the agent only in the shape each tool reads, so check both shapes. If you renumbered a rule or step, re-read every reference to it, then run it with `--update`.
-- Run the evals (see `plumb/evals/README.md`) and compare the score with the last run. Expect about ±0.1 between runs.
+- Run the evals (see `plumb/evals/README.md`) and compare the score with the last run. Expect about ±0.1 between single runs. After editing `plumb/evals/_fixtures/write_cases.py`, regenerate the cases; CI runs it with `--check`.
 - Commits follow Conventional Commits. Record what changes for users under `## Unreleased` at the top of `plumb/CHANGELOG.md`.
 
 ## How a release happens

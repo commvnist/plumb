@@ -1,7 +1,7 @@
 """Builds the seeded repositories plumb's eval cases start from.
 
 Usage: python3 make.py <fixture> <dest>
-Fixtures: shop-small, orders-medium, monorepo-large.
+Fixtures: shop-small, orders-medium, monorepo-large, todo-web.
 Each one is written into <dest> and committed as a git repository with a
 short history, so brownfield cases have real code, tests and log to read.
 """
@@ -614,7 +614,171 @@ def monorepo_large(root):
     commit(root, "feat(billing): public billing API with invoices and proration")
 
 
-FIXTURES = {"shop-small": shop_small, "orders-medium": orders_medium, "monorepo-large": monorepo_large}
+# --- todo-web: a small todo list page over a JSON API --------------------------
+
+TODO_WEB = {
+    "README.md": """
+        # todo-web
+
+        A todo list page (`web/`) over a small JSON API (`server.py`, standard library only).
+        Run it with `python3 server.py` and open http://localhost:8000. Run the tests with
+        `python3 -m unittest discover -s tests -t .`.
+    """,
+    "server.py": '''
+        import json
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        TODOS = {}
+        NEXT_ID = [1]
+
+
+        def create(title):
+            todo = {"id": NEXT_ID[0], "title": title, "done": False}
+            TODOS[todo["id"]] = todo
+            NEXT_ID[0] += 1
+            return todo
+
+
+        def delete(todo_id):
+            """Removes a todo; returns False when there was none with that id."""
+            return TODOS.pop(todo_id, None) is not None
+
+
+        class Handler(BaseHTTPRequestHandler):
+            def _send(self, status, body=None):
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                if body is not None:
+                    self.wfile.write(json.dumps(body).encode())
+
+            def do_GET(self):
+                if self.path == "/api/todos":
+                    return self._send(200, list(TODOS.values()))
+                if self.path in ("/", "/index.html", "/app.js"):
+                    name = "index.html" if self.path == "/" else self.path.lstrip("/")
+                    self.send_response(200)
+                    self.end_headers()
+                    with open("web/" + name, "rb") as f:
+                        self.wfile.write(f.read())
+                    return
+                self._send(404, {"error": "not found"})
+
+            def do_POST(self):
+                if self.path != "/api/todos":
+                    return self._send(404, {"error": "not found"})
+                length = int(self.headers.get("Content-Length", 0))
+                title = json.loads(self.rfile.read(length) or b"{}").get("title", "").strip()
+                if not title:
+                    return self._send(400, {"error": "title is required"})
+                self._send(201, create(title))
+
+            def do_DELETE(self):
+                prefix = "/api/todos/"
+                if not self.path.startswith(prefix) or not self.path[len(prefix):].isdigit():
+                    return self._send(404, {"error": "not found"})
+                if not delete(int(self.path[len(prefix):])):
+                    return self._send(404, {"error": "not found"})
+                self._send(204)
+
+
+        if __name__ == "__main__":
+            HTTPServer(("localhost", 8000), Handler).serve_forever()
+    ''',
+    "web/index.html": """
+        <!doctype html>
+        <html lang="en">
+        <head><meta charset="utf-8"><title>Todos</title></head>
+        <body>
+          <main>
+            <h1>Todos</h1>
+            <form id="new-todo">
+              <label for="title">New todo</label>
+              <input id="title" name="title" required>
+              <button type="submit">Add</button>
+            </form>
+            <p id="status" role="status"></p>
+            <ul id="todos"></ul>
+          </main>
+          <script src="app.js"></script>
+        </body>
+        </html>
+    """,
+    "web/app.js": '''
+        const list = document.getElementById("todos");
+        const status = document.getElementById("status");
+
+        async function load() {
+          const res = await fetch("/api/todos");
+          if (!res.ok) {
+            status.textContent = "Could not load your todos. Try again.";
+            return;
+          }
+          render(await res.json());
+        }
+
+        function render(todos) {
+          list.replaceChildren();
+          status.textContent = todos.length === 0 ? "Nothing to do yet." : "";
+          for (const todo of todos) {
+            const item = document.createElement("li");
+            item.textContent = todo.title;
+            list.append(item);
+          }
+        }
+
+        document.getElementById("new-todo").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const input = document.getElementById("title");
+          const res = await fetch("/api/todos", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({title: input.value}),
+          });
+          if (!res.ok) {
+            status.textContent = "Could not add that todo. Try again.";
+            return;
+          }
+          input.value = "";
+          load();
+        });
+
+        load();
+    ''',
+    "tests/__init__.py": "",
+    "tests/test_server.py": '''
+        import unittest
+
+        import server
+
+
+        class TodoStoreTest(unittest.TestCase):
+            def setUp(self):
+                server.TODOS.clear()
+
+            def test_delete_removes_an_existing_todo(self):
+                todo = server.create("milk")
+                self.assertTrue(server.delete(todo["id"]))
+                self.assertEqual(server.TODOS, {})
+
+            def test_delete_of_an_unknown_id_reports_none_removed(self):
+                self.assertFalse(server.delete(42))
+
+
+        if __name__ == "__main__":
+            unittest.main()
+    ''',
+}
+
+
+def todo_web(root):
+    init(root)
+    write(root, TODO_WEB)
+    commit(root, "feat: todo list page over a JSON API")
+
+
+FIXTURES = {"shop-small": shop_small, "orders-medium": orders_medium, "monorepo-large": monorepo_large,
+            "todo-web": todo_web}
 
 if __name__ == "__main__":
     FIXTURES[sys.argv[1]](os.path.abspath(sys.argv[2]))

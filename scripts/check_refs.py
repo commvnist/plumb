@@ -9,6 +9,9 @@ A number that exists can still point at the wrong thing after an insert or a ren
 title of every numbered rule and step is pinned in scripts/refs.lock. When a title at a number
 changes, the check fails until you have re-read every reference to it and run with --update.
 
+Each eval case names the skill text it is evidence for (plumb/evals/_fixtures/guards.json, written by
+write_cases.py). When that text is gone, the check fails until the case is changed or removed with it.
+
 Usage: python3 scripts/check_refs.py [--update]
 """
 import json
@@ -19,6 +22,7 @@ import sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 PLUGIN = os.path.join(ROOT, "plumb")
 LOCK = os.path.join(ROOT, "scripts", "refs.lock")
+GUARDS = os.path.join(PLUGIN, "evals", "_fixtures", "guards.json")
 NUMBERED = re.compile(r"^(\d+)\. \*\*(.+?)\*\*")
 DASH = r"[–-]"
 
@@ -86,6 +90,12 @@ def main(update):
             for m in re.finditer(r"(plumb(?:-[a-z]+)?)'s \"([^\"]+)\"", line):
                 if m.group(2) not in headings(texts.get(m.group(1), "")):
                     errors.append(f"{where}: {m.group(1)} has no section \"{m.group(2)}\"")
+
+    for case, pairs in json.load(open(GUARDS)).items():
+        for name, phrase in pairs:
+            if phrase not in texts.get(name, ""):
+                errors.append(f"evals/{case} guards {phrase!r} in {name}, which is no longer there: "
+                              "change or remove the case with the text")
 
     current = {"charter rules": {str(k): v for k, v in rules.items()},
                "steps": {name: {str(k): v for k, v in s.items()} for name, s in steps.items() if s}}

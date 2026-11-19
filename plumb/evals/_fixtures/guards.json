@@ -1,0 +1,426 @@
+{
+ "bf-small-debug": [
+  [
+   "plumb-debug",
+   "Name the cause"
+  ],
+  [
+   "plumb-debug",
+   "Lock it"
+  ],
+  [
+   "plumb",
+   "never swallow an error"
+  ]
+ ],
+ "bf-small-tests": [
+  [
+   "plumb-test",
+   "Expected values come from what the behaviour should be"
+  ],
+  [
+   "plumb-test",
+   "say in one line what you left untested"
+  ],
+  [
+   "plumb",
+   "A test earns its place"
+  ]
+ ],
+ "bf-small-refactor": [
+  [
+   "plumb-refactor",
+   "Pin the behaviour"
+  ],
+  [
+   "plumb-refactor",
+   "through the public surface"
+  ]
+ ],
+ "bf-small-ship": [
+  [
+   "plumb-ship",
+   "Every commit gets a body"
+  ],
+  [
+   "plumb-ship",
+   "always in Conventional Commits"
+  ],
+  [
+   "plumb",
+   "Write in a neutral technical voice"
+  ]
+ ],
+ "bf-small-ship-ticket": [
+  [
+   "plumb-ship",
+   "What the history's own format carries"
+  ],
+  [
+   "plumb",
+   "Follow a convention wherever something depends on it"
+  ]
+ ],
+ "bf-small-pr-title": [
+  [
+   "plumb-ship",
+   "Title it as a commit subject"
+  ],
+  [
+   "plumb",
+   "Write in a neutral technical voice"
+  ]
+ ],
+ "bf-small-orphan": [
+  [
+   "plumb",
+   "remove code it leaves unused"
+  ]
+ ],
+ "bf-small-pushback-right": [
+  [
+   "plumb",
+   "If the operator is right, say where else the mistake appears"
+  ]
+ ],
+ "bf-small-build-ship": [
+  [
+   "plumb-build",
+   "Prove it"
+  ],
+  [
+   "plumb-ship",
+   "Run the project's full checks on what ships"
+  ]
+ ],
+ "bf-small-two-diffs": [
+  [
+   "plumb",
+   "Across several diffs, stop after each report"
+  ],
+  [
+   "plumb",
+   "**Waiting on:**"
+  ],
+  [
+   "plumb-test",
+   "named for the behaviour and condition"
+  ]
+ ],
+ "bf-small-explain": [
+  [
+   "plumb-explain",
+   "Trace one real case"
+  ],
+  [
+   "plumb-explain",
+   "unknown or your inference"
+  ],
+  [
+   "plumb-explain",
+   "Hand them one check they can run"
+  ]
+ ],
+ "bf-small-pushback": [
+  [
+   "plumb",
+   "If their request rests on a false belief about the code"
+  ]
+ ],
+ "bf-small-risk-named": [
+  [
+   "plumb",
+   "If they ask for something that will fail, follow them and name the risk once"
+  ]
+ ],
+ "bf-medium-authz": [
+  [
+   "plumb-build",
+   "Read before writing"
+  ],
+  [
+   "plumb",
+   "Claims need evidence"
+  ]
+ ],
+ "bf-medium-consumer": [
+  [
+   "plumb",
+   "A defect in the change under real conditions (repeats"
+  ]
+ ],
+ "bf-medium-plan": [
+  [
+   "plumb-plan",
+   "Stage a change charter rule 3 names"
+  ],
+  [
+   "plumb",
+   "never lands in one diff"
+  ],
+  [
+   "plumb",
+   "Nygard ADR"
+  ],
+  [
+   "plumb",
+   "Ask at most three questions"
+  ]
+ ],
+ "bf-medium-event-rename": [
+  [
+   "plumb",
+   "queued messages"
+  ]
+ ],
+ "bf-medium-review-noise": [
+  [
+   "plumb",
+   "defend against nothing else"
+  ],
+  [
+   "plumb-review",
+   "Trace each finding's input to where it enters"
+  ]
+ ],
+ "bf-medium-agent-file": [
+  [
+   "plumb",
+   "Leave the next run less to rediscover"
+  ],
+  [
+   "plumb",
+   "never a second one"
+  ]
+ ],
+ "bf-medium-review": [
+  [
+   "plumb-review",
+   "Run the project's checks"
+  ],
+  [
+   "plumb",
+   "Never fake success"
+  ]
+ ],
+ "bf-medium-ship-red": [
+  [
+   "plumb-ship",
+   "If one fails, don't ship"
+  ]
+ ],
+ "bf-medium-reviewed": [
+  [
+   "plumb",
+   "Start each agent on the model"
+  ]
+ ],
+ "bf-medium-reviewed-off": [
+  [
+   "plumb",
+   "With `plumb agents: off`"
+  ]
+ ],
+ "bf-medium-auto": [
+  [
+   "plumb-auto",
+   "Get an independent review"
+  ],
+  [
+   "plumb-auto",
+   "Pin done first"
+  ],
+  [
+   "plumb-auto",
+   "**Assumed:**"
+  ]
+ ],
+ "bf-medium-auto-stop": [
+  [
+   "plumb-auto",
+   "Stop only for what can't be undone"
+  ]
+ ],
+ "bf-small-split": [
+  [
+   "plumb",
+   "Decide every input that can arrive"
+  ]
+ ],
+ "bf-medium-n-plus-one": [
+  [
+   "plumb",
+   "data sizes"
+  ]
+ ],
+ "bf-medium-profile": [
+  [
+   "plumb",
+   "never a whole stored record"
+  ]
+ ],
+ "bf-large-reuse": [
+  [
+   "plumb",
+   "Take the first rung that works"
+  ],
+  [
+   "plumb-build",
+   "send the plumb-scout agent"
+  ]
+ ],
+ "bf-large-audit": [
+  [
+   "plumb-test",
+   "Keep, merge, rewrite or delete"
+  ],
+  [
+   "plumb-audit",
+   "find gaps by risk"
+  ]
+ ],
+ "bf-large-audit-all": [
+  [
+   "plumb-audit",
+   "run the project's checks once"
+  ],
+  [
+   "plumb",
+   "a defect in several places being one finding"
+  ]
+ ],
+ "bf-large-audit-off": [
+  [
+   "plumb",
+   "With `plumb agents: off`"
+  ]
+ ],
+ "bf-small-clock": [
+  [
+   "plumb",
+   "A defect in the change under real conditions"
+  ],
+  [
+   "plumb",
+   "Never write tests that break on harmless changes or pass on real bugs"
+  ]
+ ],
+ "bf-medium-carrier": [
+  [
+   "plumb",
+   "a failing dependency"
+  ],
+  [
+   "plumb",
+   "Fail loudly, early, with context"
+  ]
+ ],
+ "bf-medium-export": [
+  [
+   "plumb",
+   "Work that can stop part way"
+  ]
+ ],
+ "bf-medium-live-db": [
+  [
+   "plumb",
+   "a shared or live system, or the operator's uncommitted work"
+  ]
+ ],
+ "bf-small-flaky": [
+  [
+   "plumb-debug",
+   "an intermittent one by forcing its cause"
+  ]
+ ],
+ "bf-medium-suggestions": [
+  [
+   "plumb",
+   "what a principal engineer sharing this charter would still insist on"
+  ]
+ ],
+ "gf-small-cli": [
+  [
+   "plumb",
+   "No speculative generality"
+  ]
+ ],
+ "gf-medium-api": [
+  [
+   "plumb",
+   "Nygard ADR"
+  ],
+  [
+   "plumb",
+   "a new dependency needs a yes"
+  ]
+ ],
+ "gf-large-platform": [
+  [
+   "plumb-plan",
+   "Find the thinnest end-to-end slice"
+  ],
+  [
+   "plumb-plan",
+   "No time estimates"
+  ],
+  [
+   "plumb-plan",
+   "gives up"
+  ]
+ ],
+ "bf-small-ui": [
+  [
+   "plumb-build",
+   "Define done"
+  ],
+  [
+   "plumb",
+   "**Decided:**"
+  ]
+ ],
+ "bf-medium-rename-review": [
+  [
+   "plumb",
+   "never lands in one diff"
+  ],
+  [
+   "plumb-review",
+   "Judge in order"
+  ]
+ ],
+ "bf-small-release": [
+  [
+   "plumb-ship",
+   "Changelogs and releases"
+  ],
+  [
+   "plumb-ship",
+   "never the commit list"
+  ]
+ ],
+ "bf-small-route-e2e": [
+  [
+   "plumb-build",
+   "any request to write or modify code"
+  ]
+ ],
+ "bf-small-route-away": [
+  [
+   "plumb-auto",
+   "won't be there to answer"
+  ]
+ ],
+ "bf-medium-route-merge": [
+  [
+   "plumb-review",
+   "is this safe to merge"
+  ]
+ ],
+ "bf-medium-route-column": [
+  [
+   "plumb-refactor",
+   "A change to stored data or an outside contract is plumb-plan's"
+  ]
+ ]
+}
