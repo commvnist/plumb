@@ -34,6 +34,8 @@ jobs:
       - env:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
+          # A leading Jira key ("[PROJ-123] fix: ...") doesn't change what the title releases.
+          case "$TITLE" in \[[A-Z]*-[0-9]*\]\ *) TITLE=${TITLE#*\] } ;; esac
           case "$TITLE" in
             feat*|fix*|perf*|*'!:'*) ;;
             *) exit 0 ;;

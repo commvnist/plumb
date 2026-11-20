@@ -278,6 +278,66 @@ git remote add origin https://github.com/example-shop/shop.git
                 Cart.item_count with what callers must do, and what was verified, and the body has no line saying or
                 hinting that an AI wrote it."""),
         }),
+    "bf-small-pr-jira": dict(
+        tags=["brownfield", "small", "ship"], fixture="shop-small",
+        scaffold_extra=r"""
+git checkout -q -b feature/tax
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s += '''
+
+def total_with_tax(amount, tax_percent):
+    # Adds sales tax, rounded to the cent.
+    return _round_cents(amount * (Decimal(100) + Decimal(tax_percent)) / Decimal(100))
+'''
+open(p, "w").write(s)
+PY
+git commit -qam "feat(pricing): add total_with_tax
+
+Checkout needs prices with sales tax, rounded to the cent like every
+other price."
+git remote add origin https://github.com/example-shop/shop.git
+""",
+        prompt="Open a pull request for this branch. It's for Jira issue SHOP-42.",
+        graders={
+            "skill-ship": skill("plumb-ship"),
+            "title": llm("""
+                The operator named Jira issue SHOP-42. Pass if the pull request title the agent used or proposed
+                starts with "[SHOP-42] " followed by a Conventional Commits subject (for example
+                "[SHOP-42] feat(pricing): add total_with_tax")."""),
+            "jira-section": llm("""
+                Pass if the pull request body the agent used or proposed opens with a section (its first heading or
+                first labelled part) that references Jira issue SHOP-42."""),
+        }),
+    "bf-small-pr-no-jira": dict(
+        tags=["brownfield", "small", "ship"], fixture="shop-small",
+        scaffold_extra=r"""
+git checkout -q -b feature/SHOP-17-tax
+python3 - <<'PY'
+p = "shop/pricing.py"
+s = open(p).read()
+s += '''
+
+def total_with_tax(amount, tax_percent):
+    # Adds sales tax, rounded to the cent.
+    return _round_cents(amount * (Decimal(100) + Decimal(tax_percent)) / Decimal(100))
+'''
+open(p, "w").write(s)
+PY
+git commit -qam "feat(pricing): add total_with_tax
+
+Checkout needs prices with sales tax, rounded to the cent like every
+other price."
+git remote add origin https://github.com/example-shop/shop.git
+""",
+        prompt="Open a pull request for this branch.",
+        graders={
+            "skill-ship": skill("plumb-ship"),
+            "no-key": llm("""
+                The operator named no Jira issue; only the branch name holds a key (SHOP-17). Pass if the pull request
+                title the agent used or proposed has no bracketed key such as "[SHOP-17]" in front of it."""),
+        }),
     "bf-small-orphan": dict(
         tags=["brownfield", "small", "build"], fixture="shop-small",
         scaffold_extra=r"""
@@ -1517,6 +1577,9 @@ GUARDS = {
     "bf-small-ship-ticket": [("plumb-ship", "What the history's own format carries"),
                              ("plumb", "Follow a convention wherever something depends on it")],
     "bf-small-pr-title": [("plumb-ship", "Title it as a commit subject"), ("plumb", "Write in a neutral technical voice")],
+    "bf-small-pr-jira": [("plumb-ship", "lead the title with its key in brackets", "title"),
+                         ("plumb-ship", "open the description with a section referencing that issue", "jira-section")],
+    "bf-small-pr-no-jira": [("plumb-ship", "a key from anywhere else stays out", "no-key")],
     "bf-small-orphan": [("plumb", "remove code it leaves unused")],
     "bf-small-pushback-right": [("plumb", "If the operator is right, say where else the mistake appears")],
     "bf-small-build-ship": [("plumb-build", "Prove it"), ("plumb-ship", "Ship only what the project's checks have passed on")],
