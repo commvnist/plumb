@@ -242,6 +242,28 @@ class CheckCommit(unittest.TestCase):
         self.assertNotIn("first person", hook_output(self.repo, "ssh me@build \"cd svc && git commit -m 'fix: x'\"", ""))
         self.assertIn("credits an AI tool", hook_output(
             self.repo, "ssh build \"git commit -m 'fix: x' -m 'Co-authored-by: Claude <noreply@anthropic.com>'\"", ""))
+        # A message quoted again inside a quoted remote command.
+        self.assertIn("first person", hook_output(self.repo, 'ssh host "git commit -m \\"fix: x\\" -m \\"We fixed it\\""', ""))
+
+    def test_a_subagent_is_told_once_from_its_own_transcript(self):
+        command = "ssh worker \"git commit -m 'fix: round totals'\""
+        with tempfile.TemporaryDirectory() as d:
+            session = os.path.join(d, "s1.jsonl")
+            open(session, "w").close()
+            os.makedirs(os.path.join(d, "s1", "subagents"))
+            agent = os.path.join(d, "s1", "subagents", "agent-a1b2.jsonl")
+            payload = {"cwd": self.repo, "transcript_path": session, "agent_id": "a1b2",
+                       "tool_input": {"command": command}, "tool_response": {"stdout": ""}}
+
+            def call():
+                return subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
+                                      text=True, check=True).stdout
+
+            first = call()
+            self.assertIn("hands a commit", first)
+            with open(agent, "w") as f:
+                f.write(json.dumps({"content": first}) + "\n")
+            self.assertEqual(call(), "")
         self.assertEqual(hook_output(self.repo, "echo 'git commit'", ""), "")
 
     def test_a_local_commit_through_another_shell_is_still_checked_here(self):

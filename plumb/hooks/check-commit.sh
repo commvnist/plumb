@@ -73,10 +73,11 @@ commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
   | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
   | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
 
-# The message a commit is given in the command itself: each -m or --message string, and a heredoc that
+# The message a commit is given in the command itself: each -m or --message string (quoted once, or again
+# inside a quoted remote command), and a heredoc that
 # feeds -F - or --file=-. Shell words around them (a host, a script's comments) aren't the message.
-messages=$( { printf '%s' "$command" | grep -Eo '(-m|--message)[[:space:]=]+('"'"'[^'"'"']*'"'"'|\\"([^\\]|\\[^"])*\\")' \
-    | sed -E "s/^(-m|--message)[[:space:]=]+('|\\\\\")//; s/('|\\\\\")\$//; s/\$/\\\\n/" ;
+messages=$( { printf '%s' "$command" | grep -Eo '(-m|--message)[[:space:]=]+('"'"'[^'"'"']*'"'"'|\\\\\\"[^"]*\\\\\\"|\\"([^\\]|\\[^"])*\\")' \
+    | sed -E "s/^(-m|--message)[[:space:]=]+('|(\\\\\\\\)?\\\\\")//; s/('|(\\\\\\\\)?\\\\\")\$//; s/\$/\\\\n/" ;
   printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' | awk '{ gsub(/\\n/, "\n"); print }' \
     | awk -v q="'" 'BEGIN { op = "(^|[^<])<<-?[ \t]*[\\\\\"" q "]*[A-Za-z_][A-Za-z0-9_]*" }
         take { line = $0; sub(/^([ \t]|\\t)*/, "", line); if (line == end) take = 0; else printf "%s\\n", $0; next }
