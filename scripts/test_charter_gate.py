@@ -17,13 +17,18 @@ def charter_opening():
     return next(line for line in lines if line.strip())
 
 
-def run(tool, tool_input, transcript_lines, prefix=None):
+def entry(line):
+    # A transcript line is a message, unless the test gives the whole entry (a compaction boundary).
+    return line if isinstance(line, dict) and "type" in line else {"message": {"content": [line]}}
+
+
+def run(tool, tool_input, transcript_lines, prefix=None, extra=None):
     with tempfile.NamedTemporaryFile("w", prefix=prefix, suffix=".jsonl", delete=False) as t:
         for line in transcript_lines:
-            t.write(json.dumps({"message": {"content": [line]}}) + "\n")
+            t.write(json.dumps(entry(line), separators=(",", ":")) + "\n")
     try:
         payload = {"hook_event_name": "PreToolUse", "transcript_path": t.name,
-                   "tool_name": tool, "tool_input": tool_input}
+                   "tool_name": tool, "tool_input": tool_input, **(extra or {})}
         out = subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
                              text=True, check=True).stdout
     finally:
@@ -58,6 +63,41 @@ class CharterGate(unittest.TestCase):
         first = run("Write", {"file_path": "notes.md"}, ["write notes"])
         refusal = {"type": "tool_result", "is_error": True, "content": first["permissionDecisionReason"]}
         self.assertFalse(held("Write", {"file_path": "notes.md"}, ["write notes", refusal]))
+
+    def test_holds_again_after_a_compaction_drops_the_charter(self):
+        loaded = "Base directory for this skill: /p/skills/plumb\n\n# Plumb\n\n" + charter_opening()
+        boundary = {"type": "system", "subtype": "compact_boundary", "content": "Conversation compacted"}
+        summary = {"type": "user", "isCompactSummary": True, "message": {"content": "Loaded " + charter_opening()}}
+        self.assertTrue(held("Edit", {"file_path": "a.py"}, [loaded, boundary, summary, "go on"]))
+        self.assertFalse(held("Edit", {"file_path": "a.py"}, [boundary, "go on", loaded]))
+        first = run("Edit", {"file_path": "a.py"}, [loaded, boundary])
+        refusal = {"type": "tool_result", "is_error": True, "content": first["permissionDecisionReason"]}
+        self.assertFalse(held("Edit", {"file_path": "a.py"}, [loaded, boundary, refusal]))
+
+    def test_reads_a_subagents_own_transcript(self):
+        # A subagent's call carries the session's transcript path and the agent's id.
+        loaded = "Base directory for this skill: /p/skills/plumb\n\n# Plumb\n\n" + charter_opening()
+        with tempfile.TemporaryDirectory() as d:
+            session = os.path.join(d, "s1.jsonl")
+            with open(session, "w") as f:
+                f.write(json.dumps(entry(loaded)) + "\n")
+            os.makedirs(os.path.join(d, "s1", "subagents"))
+            agent = os.path.join(d, "s1", "subagents", "agent-a1b2.jsonl")
+
+            def call():
+                payload = {"hook_event_name": "PreToolUse", "transcript_path": session, "agent_id": "a1b2",
+                           "tool_name": "Write", "tool_input": {"file_path": "notes.md"}}
+                out = subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
+                                     text=True, check=True).stdout
+                return json.loads(out)["hookSpecificOutput"] if out else None
+
+            with open(agent, "w") as f:
+                f.write(json.dumps(entry("write the notes")) + "\n")
+            first = call()
+            self.assertTrue(first and HELD in first["permissionDecisionReason"])
+            with open(agent, "a") as f:
+                f.write(json.dumps(entry({"type": "tool_result", "content": first["permissionDecisionReason"]})) + "\n")
+            self.assertIsNone(call())
 
     def test_reads_a_transcript_path_that_json_escapes(self):
         # A Windows path's backslashes arrive escaped in the hook's JSON input.

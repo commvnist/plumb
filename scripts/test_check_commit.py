@@ -14,7 +14,7 @@ def git(repo, *args):
     subprocess.run(GIT + ["-C", repo, *args], check=True, capture_output=True)
 
 
-def hook_output(repo, command, output=None, copilot=False):
+def hook_output(repo, command, output=None, copilot=False, transcript=None):
     # By default the command printed git's success line for the newest commit, as a real commit does.
     if output is None:
         line = subprocess.run(["git", "-C", repo, "log", "-1", "--format=[main %h] %s"], check=True,
@@ -22,6 +22,8 @@ def hook_output(repo, command, output=None, copilot=False):
         output = line if "commit" in command else ""
     payload = {"hook_event_name": "PostToolUse", "cwd": repo, "tool_name": "Bash",
                "tool_input": {"command": command}, "tool_response": {"stdout": output}}
+    if transcript:
+        payload["transcript_path"] = transcript
     env = {k: v for k, v in os.environ.items() if k != "COPILOT_PLUGIN_ROOT"}
     if copilot:
         env["COPILOT_PLUGIN_ROOT"] = "/plugin"
@@ -120,7 +122,8 @@ class CheckCommit(unittest.TestCase):
             git(repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
             made = subprocess.run(["git", "-C", repo, "log", "-1", "--format=[main %h] %s"], check=True,
                                   capture_output=True, text=True).stdout.strip()
-            for command in ["cd svc && git commit -m 'Add stuff'", 'git -C svc commit -m "Add stuff"']:
+            for command in ["cd svc && git commit -m 'Add stuff'", 'git -C svc commit -m "Add stuff"',
+                        "cd svc\ngit commit -m 'Add stuff'"]:
                 with self.subTest(command=command):
                     self.assertTrue(run_hook(parent, command, made))
 
@@ -203,6 +206,90 @@ class CheckCommit(unittest.TestCase):
             ('gh pr create --title "feat: tax" --body "Adds tax.\n\nI checked the rounding."', "first person"),
             ('gh pr create --assignee @me --title "feat: tax" --body "Adds tax."', None),
             ("gh api repos/o/r/commits/abc", None),
+        ]
+        for command, flag in cases:
+            with self.subTest(command=command):
+                out = hook_output(self.repo, command)
+                if flag:
+                    self.assertIn(flag, out)
+                else:
+                    self.assertEqual(out, "")
+
+    def test_checks_a_commit_handed_to_another_program_by_its_text(self):
+        # The commit runs on another machine or in a container: no repository here holds it.
+        handed = "plumb: this command hands a commit to another program"
+        cases = [
+            ("ssh worker \"cd svc && git commit -m 'fix: round totals'\"", None),
+            ("mb run <<'EOF'\ncd svc\ngit commit -m 'fix: round totals' -m 'I checked it.'\nEOF", "first person"),
+            ("mb run <<EOF\ngit commit -F - <<'MSG'\nfix: x\n\nCo-authored-by: Claude <noreply@anthropic.com>\nMSG\nEOF", "credits an AI tool"),
+        ]
+        for command, flag in cases:
+            with self.subTest(command=command):
+                out = hook_output(self.repo, command, "")
+                self.assertIn(handed, out)
+                if flag:
+                    self.assertIn(flag, out)
+        # A clean handed-off commit is pointed out once a session; text that only names a commit is not.
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as t:
+            t.write(json.dumps({"content": hook_output(self.repo, cases[0][0], "")}) + "\n")
+        try:
+            self.assertEqual(hook_output(self.repo, cases[0][0], "", transcript=t.name), "")
+        finally:
+            os.unlink(t.name)
+        self.assertEqual(hook_output(self.repo, "grep -rn 'git commit' hooks/", ""), "")
+        self.assertEqual(hook_output(self.repo, 'grep -rn "git commit -m" docs/', ""), "")
+        # Only the message is read, not the host or the commands around it.
+        self.assertNotIn("first person", hook_output(self.repo, "ssh me@build \"cd svc && git commit -m 'fix: x'\"", ""))
+        self.assertIn("credits an AI tool", hook_output(
+            self.repo, "ssh build \"git commit -m 'fix: x' -m 'Co-authored-by: Claude <noreply@anthropic.com>'\"", ""))
+        # A message quoted again inside a quoted remote command.
+        self.assertIn("first person", hook_output(self.repo, 'ssh host "git commit -m \\"fix: x\\" -m \\"We fixed it\\""', ""))
+
+    def test_a_subagent_is_told_once_from_its_own_transcript(self):
+        command = "ssh worker \"git commit -m 'fix: round totals'\""
+        with tempfile.TemporaryDirectory() as d:
+            session = os.path.join(d, "s1.jsonl")
+            open(session, "w").close()
+            os.makedirs(os.path.join(d, "s1", "subagents"))
+            agent = os.path.join(d, "s1", "subagents", "agent-a1b2.jsonl")
+            payload = {"cwd": self.repo, "transcript_path": session, "agent_id": "a1b2",
+                       "tool_input": {"command": command}, "tool_response": {"stdout": ""}}
+
+            def call():
+                return subprocess.run(["sh", HOOK], input=json.dumps(payload), capture_output=True,
+                                      text=True, check=True).stdout
+
+            first = call()
+            self.assertIn("hands a commit", first)
+            with open(agent, "w") as f:
+                f.write(json.dumps({"content": first}) + "\n")
+            self.assertEqual(call(), "")
+        self.assertEqual(hook_output(self.repo, "echo 'git commit'", ""), "")
+
+    def test_a_local_commit_through_another_shell_is_still_checked_here(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Added stuff")
+        out = hook_output(self.repo, "bash -c 'git commit -m \"Added stuff\"'")
+        self.assertIn("isn't Conventional Commits", out)
+        self.assertNotIn("hands a commit", out)
+
+    def test_a_local_commit_with_its_message_in_a_heredoc_is_still_checked_here(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
+        out = hook_output(self.repo, "git commit -F - <<'EOF'\nAdd stuff\nEOF")
+        self.assertIn("isn't Conventional Commits", out)
+        self.assertNotIn("hands a commit", out)
+
+    def test_says_when_posted_text_is_blank_or_unreadable(self):
+        empty = os.path.join(self.repo, "empty.md")
+        open(empty, "w").close()
+        cases = [
+            ("gh pr edit 4 --body-file empty.md", "is empty"),
+            ('gh pr edit 4 --body ""', "body is empty"),
+            ("gh issue edit 4 --body ''", "body is empty"),
+            ("gh pr edit 4 --body-file /worker/scratch/body.md", "couldn't read /worker/scratch/body.md"),
+            ("gh pr edit 4 --body-file - <<'EOF'\nAdds tax.\nEOF", None),
+            ("gh pr create -t 'fix: x' -b ''", "body is empty"),
+            ("gh api --method GET repos/o/r/pulls/3/comments -F per_page=100", None),
+            ("gh api repos/o/r/issues -F title=Bug -f body=Fix", None),
         ]
         for command, flag in cases:
             with self.subTest(command=command):

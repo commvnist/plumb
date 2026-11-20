@@ -2,7 +2,21 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Fixed
+- After a context compaction, the charter gate holds the next edit, commit or push once again, and the session-start hook says to load the plumb skills again. Before, the gate saw the charter from before the compaction in the transcript and stayed quiet while the agent no longer had it, so the end-of-change report and the rules after it faded for the rest of the session.
+- A subagent's edits are held at most once. The gate read the main session's transcript, where a subagent's refusal never appears, so it could hold the same call every time.
+- The commit check finds a commit on any line of a multi-line command, not only the first.
+
+### Changed
+- The commit check says when a commit went to another program (a remote shell, a container, a job runner's heredoc), where it can't read the result, and checks the message given in the command (each `-m`, or a heredoc fed to `-F -`) for AI credit and first person. A local repository is still checked first, so a commit run through `bash -c` gets the full check. A clean handed-off commit is pointed out once a session.
+- Text posted with `gh` from an empty body or an empty file is flagged, since an edit with it blanks what was there, and so is a body file the check can't read.
+- The session-start reminder names the installed version, so a session with two versions of plumb loaded shows it.
+- The README says which commits and posts the commit check can see.
+
 ## 0.19.1
+
 
 ### Changed
 - plumb-ship deploys only with a way back for everything the deploy changes, stored data included. A rollback of the code doesn't bring back a dropped column; on the smallest model, deploys of a commit that drops one now stop for a yes in 6 of 6 runs, against 3 of 6 before.
