@@ -19,7 +19,7 @@ Name a branch `<type>/<short-slug>` unless the repo has its own convention.
 
 ## Pull requests
 
-Title it as a commit subject, with `!` if any commit is breaking. Fill the project's template if it has one; otherwise write for a principal engineer deciding whether to merge, under short headings and as long as the change needs, what the diff can't show them, leading with why the change exists, then the risk and the way back, and where to look first.
+Title it as a commit subject, with `!` if any commit is breaking. When the operator's own words name the Jira issue the work is for, lead the title with its key in brackets (`[PROJ-123] fix(scope): subject`) and open the description with a section referencing that issue; a key from anywhere else stays out. Fill the project's template if it has one; otherwise write for a principal engineer deciding whether to merge, under short headings and as long as the change needs, what the diff can't show them, leading with why the change exists, then the risk and the way back, and where to look first.
 
 ## Changelogs and releases
 

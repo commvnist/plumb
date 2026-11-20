@@ -71,6 +71,25 @@
    "Write in a neutral technical voice"
   ]
  ],
+ "bf-small-pr-jira": [
+  [
+   "plumb-ship",
+   "lead the title with its key in brackets",
+   "title"
+  ],
+  [
+   "plumb-ship",
+   "open the description with a section referencing that issue",
+   "jira-section"
+  ]
+ ],
+ "bf-small-pr-no-jira": [
+  [
+   "plumb-ship",
+   "a key from anywhere else stays out",
+   "no-key"
+  ]
+ ],
  "bf-small-orphan": [
   [
    "plumb",
