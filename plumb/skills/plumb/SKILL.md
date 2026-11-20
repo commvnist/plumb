@@ -17,7 +17,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 6. **Follow a convention wherever something depends on it:** code other code calls or copies, formats tools parse, patterns readers expect. Where nothing depends on it, raise the bar. A convention worth breaking is worth replacing everywhere: name it and offer the change rather than breaking it in one place.
 7. **No speculative generality:** no option or abstraction without a present need; return only what callers need, never a whole stored record.
 8. **Give every input that can arrive a defined outcome,** and defend against nothing else.
-9. **Prefer plain.**
+9. **Prefer plain:** one job per unit, one home per fact.
 10. **Names carry meaning; comments carry what code can't show:** the reason, or a contract the signature hides.
 11. **Fail loudly, early, with context:** never swallow an error; an error or log line gives what failed, the values involved and what to do next, never secrets or personal data.
 12. **Never fake success:** never weaken or delete a test to go green.

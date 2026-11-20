@@ -1,4 +1,3 @@
-plumb 9: Prefer plain
 plumb 10: Names carry meaning; comments carry what code can't show
 plumb 14: Verify before relying
 plumb 15: Use the project's own checks

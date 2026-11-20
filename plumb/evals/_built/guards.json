@@ -24,5 +24,12 @@
    "the instruction to commit each diff",
    "per-handler"
   ]
+ ],
+ "retitle": [
+  [
+   "plumb",
+   "one job per unit, one home per fact",
+   "one-home"
+  ]
  ]
 }
