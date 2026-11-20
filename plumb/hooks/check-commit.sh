@@ -36,8 +36,9 @@ if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue
   note=""
   for file in $(printf '%s' "$posted" | grep -Eo -- "(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?[^[:space:]\"'\\\\;&|]+" \
     | sed -E "s/^(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?//; s/^[^=@]*=@//"); do
-    # A body read from standard input is in the command itself, already checked.
-    case $file in -) continue ;; /*) path=$file ;; *) path="$dir/$file" ;; esac
+    # A body read from standard input is in the command itself, already checked; an -F field without
+    # =@ is a value, not a file.
+    case $file in -|*=*) continue ;; /*) path=$file ;; *) path="$dir/$file" ;; esac
     if [ -r "$path" ]; then
       posted="$posted\\n$(sed 's/$/\\n/' "$path" | tr -d '\n')"
       [ -n "$(tr -d '[:space:]' < "$path")" ] || note="$note The file $file is empty, so the post is blank; if it replaced text, restore that from the live version's history."
@@ -45,7 +46,7 @@ if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue
       note="$note plumb couldn't read $file here (it may be on another machine), so its text went unchecked: check it against charter rule 20."
     fi
   done
-  printf '%s' "$posted" | grep -Eq -- "--body([[:space:]]+|=)(\\\\\"\\\\\"|'')([[:space:]]|$)" \
+  printf '%s' "$posted" | grep -Eq -- "(--body|-b)([[:space:]]+|=)(\\\\\"\\\\\"|'')([[:space:]]|$)" \
     && note="$note The body is empty, so the post is blank; if it replaced text, restore that from the live version's history."
   printf '%s\n' "$posted" | grep -Eiq "$CREDIT" \
     && note="$note It credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
@@ -72,27 +73,47 @@ commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
   | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
   | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
 
+# The message a commit is given in the command itself: each -m or --message string, and a heredoc that
+# feeds -F - or --file=-. Shell words around them (a host, a script's comments) aren't the message.
+messages=$( { printf '%s' "$command" | grep -Eo '(-m|--message)[[:space:]=]+('"'"'[^'"'"']*'"'"'|\\"([^\\]|\\[^"])*\\")' \
+    | sed -E "s/^(-m|--message)[[:space:]=]+('|\\\\\")//; s/('|\\\\\")\$//; s/\$/\\\\n/" ;
+  printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' | awk '{ gsub(/\\n/, "\n"); print }' \
+    | awk -v q="'" 'BEGIN { op = "(^|[^<])<<-?[ \t]*[\\\\\"" q "]*[A-Za-z_][A-Za-z0-9_]*" }
+        take { line = $0; sub(/^([ \t]|\\t)*/, "", line); if (line == end) take = 0; else printf "%s\\n", $0; next }
+        $0 ~ /commit/ && $0 ~ /(-F|--file)[ =]*-([ \t]|$|<)/ && match($0, op) {
+          end = substr($0, RSTART, RLENGTH); sub(/^.*<<-?[ \t]*/, "", end); gsub(/[^A-Za-z0-9_]/, "", end); take = 1 }' ; } | tr -d '\n')
+
 # A commit only inside text handed to another program (a remote shell, a container, a job runner's
-# heredoc) runs where no repository here can show it, so the command's own text is all there is to check.
+# heredoc) may run where no repository here holds it. A local repository is still checked first.
+handed=""
 if [ -z "$commit_args" ]; then
-  printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-]|\\n)git([[:space:]][^;&|]*)?[[:space:]]commit[^;&|]*[[:space:]](-[a-zA-Z]*[mF]|--message|--file)' || exit 0
-  note=""
-  printf '%s\n' "$command" | grep -Eiq "$CREDIT" \
-    && note=" Its text credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
-  printf '%s\n' "$command" | grep -Eq "$FIRST" \
-    && note="$note Its text is in the first person; reword it in a neutral technical voice, as charter rule 20 says."
-  unseen="plumb: this command hands a commit to another program, where the commit check can't read it."
-  if [ -z "$note" ]; then
-    # Said once a session, where the transcript shows it was said; a clean message needs no repeat.
-    transcript=$(printf '%s' "$input" | grep -Eo '"transcript_path" *: *"([^"\\]|\\.)*"' | head -n 1 \
-      | sed 's/.*: *"//; s/"$//; s/\\\\/\\/g')
-    [ -r "$transcript" ] && grep -qF "$unseen" "$transcript" && exit 0
-    say "$unseen Check the commit it made against plumb-ship and charter rule 20 where it ran, and amend it there while it's unpushed."
-  else
-    say "$unseen$note Amend it where it ran while it's unpushed; if it's pushed, tell the operator and propose the corrected message."
-  fi
-  exit 0
+  [ -n "$messages" ] || exit 0
+  handed=1
 fi
+not_here() {
+  # No commit this command made is in a repository here: for a handed-off commit, its text is all there is.
+  [ -n "$handed" ] || exit 0
+  printf '%s' "$response" | grep -Eiq 'nothing to commit|nothing added to commit|no changes added|(^|[^[:alnum:]])(error|fatal):' && exit 0
+  note=""
+  printf '%s\n' "$messages" | grep -Eiq "$CREDIT" \
+    && note=" Its message credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
+  printf '%s\n' "$messages" | grep -Eq "$FIRST" \
+    && note="$note Its message is in the first person; reword it in a neutral technical voice, as charter rule 20 says."
+  unseen="plumb: this command hands a commit to another program, where the commit check can't read it."
+  if [ -n "$note" ]; then
+    say "$unseen$note Amend it where it ran while it's unpushed; if it's pushed, tell the operator and propose the corrected message."
+    exit 0
+  fi
+  # A clean message is pointed out once a session (or subagent), where its transcript shows it was said.
+  transcript=$(printf '%s' "$input" | grep -Eo '"transcript_path" *: *"([^"\\]|\\.)*"' | head -n 1 \
+    | sed 's/.*: *"//; s/"$//; s/\\\\/\\/g')
+  agent=$(printf '%s' "$input" | grep -Eo '"agent_id" *: *"[A-Za-z0-9_-]+"' | head -n 1 | sed 's/.*: *"//; s/"$//')
+  [ -n "$agent" ] && transcript="${transcript%.jsonl}/subagents/agent-$agent.jsonl"
+  [ -r "$transcript" ] && grep -qF "$unseen" "$transcript" && exit 0
+  say "$unseen Check the commit it made against plumb-ship and charter rule 20 where it ran, and amend it there while it's unpushed."
+  exit 0
+}
+response=$(printf '%s' "$input" | sed -n 's/.*"tool_response" *: *//p')
 
 # The commit may be in another repository than the session's folder: git -C <dir>, or a cd before it.
 target=$(printf '%s' "$command" | sed -n 's/.*git[[:space:]][[:space:]]*-C[[:space:]][[:space:]]*\([^[:space:];&|]*\).*/\1/p' | head -n 1)
@@ -103,28 +124,28 @@ case $target in
   /*) git -C "$target" rev-parse --git-dir >/dev/null 2>&1 && dir=$target ;;
   *) git -C "$dir/$target" rev-parse --git-dir >/dev/null 2>&1 && dir="$dir/$target" ;;
 esac
-git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 || exit 0
+git -C "$dir" rev-parse --git-dir >/dev/null 2>&1 || not_here
 
 # Only a commit this command made: the newest reflog entry is a commit, and recent.
-entry=$(git -C "$dir" reflog -1 --date=unix --format='%gd %gs' 2>/dev/null) || exit 0
+entry=$(git -C "$dir" reflog -1 --date=unix --format='%gd %gs' 2>/dev/null) || not_here
 case $entry in
   *"} commit (merge):"*) exit 0 ;;
   *"} commit"*) ;;
-  *) exit 0 ;;
+  *) not_here ;;
 esac
 made=$(printf '%s' "$entry" | sed 's/^[^{]*{\([0-9]*\)}.*/\1/')
-[ $(( $(date +%s) - made )) -le 120 ] || exit 0
+[ $(( $(date +%s) - made )) -le 120 ] || not_here
 # A recent commit may be the operator's, made just before this command failed or made none. Where the tool
 # reports the command's output (Copilot CLI doesn't), git's success line ("[main 1a2b3c4] subject") must name
 # HEAD; a quiet commit prints none, so there only a failure message rules it out.
 if printf '%s' "$input" | grep -Eq '"tool_response" *:'; then
-  response=$(printf '%s' "$input" | sed -n 's/.*"tool_response" *: *//p')
   head_sha=$(git -C "$dir" rev-parse HEAD)
   mine=""
   for sha in $(printf '%s' "$response" | grep -Eo '\[[^]"]* [0-9a-f]{7,40}\]' | sed 's/.* \([0-9a-f]*\)\]$/\1/'); do
     case $head_sha in "$sha"*) mine=1 ;; esac
   done
   if [ -z "$mine" ]; then
+    [ -n "$handed" ] && not_here
     printf '%s' "$commit_args" | grep -Eq '[[:space:]](--quiet|-[a-zA-Z]*q[a-zA-Z]*)([[:space:]]|$)' || exit 0
     printf '%s' "$response" | grep -Eiq 'nothing to commit|nothing added to commit|no changes added|failed|(^|[^[:alnum:]])(error|fatal):' && exit 0
   fi

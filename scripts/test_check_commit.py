@@ -237,7 +237,18 @@ class CheckCommit(unittest.TestCase):
         finally:
             os.unlink(t.name)
         self.assertEqual(hook_output(self.repo, "grep -rn 'git commit' hooks/", ""), "")
+        self.assertEqual(hook_output(self.repo, 'grep -rn "git commit -m" docs/', ""), "")
+        # Only the message is read, not the host or the commands around it.
+        self.assertNotIn("first person", hook_output(self.repo, "ssh me@build \"cd svc && git commit -m 'fix: x'\"", ""))
+        self.assertIn("credits an AI tool", hook_output(
+            self.repo, "ssh build \"git commit -m 'fix: x' -m 'Co-authored-by: Claude <noreply@anthropic.com>'\"", ""))
         self.assertEqual(hook_output(self.repo, "echo 'git commit'", ""), "")
+
+    def test_a_local_commit_through_another_shell_is_still_checked_here(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Added stuff")
+        out = hook_output(self.repo, "bash -c 'git commit -m \"Added stuff\"'")
+        self.assertIn("isn't Conventional Commits", out)
+        self.assertNotIn("hands a commit", out)
 
     def test_a_local_commit_with_its_message_in_a_heredoc_is_still_checked_here(self):
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
@@ -254,7 +265,9 @@ class CheckCommit(unittest.TestCase):
             ("gh issue edit 4 --body ''", "body is empty"),
             ("gh pr edit 4 --body-file /worker/scratch/body.md", "couldn't read /worker/scratch/body.md"),
             ("gh pr edit 4 --body-file - <<'EOF'\nAdds tax.\nEOF", None),
-            ("gh pr edit 4 --body '' --title 'Generated with Claude'", "body is empty"),
+            ("gh pr create -t 'fix: x' -b ''", "body is empty"),
+            ("gh api --method GET repos/o/r/pulls/3/comments -F per_page=100", None),
+            ("gh api repos/o/r/issues -F title=Bug -f body=Fix", None),
         ]
         for command, flag in cases:
             with self.subTest(command=command):

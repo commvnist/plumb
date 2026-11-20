@@ -10,10 +10,12 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 - The commit check finds a commit on any line of a multi-line command, not only the first.
 
 ### Changed
-- The commit check says when a commit went to another program (a remote shell, a container, a job runner's heredoc), where it can't read the result, and checks the command's own text for AI credit and first person. A clean one is pointed out once a session.
+- The commit check says when a commit went to another program (a remote shell, a container, a job runner's heredoc), where it can't read the result, and checks the message given in the command (each `-m`, or a heredoc fed to `-F -`) for AI credit and first person. A local repository is still checked first, so a commit run through `bash -c` gets the full check. A clean handed-off commit is pointed out once a session.
 - Text posted with `gh` from an empty body or an empty file is flagged, since an edit with it blanks what was there, and so is a body file the check can't read.
 - The session-start reminder names the installed version, so a session with two versions of plumb loaded shows it.
 - The README says which commits and posts the commit check can see.
+
+## 0.19.1
 
 
 ### Changed
