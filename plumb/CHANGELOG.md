@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.20.0
 
 ### Changed
 - Charter rule 9 says what plain means: one job per unit, one home per fact. On a request to add in-place title editing to a todo page, 8 of 12 runs kept one rule for a valid title shared by create and edit, or offered to, against 1 of 12 before, which wrote the check twice at different strictness.
