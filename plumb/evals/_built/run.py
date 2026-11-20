@@ -443,6 +443,9 @@ BUILT = {
     "carrier": dict(fixture="orders-medium", turns=[SUITE["bf-medium-carrier"]["prompt"]],
                     checks={"deadline": carrier_deadline, "transport": carrier_transport,
                             "timeout-held": carrier_timeout_held}),
+    # edit-title's second turn alone, so the delete turn before it doesn't shape the result.
+    "retitle": dict(fixture="todo-web", turns=["Let people edit a todo's title in place on the list page."],
+                    checks={"one-home": ONE_HOME}),
     "edit-title": dict(fixture="todo-web",
                        turns=["Add a way to delete a todo from the list page.",
                               "Let people edit a todo's title in place on the list page."],
