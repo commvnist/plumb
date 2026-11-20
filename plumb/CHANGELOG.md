@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.19.2
 
 ### Fixed
 - After a context compaction, the charter gate holds the next edit, commit or push once again, and the session-start hook says to load the plumb skills again. Before, the gate saw the charter from before the compaction in the transcript and stayed quiet while the agent no longer had it, so the end-of-change report and the rules after it faded for the rest of the session.
