@@ -39,7 +39,7 @@ class Bump(unittest.TestCase):
             ("Merge pull request #8 from x/y", "", [], None),
             ("[SHOP-42] feat(pricing): add tax", "", [], "minor"),
             ("[SHOP-42] fix!: drop the old hook", "", [], "major"),
-            ("[SHOP-42] docs: reword the README", "", [], None),
+            ("[WIP] feat: half done", "", [], None),
             ("fix: small", "", ["release:minor"], "minor"),
             ("feat!: big", "", ["release:patch"], "patch"),
             ("docs: notes", "", ["release:major", "docs"], "major"),

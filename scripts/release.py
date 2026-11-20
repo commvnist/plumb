@@ -1,9 +1,9 @@
 """Works out plumb's next release from the commits since the last tag, and writes it into the files.
 
 The bump comes from each commit's Conventional Commits subject, after any leading Jira key such
-as `[PROJ-123] `: a `!` or a BREAKING CHANGE footer is major, feat is minor, fix and perf are patch. Any other commit that changes text the
-plugin ships (skills, agents, hooks) is patch, since users install from main; the rest release
-nothing. A `release:major|minor|patch|none` label on the commit's pull request overrides both.
+as `[PROJ-123] `: a `!` or a BREAKING CHANGE footer is major, feat is minor, fix and perf are
+patch. Any other commit that changes text the plugin ships (skills, agents, hooks) is patch, since
+users install from main; the rest release nothing. A `release:major|minor|patch|none` label on the commit's pull request overrides both.
 The largest bump across the commits wins. When the version in the files has no tag yet (it was
 bumped by hand), that version is released as it is.
 
