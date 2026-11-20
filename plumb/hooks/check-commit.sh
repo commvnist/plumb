@@ -33,25 +33,70 @@ dir=$(printf '%s' "$input" | grep -Eo '"cwd" *: *"([^"\\]|\\.)*"' | head -n 1 | 
 if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
   posted=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//')
   # A path may be quoted, and gh api -F reads a file named after =@.
+  note=""
   for file in $(printf '%s' "$posted" | grep -Eo -- "(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?[^[:space:]\"'\\\\;&|]+" \
     | sed -E "s/^(--body-file|--input|-F)[[:space:]=]*(\\\\\"|')?//; s/^[^=@]*=@//"); do
-    case $file in /*) ;; *) file="$dir/$file" ;; esac
-    [ -r "$file" ] && posted="$posted\\n$(sed 's/$/\\n/' "$file" | tr -d '\n')"
+    # A body read from standard input is in the command itself, already checked.
+    case $file in -) continue ;; /*) path=$file ;; *) path="$dir/$file" ;; esac
+    if [ -r "$path" ]; then
+      posted="$posted\\n$(sed 's/$/\\n/' "$path" | tr -d '\n')"
+      [ -n "$(tr -d '[:space:]' < "$path")" ] || note="$note The file $file is empty, so the post is blank; if it replaced text, restore that from the live version's history."
+    else
+      note="$note plumb couldn't read $file here (it may be on another machine), so its text went unchecked: check it against charter rule 20."
+    fi
   done
-  note=""
+  printf '%s' "$posted" | grep -Eq -- "--body([[:space:]]+|=)(\\\\\"\\\\\"|'')([[:space:]]|$)" \
+    && note="$note The body is empty, so the post is blank; if it replaced text, restore that from the live version's history."
   printf '%s\n' "$posted" | grep -Eiq "$CREDIT" \
-    && note=" It credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
+    && note="$note It credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
   printf '%s\n' "$posted" | grep -Eq "$FIRST" \
     && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 20 says."
   [ -n "$note" ] && say "plumb: check the text just posted.$note Edit it in place (gh pr edit, gh issue edit or the comment's edit) and tell the operator."
   exit 0
 fi
 
-printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]]|\\|"|$)' || exit 0
+# A newline inside the JSON command is the two characters \n, so it counts as a boundary too.
+printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-]|\\n)git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]]|\\|"|$)' || exit 0
+
+# commit's own arguments: heredoc bodies and quoted text (a message) are dropped, so a message saying
+# "commit", "-n" or "-q" doesn't count, and the command is cut at the next separator.
+Q=$(printf '\001')
+commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
+  | awk '{ gsub(/\\n/, "\n"); print }' \
+  | awk -v q="'" 'BEGIN { op = "(^|[^<])<<-?[ \t]*[\\\\\"" q "]*[A-Za-z_][A-Za-z0-9_]*" }
+      skip { line = $0; sub(/^([ \t]|\\t)*/, "", line); if (line == end) skip = 0; next }
+      { print; if (match($0, op)) { end = substr($0, RSTART, RLENGTH); sub(/^.*<<-?[ \t]*/, "", end)
+          gsub(/[^A-Za-z0-9_]/, "", end); skip = 1 } }' \
+  | awk 'BEGIN { ORS = "\\n" } { print }' \
+  | sed "s/\\\\\"/$Q/g; s/$Q[^$Q]*$Q//g; s/'[^']*'//g; s/\\\\n/;/g" | tr ';&|' '\n\n\n' \
+  | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
+  | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
+
+# A commit only inside text handed to another program (a remote shell, a container, a job runner's
+# heredoc) runs where no repository here can show it, so the command's own text is all there is to check.
+if [ -z "$commit_args" ]; then
+  printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-]|\\n)git([[:space:]][^;&|]*)?[[:space:]]commit[^;&|]*[[:space:]](-[a-zA-Z]*[mF]|--message|--file)' || exit 0
+  note=""
+  printf '%s\n' "$command" | grep -Eiq "$CREDIT" \
+    && note=" Its text credits an AI tool; remove that, as charter rule 20 says, unless the operator or the project's rules asked for it."
+  printf '%s\n' "$command" | grep -Eq "$FIRST" \
+    && note="$note Its text is in the first person; reword it in a neutral technical voice, as charter rule 20 says."
+  unseen="plumb: this command hands a commit to another program, where the commit check can't read it."
+  if [ -z "$note" ]; then
+    # Said once a session, where the transcript shows it was said; a clean message needs no repeat.
+    transcript=$(printf '%s' "$input" | grep -Eo '"transcript_path" *: *"([^"\\]|\\.)*"' | head -n 1 \
+      | sed 's/.*: *"//; s/"$//; s/\\\\/\\/g')
+    [ -r "$transcript" ] && grep -qF "$unseen" "$transcript" && exit 0
+    say "$unseen Check the commit it made against plumb-ship and charter rule 20 where it ran, and amend it there while it's unpushed."
+  else
+    say "$unseen$note Amend it where it ran while it's unpushed; if it's pushed, tell the operator and propose the corrected message."
+  fi
+  exit 0
+fi
 
 # The commit may be in another repository than the session's folder: git -C <dir>, or a cd before it.
 target=$(printf '%s' "$command" | sed -n 's/.*git[[:space:]][[:space:]]*-C[[:space:]][[:space:]]*\([^[:space:];&|]*\).*/\1/p' | head -n 1)
-[ -n "$target" ] || target=$(printf '%s' "$command" | grep -Eo '(: *"|[;&|]|\\n)[[:space:]]*cd[[:space:]]+[^;&|[:space:]]+' | tail -n 1 | sed 's/.*cd[[:space:]]*//')
+[ -n "$target" ] || target=$(printf '%s' "$command" | grep -Eo '(: *"|[;&|]|\\n)[[:space:]]*cd[[:space:]]+[^;&|[:space:]]+' | tail -n 1 | sed 's/.*cd[[:space:]]*//; s/\\n.*//')
 target=$(printf '%s' "$target" | sed 's/\\"//g; s/^"//; s/"$//')
 case $target in
   '') ;;
@@ -69,13 +114,6 @@ case $entry in
 esac
 made=$(printf '%s' "$entry" | sed 's/^[^{]*{\([0-9]*\)}.*/\1/')
 [ $(( $(date +%s) - made )) -le 120 ] || exit 0
-# commit's own arguments: quoted text (a message, a heredoc) is dropped, so a message saying "commit",
-# "-n" or "-q" doesn't count, and the command is cut at the next separator.
-Q=$(printf '\001')
-commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
-  | sed "s/\\\\\"/$Q/g; s/$Q[^$Q]*$Q//g; s/'[^']*'//g; s/\\\\n/;/g" | tr ';&|' '\n\n\n' \
-  | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
-  | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
 # A recent commit may be the operator's, made just before this command failed or made none. Where the tool
 # reports the command's output (Copilot CLI doesn't), git's success line ("[main 1a2b3c4] subject") must name
 # HEAD; a quiet commit prints none, so there only a failure message rules it out.
