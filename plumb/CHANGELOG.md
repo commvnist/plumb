@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.23.0
 
 ### Changed
 - Commits go where the work can still be reviewed: one branch off the one it merges into, with later work on top unless you ask for it apart. Before, plumb-ship named a branch and never said where commits belong, so a session asked for two changes and then a pull request left them on sibling branches or on `main`, and the pull request covered one of them or needed the branches repaired first. Over three turns (two changes, then the pull request), 5 of 6 runs left both changes on one new branch with `main` untouched, against 0 of 6 before; asked to keep the second change apart, every run did. A project that commits straight to its main branch says so, in the request or its written rules, and plumb commits there (3 of 3 runs).
