@@ -35,14 +35,14 @@
  "one-branch": [
   [
    "plumb-ship",
-   "one branch off the one it merges into",
+   "later work on top unless asked apart",
    "one-line"
   ]
  ],
  "one-branch-apart": [
   [
    "plumb-ship",
-   "later work on top unless asked apart",
+   "one branch off the one it merges into",
    "kept-apart"
   ]
  ],
@@ -58,6 +58,13 @@
    "plumb-debug",
    "fails before the fix on every run",
    "red-every-run"
+  ]
+ ],
+ "one-branch-trunk": [
+  [
+   "plumb-ship",
+   "Commit where the work can still be reviewed",
+   "on-trunk"
   ]
  ]
 }

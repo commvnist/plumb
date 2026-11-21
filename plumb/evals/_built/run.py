@@ -355,13 +355,31 @@ def one_line(run):
     if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
         return None  # nothing was committed anywhere, so there is no layout to read
     ahead = branches_ahead(run)
-    return len(ahead) == 1 and all(run.sh(f"git diff --quiet {run.start} {ahead[0]} -- {h}").returncode
-                                   for h in BOTH_HANDLERS)
+    return (len(ahead) == 1 and bool(default_unmoved(run))
+            and all(run.sh(f"git diff --quiet {run.start} {ahead[0]} -- {h}").returncode for h in BOTH_HANDLERS))
 
 
 def default_unmoved(run):
     """The branch pull requests merge into still points where the session found it."""
+    if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
+        return None
     return run.sh("git rev-parse main").stdout.strip() == run.start
+
+
+def on_trunk(run):
+    """Told to commit on main, the session did, and started no branch."""
+    if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
+        return None
+    return not branches_ahead(run) and run.sh("git rev-parse main").stdout.strip() != run.start
+
+
+def stopped_after_first(check):
+    """The check, for runs that stopped before the second diff; a run that built both has no ask to place."""
+    def gated(run):
+        with open(os.path.join(run.repo, "shop", "cart.py")) as f:
+            return None if "total_with_tax" in f.read() else check(run)
+    gated.__doc__ = check.__doc__
+    return gated
 
 
 def tip_green(run):
@@ -556,13 +574,17 @@ BUILT = {
     "one-branch": dict(fixture="orders-medium", turns=ONE_BRANCH,
                        checks={"one-line": one_line, "default-unmoved": default_unmoved, "tip-green": tip_green,
                                "pr-covers-both": PR_COVERS_BOTH}),
-    # The operator's word outranks the default: asked apart, the second change starts from main.
+    # The operator's word outranks the default: asked apart, the second change starts from main, and told
+    # to commit on main the session does.
     "one-branch-apart": dict(fixture="orders-medium",
                              turns=[ONE_BRANCH[0], ONE_BRANCH[1].replace(
                                  "Commit it.", "Commit it on its own branch off main; they will be reviewed apart.")],
                              checks={"kept-apart": kept_apart}),
+    "one-branch-trunk": dict(fixture="orders-medium",
+                             turns=[ONE_BRANCH[0].replace("Commit it.", "Commit it on main; we don't use branches here.")],
+                             checks={"on-trunk": on_trunk}),
     "two-diffs": dict(fixture="shop-small", turns=[SUITE["bf-small-two-diffs"]["prompt"]],
-                      checks={"ask-early": ASK_EARLY}),
+                      checks={"ask-early": stopped_after_first(ASK_EARLY)}),
 }
 
 
