@@ -5,7 +5,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ## Unreleased
 
 ### Changed
-- Charter rule 21 applies to work that changes nothing: a question or an investigation that uncovers something costly to find again now ends with the offer to record it, as a change already did. Asked how a migration reaches staging, where only a script shows that the pushed release branch is applied and never the local checkout, 18 of 18 runs offered to record it in the repository's agent file, against 2 of 18 before.
+- Charter rule 21 applies to work that changes nothing: a question or an investigation that uncovers something costly to find again now ends with the offer to record it, as a change already did. Asked how a migration reaches staging, where only a script shows that the pushed release branch is applied and never the local checkout, 24 of 27 runs offered to record it for the next session, against 2 of 18 before; a walkthrough with nothing worth recording still ends without the offer.
 
 ## 0.21.0
 
