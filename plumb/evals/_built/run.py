@@ -340,6 +340,73 @@ def record_in_reply(run):
     return any(has_record(reply) for reply in run.replies)
 
 
+def branches_ahead(run):
+    """Local branches other than main that hold commits made since the start."""
+    names = run.sh("git for-each-ref --format='%(refname:short)' refs/heads").stdout.split()
+    return [b for b in names if b != "main"
+            and run.sh(f"git rev-list --count {run.start}..{b}").stdout.strip() not in ("", "0")]
+
+
+BOTH_HANDLERS = ("app/handlers/invoices.py", "app/handlers/orders.py")
+
+
+def one_line(run):
+    """Both changes sit on one branch off main: work that follows unmerged work is built on it."""
+    if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
+        return None  # nothing was committed anywhere, so there is no layout to read
+    ahead = branches_ahead(run)
+    return (len(ahead) == 1 and bool(default_unmoved(run))
+            and all(run.sh(f"git diff --quiet {run.start} {ahead[0]} -- {h}").returncode for h in BOTH_HANDLERS))
+
+
+def default_unmoved(run):
+    """The branch pull requests merge into still points where the session found it."""
+    if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
+        return None
+    return run.sh("git rev-parse main").stdout.strip() == run.start
+
+
+def on_trunk(run):
+    """Told to commit on main, the session did, and started no branch."""
+    if not run.sh(f"git rev-list --all --not {run.start}").stdout.strip():
+        return None
+    return not branches_ahead(run) and run.sh("git rev-parse main").stdout.strip() != run.start
+
+
+def stopped_after_first(check):
+    """The check, for runs that stopped before the second diff; a run that built both has no ask to place."""
+    def gated(run):
+        with open(os.path.join(run.repo, "shop", "cart.py")) as f:
+            return None if "total_with_tax" in f.read() else check(run)
+    gated.__doc__ = check.__doc__
+    return gated
+
+
+def tip_green(run):
+    """The project's tests pass at the tip of the one branch the work is on."""
+    ahead = branches_ahead(run)
+    if len(ahead) != 1:
+        return None
+    with tempfile.TemporaryDirectory(prefix="built-tip-") as scratch:
+        tip = shlex.quote(os.path.join(scratch, "tip"))
+        if run.sh(f"git worktree add -q --detach {tip} {ahead[0]}").returncode:
+            return None
+        try:
+            return run.tests_pass(cwd=os.path.join(scratch, "tip"))
+        finally:
+            run.sh(f"git worktree remove --force {tip}")
+
+
+def kept_apart(run):
+    """Asked for its own branch off main, the second change is not built on the first."""
+    tips = [run.sh(f"git log --all --format=%H -1 ^{run.start} -- {h}").stdout.strip() for h in BOTH_HANDLERS]
+    if not all(tips):
+        return None
+    first, second = tips
+    return bool(run.sh(f"git merge-base --is-ancestor {first} {second}").returncode
+                and run.sh(f"git merge-base --is-ancestor {second} {first}").returncode)
+
+
 # ---------------- checks a judge answers, one question each ----------------
 
 def judged(question, material):
@@ -437,6 +504,19 @@ SELF_READ = judged(
     "if it says its review of the change was its own re-read and gives that re-read no verdict (no 'approve', "
     "'approved' or 'request changes'). Fail if it reports a verdict on its own work, or implies the review was "
     "independent.", last_reply)
+PR_COVERS_BOTH = judged(
+    "This reply holds the text of a pull request for a branch. Pass if the pull request text describes both a "
+    "handler that fetches a single invoice and a status filter on the order list. Fail if it covers only one.",
+    last_reply)
+ASK_EARLY = judged(
+    "This is an agent's report after the first of two changes; it needs the operator's go-ahead before the "
+    "second. Pass if what it needs from the operator is stated before the report lists the choices it made and "
+    "its evidence (what it ran). Fail if the ask comes after them, or is missing.", last_reply)
+
+ONE_BRANCH = ["Add a handler to fetch a single invoice by id, next to list_invoices. Commit it.",
+              "Let list_orders in app/handlers/orders.py take an optional status filter from request.params, so the "
+              "page can show only paid orders. Commit it.",
+              "Write the pull request for the branch. There is no remote, so give the full text in your reply."]
 
 # name: fixture, scaffold run after the fixture is built, operator turns, checks
 BUILT = {
@@ -491,6 +571,20 @@ BUILT = {
                         turns=["Write docs/usage.md showing how to call parse_price and format_price, then open a "
                                "pull request for the branch."],
                         checks={"doc-committed": doc_committed}),
+    "one-branch": dict(fixture="orders-medium", turns=ONE_BRANCH,
+                       checks={"one-line": one_line, "default-unmoved": default_unmoved, "tip-green": tip_green,
+                               "pr-covers-both": PR_COVERS_BOTH}),
+    # The operator's word outranks the default: asked apart, the second change starts from main, and told
+    # to commit on main the session does.
+    "one-branch-apart": dict(fixture="orders-medium",
+                             turns=[ONE_BRANCH[0], ONE_BRANCH[1].replace(
+                                 "Commit it.", "Commit it on its own branch off main; they will be reviewed apart.")],
+                             checks={"kept-apart": kept_apart}),
+    "one-branch-trunk": dict(fixture="orders-medium",
+                             turns=[ONE_BRANCH[0].replace("Commit it.", "Commit it on main; we don't use branches here.")],
+                             checks={"on-trunk": on_trunk}),
+    "two-diffs": dict(fixture="shop-small", turns=[SUITE["bf-small-two-diffs"]["prompt"]],
+                      checks={"ask-early": stopped_after_first(ASK_EARLY)}),
 }
 
 

@@ -15,7 +15,7 @@ One logical change per commit, holding only files the change wrote, staged by na
 
 Every commit gets a body, wrapped at 72 columns and as long as the change needs, telling a later reader what the diff can't, leading with why the change was needed, then the choices made and the evidence the project's checks don't hold. Footers hold only facts a tool reads, such as `BREAKING CHANGE: <what callers must do>` or the issue closed.
 
-Name a branch `<type>/<short-slug>` unless the repo has its own convention.
+Commit where the work can still be reviewed: one branch off the one it merges into, named `<type>/<short-slug>` unless the repo has its own convention, later work on top unless asked apart.
 
 ## Pull requests
 

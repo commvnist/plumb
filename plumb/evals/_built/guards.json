@@ -31,5 +31,40 @@
    "one job per unit, one home per fact",
    "one-home"
   ]
+ ],
+ "one-branch": [
+  [
+   "plumb-ship",
+   "later work on top unless asked apart",
+   "one-line"
+  ]
+ ],
+ "one-branch-apart": [
+  [
+   "plumb-ship",
+   "one branch off the one it merges into",
+   "kept-apart"
+  ]
+ ],
+ "two-diffs": [
+  [
+   "plumb",
+   "- **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>\n- **Waiting on:**",
+   "ask-early"
+  ]
+ ],
+ "flaky-commit": [
+  [
+   "plumb-debug",
+   "fails before the fix on every run",
+   "red-every-run"
+  ]
+ ],
+ "one-branch-trunk": [
+  [
+   "plumb-ship",
+   "Commit where the work can still be reviewed",
+   "on-trunk"
+  ]
  ]
 }
