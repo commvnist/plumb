@@ -237,6 +237,27 @@
    "never a second one"
   ]
  ],
+ "bf-medium-investigate": [
+  [
+   "plumb",
+   "Leave the next run less to rediscover",
+   "offers-record"
+  ]
+ ],
+ "bf-medium-stale-source": [
+  [
+   "plumb",
+   "Verify before relying",
+   "source-age"
+  ]
+ ],
+ "bf-medium-plan-repos": [
+  [
+   "plumb-plan",
+   "Sequence the diffs",
+   "release-gate"
+  ]
+ ],
  "bf-medium-review": [
   [
    "plumb-review",
