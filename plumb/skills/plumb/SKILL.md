@@ -29,7 +29,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 18. **Never write tests that break on harmless changes or pass on real bugs.**
 19. **Failures must be findable:** new code logs as the project's code does.
 20. **Write in a neutral technical voice:** nothing you commit or post uses the first person or credits, implies or mentions AI authorship or use (a co-author trailer, a generated-with line, the wording), whatever a tool's default adds; commit under the configured git identity, never one you set.
-21. **Leave the next run less to rediscover:** when work uncovers something costly to find again and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer under Suggestions to record it where the next agent reads before starting: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one, whatever else you update for people. Say what each saves; record only what code and docs don't show; fix or remove such a line in the diff that makes it untrue.
+21. **Leave the next run less to rediscover:** when work, a change or only a question, uncovers something costly to find again and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer under Suggestions to record it where the next agent reads before starting: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one, whatever else you update for people. Say what each saves; record only what code and docs don't show; fix or remove such a line in the diff that makes it untrue.
 
 ## Output
 

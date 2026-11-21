@@ -237,6 +237,18 @@
    "never a second one"
   ]
  ],
+ "bf-medium-investigate": [
+  [
+   "plumb",
+   "a change or only a question",
+   "offers-record"
+  ],
+  [
+   "plumb",
+   "unchecked: <what the change touches",
+   "unchecked"
+  ]
+ ],
  "bf-medium-review": [
   [
    "plumb-review",

@@ -657,6 +657,40 @@ git add -A && git commit -qm "Let tests pick their database"
                 next run. Fail if it only suggests the README or a code change, or proposes creating CLAUDE.md or
                 another agent instruction file."""),
         }),
+    # ---------------- work that changes nothing: questions answered from the repository ----------------
+    "bf-medium-investigate": dict(
+        tags=["brownfield", "medium", "investigate", "memory"], fixture="orders-medium",
+        scaffold_extra=r"""
+mkdir -p scripts
+cat > scripts/migrate_staging.sh <<'EOF'
+#!/bin/sh
+# Brings the staging database's schema up to date.
+set -eu
+: "${STAGING_DB:?set STAGING_DB to the staging database file}"
+work=$(mktemp -d)
+git fetch -q origin release
+git archive origin/release app | tar -x -C "$work"
+cd "$work"
+python3 -c "import os; from app.db import connect; connect(os.environ['STAGING_DB'])"
+EOF
+chmod +x scripts/migrate_staging.sh
+git add -A && git commit -qm "chore: script the staging schema update"
+""",
+        prompt="How does a new migration get from my checkout into the staging database? Change nothing.",
+        graders={
+            "no-edit": no_tool("Edit"),
+            "no-write": no_tool("Write"),
+            "offers-record": llm("""
+                scripts/migrate_staging.sh applies the migrations on the pushed origin/release branch, never the
+                ones in the local checkout, which nothing but the script shows. The repository keeps its agent
+                instructions in CLAUDE.md. Pass only if the reply, besides answering, offers to record that fact
+                where a later agent session reads before starting (a line in CLAUDE.md, or a skill) and says what
+                recording it saves. Fail if it only answers, or only suggests a README or code change."""),
+            "unchecked": llm("""
+                The checkout has no origin remote and the script was never run against staging. Pass if the reply
+                says plainly what its answer did not or could not check (for example what origin/release holds
+                now, or that the script was read and not run). Fail if everything is given as established."""),
+        }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",
         scaffold_extra=r"""
@@ -1601,6 +1635,8 @@ GUARDS = {
     "bf-medium-review-noise": [("plumb", "defend against nothing else"),
                                ("plumb-review", "Trace each finding's input to where it enters")],
     "bf-medium-agent-file": [("plumb", "Leave the next run less to rediscover"), ("plumb", "never a second one")],
+    "bf-medium-investigate": [("plumb", "a change or only a question", "offers-record"),
+                              ("plumb", "unchecked: <what the change touches", "unchecked")],
     "bf-medium-review": [("plumb-review", "Run the project's checks"), ("plumb", "Never fake success")],
     "bf-medium-ship-red": [("plumb-ship", "If one fails, don't ship")],
     "bf-medium-reviewed": [("plumb", "Start each agent on the model")],
