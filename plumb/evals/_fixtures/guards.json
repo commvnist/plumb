@@ -240,22 +240,13 @@
  "bf-medium-investigate": [
   [
    "plumb",
-   "Leave the next run less to rediscover",
+   "a change or only a question",
    "offers-record"
-  ]
- ],
- "bf-medium-stale-source": [
+  ],
   [
    "plumb",
-   "Verify before relying",
-   "source-age"
-  ]
- ],
- "bf-medium-plan-repos": [
-  [
-   "plumb-plan",
-   "Sequence the diffs",
-   "release-gate"
+   "unchecked: <what the change touches",
+   "unchecked"
   ]
  ],
  "bf-medium-review": [

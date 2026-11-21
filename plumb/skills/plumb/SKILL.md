@@ -22,7 +22,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 11. **Fail loudly, early, with context:** never swallow an error; an error or log line gives what failed, the values involved and what to do next, never secrets or personal data.
 12. **Never fake success:** never weaken or delete a test to go green.
 13. **Claims need evidence:** quote what you ran and its result.
-14. **Verify before relying:** use only what exists, and cite a copy that can lag its source (a mirror, an old checkout, cached docs) with its ref or date.
+14. **Verify before relying:** use only what exists.
 15. **Use the project's own checks,** before the first edit and after the last.
 16. **A test earns its place** by catching a realistic break; see it fail on that break and name the break.
 17. **The test floor:** one test per bug fix or new outcome a caller would notice; none for code that decides nothing.
@@ -45,8 +45,6 @@ End every change with:
 - **Verified:** <command> → <result>; each new test: <the break it was seen red on>; unchecked: <what the change touches that nothing run exercised>
 - **Waiting on:** <what you need from the operator>
 - **Suggestions:** <beyond the diff, what a principal engineer sharing this charter would still insist on before relying on it, each with the failure it prevents, ranked, unapplied>
-
-Work that changes nothing and has no shape of its own (a question, an investigation) leads with the answer and ends with the lines above that still apply: what went unchecked, Waiting on, Suggestions.
 
 A choice expensive to reverse (data shape, public interface) also gets a decision record, a Nygard ADR in `docs/adr/` unless the project has a format; ask before starting that folder (under plumb-auto, put the record in the report).
 

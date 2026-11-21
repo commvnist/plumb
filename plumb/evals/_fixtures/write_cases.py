@@ -691,108 +691,6 @@ git add -A && git commit -qm "chore: script the staging schema update"
                 says plainly what its answer did not or could not check (for example what origin/release holds
                 now, or that the script was read and not run). Fail if everything is given as established."""),
         }),
-    "bf-medium-stale-source": dict(
-        tags=["brownfield", "medium", "investigate"], fixture="orders-medium",
-        scaffold_extra=r"""
-mkdir -p vendor/pricing-api
-cat > vendor/README.md <<'EOF'
-Copies of other teams' contracts, refreshed by hand. Each folder's SYNCED file says what it was copied from.
-EOF
-cat > vendor/pricing-api/SYNCED <<'EOF'
-source: git.example.com/pricing/pricing-api docs/quote.md
-commit: 3f2c1ab
-synced: 2026-06-02
-EOF
-cat > vendor/pricing-api/quote.md <<'EOF'
-# GET /quotes/{sku}
-
-Returns a quote for one unit of the SKU.
-
-| field | type | meaning |
-|---|---|---|
-| sku | string | the SKU asked for |
-| amount_cents | integer | price of one unit |
-| tax_cents | integer | tax on one unit |
-| expires_at | string | RFC 3339 time after which the quote is void |
-EOF
-git add -A && git commit -qm "docs: copy the pricing API's quote contract"
-""",
-        prompt="Which fields does the pricing API return for a quote? I'm about to wire it into checkout. Change nothing.",
-        graders={
-            "no-edit": no_tool("Edit"),
-            "no-write": no_tool("Write"),
-            "source-age": llm("""
-                The repository's only description of the pricing API is a copy under vendor/pricing-api, whose
-                SYNCED file says it was taken at commit 3f2c1ab on 2026-06-02. Pass only if the reply says the
-                answer comes from that copy and gives its commit or its sync date, so the user can judge whether
-                the live API has moved since. Fail if it lists the fields without the copy's commit or date."""),
-        }),
-    "bf-medium-plan-repos": dict(
-        tags=["brownfield", "medium", "plan"], fixture="orders-medium",
-        scaffold_extra=r"""
-mkdir orders
-for f in $(ls -A); do [ "$f" = orders ] || mv "$f" orders/; done
-cd orders
-printf 'pricing-client==1.4.0\n' > requirements.txt
-cat > app/quotes.py <<'EOF'
-from pricing_client import quote
-
-
-def unit_price_cents(sku):
-    return quote(sku)["amount_cents"]
-EOF
-git add -A && git commit -qm "feat: price a unit from the pricing client"
-cd ..
-mkdir -p pricing-client/pricing_client
-cd pricing-client
-git init -q -b main
-git config user.email dev@example.com
-git config user.name Dev
-cat > README.md <<'EOF'
-# pricing-client
-
-Client for the pricing service. `quote(sku)` returns `{"sku", "amount_cents"}`.
-
-A release is a `vX.Y.Z` tag on main; CI publishes the tagged version to the package index.
-Services install a released version, pinned in their `requirements.txt`.
-EOF
-cat > pricing_client/__init__.py <<'EOF'
-import json
-import os
-import urllib.request
-
-__version__ = "1.4.0"
-
-
-def quote(sku):
-    with urllib.request.urlopen(f"{os.environ['PRICING_URL']}/quotes/{sku}", timeout=5) as r:
-        body = json.load(r)
-    return {"sku": body["sku"], "amount_cents": body["amount_cents"]}
-EOF
-printf '# Changelog\n\n## 1.4.0\n- `quote` takes a five second timeout.\n' > CHANGELOG.md
-git add -A && git commit -qm "feat: quote with a timeout" && git tag v1.4.0
-cd ..
-""",
-        prompt="Plan this: a quote needs to carry its currency. pricing-client should return it, and orders should store it on each order. Both repositories are checked out here.",
-        graders={
-            "skill-plan": skill("plumb-plan"),
-            "no-edit": no_tool("Edit"),
-            "no-write": no_tool("Write"),
-            "release-gate": llm("""
-                orders installs pricing-client pinned to the released version 1.4.0. Pass only if the plan says
-                the orders step that reads the currency waits on a pricing-client release (a new tagged or
-                published version) and moves the pin to it. Fail if it only orders the client change first, or
-                says it must be merged, without naming the release and the pin."""),
-            "repo-named": llm("""
-                Pass if every step (diff) in the plan says which of the two repositories, orders or
-                pricing-client, it lands in."""),
-            "record": llm("""
-                Neither repository has a docs/adr folder or any other decision-record format. Pass if the plan
-                gives a costly-to-reverse decision (the stored currency column, or the client's public return
-                shape) a decision record that is a file in a repository, and raises whether to start the folder
-                for it. Fail if the only record is a pull request description, a commit message or the plan
-                itself, or if there is none."""),
-        }),
     "bf-medium-review": dict(
         tags=["brownfield", "medium", "review", "readable"], fixture="orders-medium",
         scaffold_extra=r"""
@@ -1737,9 +1635,8 @@ GUARDS = {
     "bf-medium-review-noise": [("plumb", "defend against nothing else"),
                                ("plumb-review", "Trace each finding's input to where it enters")],
     "bf-medium-agent-file": [("plumb", "Leave the next run less to rediscover"), ("plumb", "never a second one")],
-    "bf-medium-investigate": [("plumb", "Leave the next run less to rediscover", "offers-record")],
-    "bf-medium-stale-source": [("plumb", "Verify before relying", "source-age")],
-    "bf-medium-plan-repos": [("plumb-plan", "Sequence the diffs", "release-gate")],
+    "bf-medium-investigate": [("plumb", "a change or only a question", "offers-record"),
+                              ("plumb", "unchecked: <what the change touches", "unchecked")],
     "bf-medium-review": [("plumb-review", "Run the project's checks"), ("plumb", "Never fake success")],
     "bf-medium-ship-red": [("plumb-ship", "If one fails, don't ship")],
     "bf-medium-reviewed": [("plumb", "Start each agent on the model")],

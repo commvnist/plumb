@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: bf-medium-stale-source
-context:
-  scaffold_script: scaffold.sh
