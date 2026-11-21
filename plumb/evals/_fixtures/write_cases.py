@@ -438,7 +438,7 @@ git commit -qam "Add bill splitting and unit prices"
                   to commit it or say to go on before starting the second diff; the cart method is not built yet.
                 - {REPORT}"""),
             "waiting-on": llm("""
-                Pass if the reply's report says in one place (a 'Waiting on' line or equivalent closing line) what
+                Pass if the reply's report says in one place (a 'Waiting on' line or its equivalent) what
                 it needs from the user before going on."""),
         }),
     "bf-small-explain": dict(

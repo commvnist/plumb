@@ -39,15 +39,15 @@ plan → build → (test · debug · refactor as needed) → review → ship
                  audit · explain any time · auto runs the whole line
 ```
 
-Every phase that changes code ends with the same short report: what was done and why, what was decided, what was verified, what it is waiting on from you, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
+Every phase that changes code ends with the same short report: what was done, what it is waiting on from you, why, what was decided, what was verified, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
 
 A report for a small change reads like this:
 
 - **Done:** fix(pricing): accept thousands separators in typed prices (uncommitted)
+- **Waiting on:** a yes to commit.
 - **Why:** `Decimal("1,200.50")` raises; `parse_price` passed the text to `Decimal` with the comma still in it (shop/pricing.py:6).
 - **Decided:** accept a comma only before a group of three digits, over stripping every comma: stripping would read "1,50" (a European decimal comma) as 150.
 - **Verified:** `python3 -m unittest` → 6 tests OK; the "1,200.50" test failed on the old code with the same error; the "1,50" test failed against comma stripping, which read it as 150.
-- **Waiting on:** a yes to commit.
 - **Suggestions:** 1. The price field accepts any text; showing the expected format beside it would stop "1,50" before it reaches `parse_price`.
 
 Read Decided and Suggestions first: they are where you agree, overrule, or pick what comes next, by number.
