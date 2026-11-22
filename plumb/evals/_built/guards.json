@@ -73,5 +73,12 @@
    "on <the commit judged>",
    "verdict-scoped"
   ]
+ ],
+ "deploy-record": [
+  [
+   "plumb-ship",
+   "recorded where the project keeps what shipped",
+   "way-back-recorded"
+  ]
  ]
 }

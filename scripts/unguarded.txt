@@ -2,15 +2,13 @@ plumb 10: Names carry meaning; comments carry what code can't show
 plumb 14: Verify before relying
 plumb 15: Use the project's own checks
 plumb 17: The test floor
-plumb 19: Failures must be findable
 plumb-auto 1: Read until nothing surprises you
 plumb-auto 3: Plan the diffs
 plumb-auto 5: Build each diff
 plumb-auto 7: Try to break it
 plumb-build 1: Size it
-plumb-build 4: Baseline
-plumb-build 5: Climb the ladder
-plumb-build 7: Review your own diff as its reviewer
+plumb-build 4: Climb the ladder
+plumb-build 6: Review your own diff as its reviewer
 plumb-debug 2: Trace
 plumb-debug 5: Fix at the origin
 plumb-debug 6: Clean up
