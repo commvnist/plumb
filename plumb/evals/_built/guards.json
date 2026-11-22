@@ -66,5 +66,12 @@
    "Commit where the work can still be reviewed",
    "on-trunk"
   ]
+ ],
+ "review-scope": [
+  [
+   "plumb-review",
+   "on <the commit judged>",
+   "verdict-scoped"
+  ]
  ]
 }

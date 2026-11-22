@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- A review's verdict names the commit it judged, so a push after the review can't borrow it. Before, a verdict named only the branch, and a branch that moved after the review still read as approved. Reviewing a branch, 6 of 6 runs (Sonnet and Haiku) named the commit, against 0 of 6 before.
+
 ## 0.23.0
 
 ### Changed
