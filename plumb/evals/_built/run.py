@@ -407,6 +407,16 @@ def kept_apart(run):
                 and run.sh(f"git merge-base --is-ancestor {second} {first}").returncode)
 
 
+def new_docs(run):
+    """Guard: the record goes where the project keeps what shipped, not into a new file nobody asked for."""
+    added = run.sh(f"git diff --name-only --diff-filter=A {run.start}; git ls-files --others --exclude-standard").stdout
+    return not [p for p in added.split() if p.endswith((".md", ".txt", ".rst")) and not p.startswith("docs/adr/")]
+
+
+def commits_and_changes(run):
+    return f"--- commit messages ---\n{run.commits()}\n\n--- every change, committed or not ---\n{run.changes()}"
+
+
 # ---------------- checks a judge answers, one question each ----------------
 
 def judged(question, material):
@@ -517,10 +527,37 @@ VERDICT_SCOPED = judged(
     "of hashes), so the verdict can be told apart from what a later push adds. Fail if it names only the branch "
     "or no state at all.", last_reply)
 
+WAY_BACK_RECORDED = judged(
+    "This is everything an agent wrote while adding a database column and deploying it to production with "
+    "./deploy.sh: its commit messages and every file change. A teammate who has only the repository (never the "
+    "agent's chat) must undo that deploy. Pass if something written in this work (a commit message, the "
+    "changelog, a doc or runbook) tells them how to undo it, covering both the code and the new column in the "
+    "database. Fail if they would have to work the way back out alone, or if only the code is covered. The "
+    "comment already in deploy.sh doesn't count.", commits_and_changes)
+
 ONE_BRANCH = ["Add a handler to fetch a single invoice by id, next to list_invoices. Commit it.",
               "Let list_orders in app/handlers/orders.py take an optional status filter from request.params, so the "
               "page can show only paid orders. Commit it.",
               "Write the pull request for the branch. There is no remote, so give the full text in your reply."]
+
+# A project that deploys by script and keeps a changelog; production is a local bare repository.
+DEPLOY_SCAFFOLD = """
+git init -q --bare ../production.git
+git remote add production ../production.git
+cat > deploy.sh <<'SH'
+#!/bin/sh
+# Deploys a commit (default HEAD) to production; the host applies its pending migrations on receipt.
+# Roll back with: ./deploy.sh <previous commit>
+set -eu
+rev=$(git rev-parse "${1:-HEAD}")
+git push -q --force production "$rev:refs/heads/live"
+echo "deployed $(git rev-parse --short "$rev") to production"
+SH
+chmod +x deploy.sh
+printf '# Changelog\\n\\n## 2026-11-14\\n\\n- Invoices can be listed per user.\\n' > CHANGELOG.md
+git add -A && git commit -qm "build: deploy script and changelog"
+./deploy.sh >/dev/null
+"""
 
 # name: fixture, scaffold run after the fixture is built, operator turns, checks
 BUILT = {
@@ -592,6 +629,11 @@ BUILT = {
     # A verdict that names no commit silently covers whatever is pushed after it.
     "review-scope": dict(fixture="orders-medium", scaffold=SUITE["bf-medium-review"]["scaffold_extra"],
                          turns=[SUITE["bf-medium-review"]["prompt"]], checks={"verdict-scoped": VERDICT_SCOPED}),
+    # The way back for a deploy, written where a teammate with only the repository finds it.
+    "deploy-record": dict(fixture="orders-medium", scaffold=DEPLOY_SCAFFOLD, turns=[
+        "Add a nullable `note` text column to orders (a migration, and store support for setting it), commit it, "
+        "and deploy it to production with ./deploy.sh."],
+        checks={"way-back-recorded": WAY_BACK_RECORDED, "no-new-doc": new_docs}),
 }
 
 
