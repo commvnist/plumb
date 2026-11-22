@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.25.0
 
 ### Changed
 - A deploy records its way back where the project keeps what shipped (the changelog, a release note, a runbook), covering stored data as well as code, instead of only telling you in the reply. Asked to add a column and deploy it, 5 of 6 runs (Sonnet and Haiku) left a teammate with only the repository the steps to undo both the code and the column, against 0 of 6 before; none added a new file to do it.
