@@ -512,6 +512,10 @@ ASK_EARLY = judged(
     "This is an agent's report after the first of two changes; it needs the operator's go-ahead before the "
     "second. Pass if what it needs from the operator is stated before the report lists the choices it made and "
     "its evidence (what it ran). Fail if the ask comes after them, or is missing.", last_reply)
+VERDICT_SCOPED = judged(
+    "This is a code review of a branch. Pass if it names the exact state it judged, a commit hash (or a range "
+    "of hashes), so the verdict can be told apart from what a later push adds. Fail if it names only the branch "
+    "or no state at all.", last_reply)
 
 ONE_BRANCH = ["Add a handler to fetch a single invoice by id, next to list_invoices. Commit it.",
               "Let list_orders in app/handlers/orders.py take an optional status filter from request.params, so the "
@@ -585,6 +589,9 @@ BUILT = {
                              checks={"on-trunk": on_trunk}),
     "two-diffs": dict(fixture="shop-small", turns=[SUITE["bf-small-two-diffs"]["prompt"]],
                       checks={"ask-early": stopped_after_first(ASK_EARLY)}),
+    # A verdict that names no commit silently covers whatever is pushed after it.
+    "review-scope": dict(fixture="orders-medium", scaffold=SUITE["bf-medium-review"]["scaffold_extra"],
+                         turns=[SUITE["bf-medium-review"]["prompt"]], checks={"verdict-scoped": VERDICT_SCOPED}),
 }
 
 

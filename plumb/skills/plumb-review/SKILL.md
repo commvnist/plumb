@@ -16,7 +16,7 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 ## Output
 
-- **Verdict:** approve | approve with suggestions | request changes, with the reason
+- **Verdict:** approve | approve with suggestions | request changes, on <the commit judged>, with the reason
 - **Blocking:** <findings, or none>
 - **Suggestions:** <findings>
 - **Verified:** <command> → <result>
