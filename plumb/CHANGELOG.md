@@ -6,6 +6,8 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ### Changed
 - A deploy records its way back where the project keeps what shipped (the changelog, a release note, a runbook), covering stored data as well as code, instead of only telling you in the reply. Asked to add a column and deploy it, 5 of 6 runs (Sonnet and Haiku) left a teammate with only the repository the steps to undo both the code and the column, against 0 of 6 before; none added a new file to do it.
+- plumb-debug's "the cause and the observation that established it" now sits in the charter's Why line, so it applies to every fix, including one made while building or under plumb-auto. Debug sessions show their evidence as before (6 of 6 runs either way); fixes outside debug weren't measured.
+- The charter, plumb-build and plumb-debug are 36 words shorter, with every behaviour kept. Rule 19 ("new code logs as the project's code does") is gone, since rules 6 and 11 already hold it and sessions log in the project's style without it (6 of 6 runs either way). plumb-build no longer repeats rule 15's "run the project's checks" in two steps; sessions still ran the checks before the first edit. The doc shape drops "changed with what it describes"; a README line documenting a changed default was updated in the same commit in 6 of 6 runs without it. Rules 20 and 21 are now 19 (neutral voice) and 20 (leave the next run less to rediscover).
 
 ## 0.24.0
 

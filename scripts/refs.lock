@@ -18,9 +18,8 @@
     "16": "A test earns its place",
     "17": "The test floor",
     "18": "Never write tests that break on harmless changes or pass on real bugs",
-    "19": "Failures must be findable",
-    "20": "Write in a neutral technical voice",
-    "21": "Leave the next run less to rediscover"
+    "19": "Write in a neutral technical voice",
+    "20": "Leave the next run less to rediscover"
   },
   "steps": {
     "plumb-auto": {
@@ -36,10 +35,9 @@
       "1": "Size it",
       "2": "Define done",
       "3": "Read before writing",
-      "4": "Baseline",
-      "5": "Climb the ladder",
-      "6": "Prove it",
-      "7": "Review your own diff as its reviewer"
+      "4": "Climb the ladder",
+      "5": "Prove it",
+      "6": "Review your own diff as its reviewer"
     },
     "plumb-debug": {
       "1": "Reproduce",

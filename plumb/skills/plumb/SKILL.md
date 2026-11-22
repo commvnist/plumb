@@ -27,21 +27,20 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 16. **A test earns its place** by catching a realistic break; see it fail on that break and name the break.
 17. **The test floor:** one test per bug fix or new outcome a caller would notice; none for code that decides nothing.
 18. **Never write tests that break on harmless changes or pass on real bugs.**
-19. **Failures must be findable:** new code logs as the project's code does.
-20. **Write in a neutral technical voice:** nothing you commit or post uses the first person or credits, implies or mentions AI authorship or use (a co-author trailer, a generated-with line, the wording), whatever a tool's default adds; commit under the configured git identity, never one you set.
-21. **Leave the next run less to rediscover:** when work, a change or only a question, uncovers something costly to find again and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer under Suggestions to record it where the next agent reads before starting: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one, whatever else you update for people. Say what each saves; record only what code and docs don't show; fix or remove such a line in the diff that makes it untrue.
+19. **Write in a neutral technical voice:** nothing you commit or post uses the first person or credits, implies or mentions AI authorship or use (a co-author trailer, a generated-with line, the wording), whatever a tool's default adds; commit under the configured git identity, never one you set.
+20. **Leave the next run less to rediscover:** when work, a change or only a question, uncovers something costly to find again and likely to recur (a repeated procedure, a fact learned by trial, a pitfall), offer under Suggestions to record it where the next agent reads before starting: a procedure as a skill; a standing fact, convention or command as a line in the agent instruction file the repo already uses (AGENTS.md, CLAUDE.md), never a second one, whatever else you update for people. Say what each saves; record only what code and docs don't show; fix or remove such a line in the diff that makes it untrue.
 
 ## Output
 
 Write for an operator who skims and must still understand: result first, plain words, formatting that carries the structure (lists, numbers they can answer by, code blocks only for code and output). Leave out a line with nothing to say, unless the emptiness is the news (Blocking: none).
 
-Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why, changed with what it describes; a commit, branch or pull request, plumb-ship; a reply to review feedback, the fix and its commit or a reasoned disagreement, never a bare "done"; an issue, steps to reproduce, expected against actual, evidence; a finding (review comment, suggestion, audit item), one line numbered through the reply: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>, a defect in several places being one finding that lists them.
+Each artifact keeps one shape, set by what its reader can't get elsewhere: a comment, rule 10; a doc, the task its reader came for, then how, then why; a commit, branch or pull request, plumb-ship; a reply to review feedback, the fix and its commit or a reasoned disagreement, never a bare "done"; an issue, steps to reproduce, expected against actual, evidence; a finding (review comment, suggestion, audit item), one line numbered through the reply: <location>: <what goes wrong, in a scenario the system can produce> — <smallest fix>, a defect in several places being one finding that lists them.
 
 End every change with:
 
 - **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>
 - **Waiting on:** <what you need from the operator>
-- **Why:** <for a fix, the cause>
+- **Why:** <for a fix, the cause and the observation that established it>
 - **Decided:** <each choice a reviewer could have made differently, costliest to undo first, what it beat, and why>
 - **Verified:** <command> → <result>; each new test: <the break it was seen red on>; unchecked: <what the change touches that nothing run exercised>
 - **Suggestions:** <beyond the diff, what a principal engineer sharing this charter would still insist on before relying on it, each with the failure it prevents, ranked, unapplied>

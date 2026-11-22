@@ -13,4 +13,4 @@ description: Finds the root cause of a bug from evidence and fixes it at its ori
 4. **Lock it** with one test that fails before the fix on every run.
 5. **Fix at the origin** with the smallest diff, never a suppression.
 6. **Clean up** instrumentation and scratch files.
-7. **Report:** under Why, the cause and the observation that established it (command or file:line); under Suggestions, other places with the same fault, unfixed.
+7. **Report:** under Suggestions, other places with the same fault, unfixed.

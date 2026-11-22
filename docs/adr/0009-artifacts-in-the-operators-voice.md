@@ -10,7 +10,7 @@ commvnist wants what plumb commits or posts to be indistinguishable from the ope
 
 ## Decision
 
-Everything plumb commits or posts (code comments, commits, pull requests, review comments) is in a neutral technical voice: no first person, and nothing that credits, implies or mentions AI authorship or use. Commits use the configured git identity, never one the agent sets. Replies to the operator in the session are not filtered. Charter rule 20 states it; `hooks/check-commit.sh` checks commits and `gh` pull request and issue text after the fact.
+Everything plumb commits or posts (code comments, commits, pull requests, review comments) is in a neutral technical voice: no first person, and nothing that credits, implies or mentions AI authorship or use. Commits use the configured git identity, never one the agent sets. Replies to the operator in the session are not filtered. Charter rule 19 states it; `hooks/check-commit.sh` checks commits and `gh` pull request and issue text after the fact.
 
 ## Consequences
 
