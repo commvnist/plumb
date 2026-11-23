@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.27.0
 
 ### Changed
 - A premise from a request, an issue, a doc or an instruction file is a claim until the code, history or a run confirms it, wherever that evidence lives, and a false one is shown with its line before anything is built on it (charter rule 14). Handed an issue that blamed the wrong file, 6 of 6 runs (Sonnet and Haiku) said the diagnosis was wrong and showed where the cause was, against 1 of 6 before; one run before the change "fixed" it by changing the rule the issue blamed. Told that another team's service refunds cancelled orders, 6 of 6 runs marked that as unconfirmed, against 3 of 6. Builds that rest on true premises went ahead as before.
