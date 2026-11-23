@@ -4,6 +4,9 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ## Unreleased
 
+### Changed
+- A plan that stages a change to stored data or an outside contract stops using the old form in one step and removes it in a later one, and keeps each step working while instances of the step before it still run. Before, plans for a column rename tended to stop writing the old column in the same release that dropped it, so instances still on the previous release failed every write during a rolling deploy. Planning that rename, 8 of 12 runs (Sonnet and Haiku) kept the two apart, against 3 of 12 before.
+
 ### Fixed
 - The commit check no longer mistakes a local commit for one handed to another program when an earlier part of the same shell command holds a double quote inside single quotes (a `sed` script, say). Such a commit was checked only for credit lines and first person, so a subject outside Conventional Commits, a missing body or skipped hooks went unflagged.
 
