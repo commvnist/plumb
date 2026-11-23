@@ -278,6 +278,15 @@ class CheckCommit(unittest.TestCase):
         self.assertIn("isn't Conventional Commits", out)
         self.assertNotIn("hands a commit", out)
 
+    def test_a_double_quote_inside_single_quotes_earlier_in_the_command_hides_no_commit(self):
+        # Recorded shape: a sed script holding a " in single quotes, a later "..." argument, then the commit.
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "Add stuff")
+        command = ("sed -i '/BEGIN/,/END\"/d' app/m.py; python3 -c \"import app.m\"\n"
+                   "git add app/m.py && git commit -q -F - <<'EOF'\nAdd stuff\nEOF")
+        out = hook_output(self.repo, command, "")
+        self.assertIn("isn't Conventional Commits", out)
+        self.assertNotIn("hands a commit", out)
+
     def test_says_when_posted_text_is_blank_or_unreadable(self):
         empty = os.path.join(self.repo, "empty.md")
         open(empty, "w").close()

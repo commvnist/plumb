@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Fixed
+- The commit check no longer mistakes a local commit for one handed to another program when an earlier part of the same shell command holds a double quote inside single quotes (a `sed` script, say). Such a commit was checked only for credit lines and first person, so a subject outside Conventional Commits, a missing body or skipped hooks went unflagged.
+
 ## 0.28.0
 
 ### Changed

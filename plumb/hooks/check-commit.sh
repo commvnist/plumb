@@ -69,7 +69,14 @@ commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
       { print; if (match($0, op)) { end = substr($0, RSTART, RLENGTH); sub(/^.*<<-?[ \t]*/, "", end)
           gsub(/[^A-Za-z0-9_]/, "", end); skip = 1 } }' \
   | awk 'BEGIN { ORS = "\\n" } { print }' \
-  | sed "s/\\\\\"/$Q/g; s/$Q[^$Q]*$Q//g; s/'[^']*'//g; s/\\\\n/;/g" | tr ';&|' '\n\n\n' \
+  | sed "s/\\\\\"/$Q/g" \
+  | awk -v q="'" -v d="$Q" '{ out = ""; s = 0
+      # Left to right, so a double quote inside single quotes (or the reverse) opens nothing.
+      for (i = 1; i <= length($0); i++) { c = substr($0, i, 1)
+        if (s == 0) { if (c == q) s = 1; else if (c == d) s = 2; else out = out c }
+        else if ((s == 1 && c == q) || (s == 2 && c == d)) s = 0 }
+      print out }' \
+  | sed 's/\\n/;/g' | tr ';&|' '\n\n\n' \
   | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
   | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
 
