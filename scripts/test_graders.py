@@ -134,17 +134,17 @@ class BuiltChecks(unittest.TestCase):
                 run.start = run.sh("git rev-parse HEAD").stdout.strip()
                 run.sh(change)
                 return built.no_stale(run)
-        code_only = "sed -i 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py && git commit -qam 'feat: five'"
-        prose = ("sed -i 's/up to 3 times, after 1s, 2s and 4s/up to 5 times, doubling the wait each time/' "
-                 "notifier/send.py && sed -i 's/retried up to 3 times/retried up to 5 times/' notifier/cli.py && "
-                 "sed -i 's/retried 3 times, after 1s, 2s and 4s/retried 5 times, doubling the wait each time/' "
+        code_only = "perl -pi -e 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py && git commit -qam 'feat: five'"
+        prose = ("perl -pi -e 's/up to 3 times, after 1s, 2s and 4s/up to 5 times, doubling the wait each time/' "
+                 "notifier/send.py && perl -pi -e 's/retried up to 3 times/retried up to 5 times/' notifier/cli.py && "
+                 "perl -pi -e 's/retried 3 times, after 1s, 2s and 4s/retried 5 times, doubling the wait each time/' "
                  "README.md && printf '# Operating notifier\\n' > docs/operations.md")
         self.assertIs(scored(code_only), False)
         self.assertIs(scored(f"{prose} && {code_only}"), True)
-        self.assertIsNone(scored(f"{prose} && sed -i 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py"))  # uncommitted
+        self.assertIsNone(scored(f"{prose} && perl -pi -e 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py"))  # uncommitted
         self.assertIsNone(scored("git commit -q --allow-empty -m 'chore: nothing'"))  # the default never changed
         # Only the committed tree counts: a change reverted in the working tree still committed stale text.
-        self.assertIs(scored(f"{code_only} && sed -i 's/^RETRIES = 5/RETRIES = 3/' notifier/send.py"), False)
+        self.assertIs(scored(f"{code_only} && perl -pi -e 's/^RETRIES = 5/RETRIES = 3/' notifier/send.py"), False)
 
     def test_a_name_the_session_added_and_then_renamed_is_gone_and_the_reference_regenerated(self):
         def scored(check, change):
@@ -156,14 +156,14 @@ class BuiltChecks(unittest.TestCase):
                 run.start = run.sh("git rev-parse HEAD").stdout.strip()
                 run.sh(change)
                 return check(run)
-        add = ("sed -i 's/^RETRIES = 3/RETRIES = int(__import__(\"os\").environ.get(\"NOTIFY_RETRIES\", 5))/' "
+        add = ("perl -pi -e 's/^RETRIES = 3/RETRIES = int(__import__(\"os\").environ.get(\"NOTIFY_RETRIES\", 5))/' "
                "notifier/send.py && echo 'Set NOTIFY_RETRIES.' >> README.md && git commit -qam 'feat: retries'")
-        rename_code = "sed -i 's/NOTIFY_RETRIES/NOTIFY_MAX_ATTEMPTS/' notifier/send.py"
+        rename_code = "perl -pi -e 's/NOTIFY_RETRIES/NOTIFY_MAX_ATTEMPTS/' notifier/send.py"
         self.assertIs(scored(built.no_stale_name, f"{add} && {rename_code} && git commit -qam 'feat: attempts'"), False)
-        self.assertIs(scored(built.no_stale_name, f"{add} && {rename_code} && sed -i 's/NOTIFY_RETRIES/"
+        self.assertIs(scored(built.no_stale_name, f"{add} && {rename_code} && perl -pi -e 's/NOTIFY_RETRIES/"
                                                   f"NOTIFY_MAX_ATTEMPTS/' README.md && git commit -qam 'feat: x'"), True)
         self.assertIsNone(scored(built.no_stale_name, add))  # nothing the session added was renamed
-        setting = ("sed -i 's/^    (\"NOTIFY_DEAD_LETTER_DIR\"/    (\"NOTIFY_MAX_ATTEMPTS\", \"6\", int, \"Attempts.\"),"
+        setting = ("perl -pi -e 's/^    \\(\"NOTIFY_DEAD_LETTER_DIR\"/    (\"NOTIFY_MAX_ATTEMPTS\", \"6\", int, \"Attempts.\"),"
                    "\\n    (\"NOTIFY_DEAD_LETTER_DIR\"/' notifier/config.py")
         self.assertIs(scored(built.generated_current, f"{setting} && git commit -qam 'feat: attempts'"), False)
         self.assertIs(scored(built.generated_current, f"{setting} && make -s docs && git commit -qam 'feat: x'"), True)

@@ -853,8 +853,8 @@ PUSHED_SCAFFOLD = "git init -q --bare ../origin.git && git remote add origin ../
 # A branch that raises the timeout default in the code and its test, and leaves every other statement of it.
 TIMEOUT_BRANCH_SCAFFOLD = """
 git checkout -qb feature/timeout
-sed -i 's/"NOTIFY_TIMEOUT_SECONDS", "10"/"NOTIFY_TIMEOUT_SECONDS", "30"/' notifier/config.py
-sed -i 's/("localhost", 25, 10.0)/("localhost", 25, 30.0)/' tests/test_config.py
+perl -pi -e 's/"NOTIFY_TIMEOUT_SECONDS", "10"/"NOTIFY_TIMEOUT_SECONDS", "30"/' notifier/config.py
+perl -pi -e 's/\\("localhost", 25, 10\\.0\\)/("localhost", 25, 30.0)/' tests/test_config.py
 git commit -qam 'feat(config): raise the default delivery timeout to 30 seconds' -m 'The relay in eu-west regularly \
 takes 12 to 20 seconds to accept a message under load, so attempts at 10 seconds were abandoned and retried while \
 the first was still being accepted, sending duplicates.'
