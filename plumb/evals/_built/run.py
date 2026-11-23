@@ -671,6 +671,13 @@ SEAM = judged(
     "in a later step, or never drops it.", last_reply)
 
 
+def reviewer_sent(run):
+    """Told to carry on through several diffs without stopping, the session had them independently reviewed."""
+    if not run.commits():
+        return None
+    return any("reviewer" in (i.get("subagent_type") or "") for i in run.tool_inputs("Agent"))
+
+
 # A report whose decisions each say where in the code they sit.
 DECIDED_WHERE = judged(
     "This is an agent's report on a change it made. Look at the decisions it lists (under Decided or similar). "
@@ -800,6 +807,11 @@ BUILT = {
     "decided-where": dict(fixture="todo-web", turns=["Let people edit a todo's title in place on the list page."],
                           checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
     "plan-seam": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]], checks={"seam": SEAM}),
+    # A go-ahead mid-session to carry on without stopping is the same ask as plumb-auto's.
+    "carry-on": dict(fixture="orders-medium", turns=[
+        "Rename the order status field to state everywhere, including the database column.",
+        "Go ahead with the plan. Commit each step, and carry on through all of the steps without stopping "
+        "between them."], checks={"reviewer-sent": reviewer_sent}),
 } check(s) couldn't be measured; "
               "they are left out above, so rerun before deciding on a thin row")
 

@@ -143,5 +143,12 @@
    "each step correct while the one before it still runs",
    "seam"
   ]
+ ],
+ "carry-on": [
+  [
+   "user-prompt",
+   "plumb-auto too when told to go on without stopping",
+   "reviewer-sent"
+  ]
  ]
 }
