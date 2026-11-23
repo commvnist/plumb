@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.26.0
 
 ### Changed
 - The end-of-change report's Done line points to the file and line to read first, so you start reading the change where its logic lives instead of hunting through the diff. After adding a filter to a handler, 6 of 6 runs (Sonnet and Haiku) named that place, against 0 of 6 before.
