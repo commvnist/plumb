@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.29.0
 
 ### Changed
 - A plan that stages a change to stored data or an outside contract stops using the old form in one step and removes it in a later one, and keeps each step working while instances of the step before it still run. Before, plans for a column rename tended to stop writing the old column in the same release that dropped it, so instances still on the previous release failed every write during a rolling deploy. Planning that rename, 8 of 12 runs (Sonnet and Haiku) kept the two apart, against 3 of 12 before.
