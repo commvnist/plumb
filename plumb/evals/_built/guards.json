@@ -94,5 +94,19 @@
    "its way back once shipped, or why it has none",
    "way-back-per-step"
   ]
+ ],
+ "false-cause": [
+  [
+   "plumb",
+   "a premise from a request, issue, doc or instruction file is a claim",
+   "premise-false"
+  ]
+ ],
+ "refund-assumed": [
+  [
+   "plumb",
+   "a premise from a request, issue, doc or instruction file is a claim",
+   "assumed"
+  ]
  ]
 }
