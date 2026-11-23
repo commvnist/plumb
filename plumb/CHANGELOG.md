@@ -7,7 +7,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ### Changed
 - An audit says what it didn't reach. Its Verified line now ends with what the audit left unexamined, and each auditor agent returns that with its findings, so a partial audit no longer reads as a whole one. Auditing a twelve-service repository in one session, 5 of 6 runs on the smaller model named what they hadn't read, against 0 of 6 before; the stronger model already did.
 - An audit's Delete list says, for each item, what the search that shows it unused can't see, such as callers outside the repository. Asked what could be deleted from a library whose functions other projects import, 17 of 18 runs on the smaller model named the outside callers their search couldn't reach, against 11 of 18 before.
-- A pull request description carries why, risk, way back and verification even when the project's template asks only for a summary and a checklist: the template's sections come first, with headings added for what it lacks, and the description says what was run and what nothing exercised. 17 of 18 runs on the smaller model said what was run and what it showed, against 7 of 18 before.
+- A pull request description says what was run to show the change works and what nothing exercised, and a project's pull request template no longer replaces plumb's own sections: the description is written inside the template, under headings for what it lacks. In a repository whose template has only a summary and a checklist, 17 of 18 runs on the smaller model gave the command run and its result, against 7 of 18 before; why and risk were measured too and didn't move.
 
 ## 0.27.0
 
