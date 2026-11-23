@@ -128,17 +128,19 @@ class Run:
 
         None when no two agree, or when `na` lets the judge say the situation the question asks about never
         arose: such a run is unmeasured, never a pass."""
-        return vote(self.judge_model, question, material, na, self.log)
+        verdict = vote(self.judge_model, question, material, na, self.log)
+        return verdict if isinstance(verdict, bool) else None
 
 
 def vote(model, question, material, na=False, log=None):
-    """True, False or None (no two answers agree, or the situation never arose), from up to three asks."""
+    """True or False when two of up to three answers agree; "NA" when two agree the situation never arose; None
+    when no two agree."""
     votes = []
     for _ in range(3):
         votes.append(ask_judge(model, question, material, na, log))
         agreed = [v for v in set(votes) if votes.count(v) >= 2]
         if agreed:
-            return None if agreed[0] in ("NA", None) else agreed[0] == "PASS"
+            return {"PASS": True, "FAIL": False}.get(agreed[0], agreed[0])
     return None
 
 
@@ -850,8 +852,8 @@ def check_judges(path, model):
         case, name = key.split("/")
         check = BUILT[case]["checks"][name]
         for i, item in enumerate(items, 1):
-            got = vote(model, check.question, item["material"], check.na)
-            got = "NA" if got is None and item["expect"] == "NA" else {True: "PASS", False: "FAIL"}.get(got, "none")
+            got = {True: "PASS", False: "FAIL", "NA": "NA"}.get(vote(model, check.question, item["material"], check.na),
+                                                                "no agreement")
             ok = got == item["expect"]
             misses += not ok
             print(f"{key:36} example {i}: expected {item['expect']}, judged {got}{'' if ok else '  <- miss'}")

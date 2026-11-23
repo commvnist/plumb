@@ -13,10 +13,17 @@ Two questions, in this order:
    open with the case marked for a harder one. Only models where the case reproduces go on to question 2.
 2. Does the wording beat main? An exact test stratified by model (each model's runs compared only with its
    own, the conditional form of Cochran-Mantel-Haenszel), one-sided. The wording lands at p <= 0.05. Runs go
-   in stages of 6, 18 and 30 per arm per model: a candidate ahead of main is run on to the next stage, one no
-   better than main is dropped at any stage, and at 30 anything not landed is dropped as undecided, with the
-   power the runs had to find a gain. When both arms fail every run, check the grader on a known-good output
-   before calling the wording ineffective.
+   in stages of 6, 18 and 30 per arm per model: a candidate ahead of main is run on to the next stage; one no
+   better than main is dropped from 18 runs on (at 6 it stays open: too few runs to drop it); at 30 anything not
+   landed is dropped as undecided, with the power the runs had to find a gain. When both arms fail every run,
+   the grader is checked on a known-good output before the wording is called ineffective.
+
+The first six main runs both decide that a case reproduces and count in the comparison, and each stage is a
+fresh look at the data; a simulation of a wording with no effect put the chance of a false landing at 4.6% to
+6.6% against the nominal 5%, which this rule accepts.
+
+With --guard, every check is read as a guard: it fell when main beats the change at p <= 0.05, and it holds
+once each arm has 18 runs per model without that. A trim is a guard question on its deciding cases.
 """
 import argparse
 import json
@@ -99,12 +106,37 @@ def decide(by_model, main, new):
     cells.append(f"p = {p:.3f}")
     if p <= ALPHA:
         return "land", notes + cells
+    if all(s[0] == 0 and s[2] == 0 for s in strata):
+        return "check the grader: both arms fail every run; run a known-good output through it", notes + cells
     if n >= STAGES[-1]:
         return f"drop: undecided at {n} (power for 50%->90% was {power(n):.0%})", notes + cells
-    if not ahead:
+    if not ahead and n >= STAGES[1]:
         return "drop: no better than main", notes + cells
+    if not ahead:
+        return f"open: not ahead at {n} runs, too few to drop; run each arm to {STAGES[1]}", notes + cells
     nxt = next(s for s in STAGES if s > n)
     return f"run each arm to {nxt}", notes + cells
+
+
+def guard(by_model, main, new):
+    """Whether a guard check fell: main ahead of the change at p <= 0.05. No reproduce step: a guard is meant to
+    pass on main. A trim is judged this way on its deciding cases, with the trimmed text as `new`."""
+    strata, cells = [], []
+    for model, arms in sorted(by_model.items()):
+        a, b = arms.get(main, []), arms.get(new, [])
+        if a and b:
+            strata.append((sum(b), len(b), sum(a), len(a)))
+            cells.append(f"{model}: main {sum(a)}/{len(a)} new {sum(b)}/{len(b)}")
+    if not strata:
+        return "run both arms", cells
+    p = stratified_p(strata)
+    n = min(min(s[1], s[3]) for s in strata)
+    cells.append(f"p (main ahead) = {p:.3f}")
+    if p <= ALPHA:
+        return "fell", cells
+    if n < STAGES[1]:
+        return f"holds so far; run each arm to {STAGES[1]} before relying on it", cells
+    return "holds", cells
 
 
 def main():
@@ -112,13 +144,14 @@ def main():
     ap.add_argument("results", nargs="+")
     ap.add_argument("--main", default="main")
     ap.add_argument("--new", default="new")
+    ap.add_argument("--guard", action="store_true", help="read every check as a guard: did the change lower it?")
     a = ap.parse_args()
     results = []
     for path in a.results:
         with open(path) as f:
             results += json.load(f)
     for (case, check), by_model in sorted(tally(results, a.main, a.new).items()):
-        verdict, detail = decide(by_model, a.main, a.new)
+        verdict, detail = (guard if a.guard else decide)(by_model, a.main, a.new)
         print(f"{case:18} {check:18} {verdict}\n{'':38}" + "; ".join(detail))
 
 

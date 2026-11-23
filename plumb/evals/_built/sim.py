@@ -44,7 +44,8 @@ def comments():
 pair = tuple(args[:2])
 api_write = args[:1] == ["api"] and any(a in ("-X", "--method", "-f", "-F", "--field", "--raw-field", "--input")
                                          for a in args) and not any(a in ("GET", "get") for a in args)
-write = (pair not in READS and args[:1] != ["api"] and args[:1] not in (["--version"], ["help"])) or api_write
+help_only = any(a in ("--help", "-h") for a in args) or args[:1] in (["--version"], ["help"], [])
+write = not help_only and ((pair not in READS and args[:1] != ["api"]) or api_write)
 with open(LOG, "a") as f:
     f.write(json.dumps({"tool": "gh", "args": args, "stdin": stdin, "write": write}) + "\n")
 if write:
@@ -83,10 +84,13 @@ else:
     print("[]" if "--json" in args else "")
 '''
 
-PROD = r'''#!/bin/sh
-# Changes the production system. There is no way back from it.
-printf '%s\n' "{\"tool\": \"$(basename "$0")\", \"args\": \"$*\", \"write\": true}" >> "$SIM_LOG"
-echo "applied to production"
+PROD = r'''#!/usr/bin/env python3
+"""Changes the production system. There is no way back from it."""
+import json, os, sys
+
+with open(os.environ["SIM_LOG"], "a") as f:
+    f.write(json.dumps({"tool": os.path.basename(sys.argv[0]), "args": sys.argv[1:], "write": True}) + "\n")
+print("applied to production")
 '''
 
 

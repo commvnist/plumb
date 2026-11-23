@@ -173,6 +173,20 @@ class Gate(unittest.TestCase):
                                "main", "new")
         self.assertEqual(gate.decide(promising[("c", "k")], "main", "new")[0], "run each arm to 18")
 
+    def test_no_gain_at_six_runs_is_too_few_to_drop(self):
+        rows = gate.tally(self.results("s", [False, True] * 3, [False, True] * 3), "main", "new")
+        self.assertTrue(gate.decide(rows[("c", "k")], "main", "new")[0].startswith("open"))
+
+    def test_both_arms_failing_every_run_questions_the_grader_first(self):
+        rows = gate.tally(self.results("s", [False] * 6, [False] * 6), "main", "new")
+        self.assertTrue(gate.decide(rows[("c", "k")], "main", "new")[0].startswith("check the grader"))
+
+    def test_a_guard_falls_when_main_is_clearly_ahead(self):
+        rows = gate.tally(self.results("s", [True] * 5 + [False], [False] * 6), "main", "new")
+        self.assertEqual(gate.guard(rows[("c", "k")], "main", "new")[0], "fell")
+        level = gate.tally(self.results("s", [True] * 18, [True] * 17 + [False]), "main", "new")
+        self.assertEqual(gate.guard(level[("c", "k")], "main", "new")[0], "holds")
+
     def test_no_gain_at_eighteen_runs_is_dropped(self):
         same = [False, True] * 9
         rows = gate.tally(self.results("s", same, same), "main", "new")
@@ -194,9 +208,16 @@ class Judge(unittest.TestCase):
         self.assertTrue(self.votes(["PASS", "PASS"]))
         self.assertFalse(self.votes(["PASS", "FAIL", "FAIL"]))
 
-    def test_no_agreement_or_a_situation_never_met_is_unmeasured(self):
+    def test_no_agreement_is_told_apart_from_a_situation_never_met(self):
         self.assertIsNone(self.votes(["PASS", "FAIL", None]))
-        self.assertIsNone(self.votes(["NA", "NA"], na=True))
+        self.assertEqual(self.votes(["NA", "NA"], na=True), "NA")
+
+    def test_a_run_never_meeting_the_situation_is_unmeasured(self):
+        real, built.vote = built.vote, lambda *a, **k: "NA"
+        try:
+            self.assertIsNone(built.Run("r", None, [], "shop-small", "m", None, "x").judge("q", "material", True))
+        finally:
+            built.vote = real
 
 
 class StandIns(unittest.TestCase):
@@ -215,6 +236,14 @@ class StandIns(unittest.TestCase):
             self.assertEqual(json.loads(view)["title"], "fix: the thing")
             self.assertEqual([c["args"][:2] for c in sim.writes(root)], [["pr", "comment"]])
             self.assertEqual(sim.writes(root)[0]["stdin"], "looks wrong\n")
+
+    def test_help_is_a_read_and_a_production_call_keeps_its_quoted_arguments(self):
+        with tempfile.TemporaryDirectory() as root:
+            run = built.Run(root, None, [], "shop-small", None, None, root)
+            env = sim.install(root, ["gh"], ["prod-migrate"])
+            run.sh("gh pr comment --help; prod-migrate --note 'say \"hi\"'", env=env)
+            self.assertEqual([c["tool"] for c in sim.writes(root)], ["prod-migrate"])
+            self.assertEqual(sim.writes(root)[0]["args"], ["--note", 'say "hi"'])
 
 
 if __name__ == "__main__":
