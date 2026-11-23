@@ -293,6 +293,10 @@ class CheckCommit(unittest.TestCase):
                    "A review sent with `gh api repos/o/r/pulls/1/reviews --input /tmp/r.json` was lost.\nEOF")
         self.assertNotIn("text just posted", hook_output(self.repo, command))
 
+    def test_a_post_on_its_own_line_after_another_command_is_checked(self):
+        out = hook_output(self.repo, "cd /tmp\ngh pr comment 1 --body 'I fixed it.'", "")
+        self.assertIn("first person", out)
+
     def test_says_when_posted_text_is_blank_or_unreadable(self):
         empty = os.path.join(self.repo, "empty.md")
         open(empty, "w").close()

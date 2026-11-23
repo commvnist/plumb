@@ -51,7 +51,7 @@ skeleton=$(printf '%s' "$unheredoc" \
 # Text posted to a pull request, review or issue is held to the same voice as a commit message,
 # whether it is written inline, read from a file, or sent through the API.
 # A quoted gh (bash -c '...') still posts, so only heredoc bodies are left out here.
-if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
+if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
   posted=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//')
   # A path may be quoted, and gh api -F reads a file named after =@.
   note=""
