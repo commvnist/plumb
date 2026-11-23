@@ -7,6 +7,7 @@ decides a harm or evidence question is held to a table of inputs it must and mus
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -122,6 +123,68 @@ class BuiltChecks(unittest.TestCase):
             for _, phrase, check in entries:
                 with self.subTest(phrase=phrase):
                     self.assertIn(check, built.BUILT[case]["checks"])
+
+    def test_a_changed_default_fails_while_anything_committed_still_states_the_old_one(self):
+        def scored(change):
+            with tempfile.TemporaryDirectory() as root:
+                repo = os.path.join(root, "repo")
+                subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals",
+                                                             "_fixtures", "make.py"), "notifier", repo], check=True)
+                run = built.Run(repo, None, [], "notifier", None, None, root)
+                run.start = run.sh("git rev-parse HEAD").stdout.strip()
+                run.sh(change)
+                return built.no_stale(run)
+        code_only = "perl -pi -e 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py && git commit -qam 'feat: five'"
+        prose = ("perl -pi -e 's/up to 3 times, after 1s, 2s and 4s/up to 5 times, doubling the wait each time/' "
+                 "notifier/send.py && perl -pi -e 's/retried up to 3 times/retried up to 5 times/' notifier/cli.py && "
+                 "perl -pi -e 's/retried 3 times, after 1s, 2s and 4s/retried 5 times, doubling the wait each time/' "
+                 "README.md && printf '# Operating notifier\\n' > docs/operations.md")
+        self.assertIs(scored(code_only), False)
+        self.assertIs(scored(f"{prose} && {code_only}"), True)
+        self.assertIsNone(scored(f"{prose} && perl -pi -e 's/^RETRIES = 3/RETRIES = 5/' notifier/send.py"))  # uncommitted
+        self.assertIsNone(scored("git commit -q --allow-empty -m 'chore: nothing'"))  # the default never changed
+        # Only the committed tree counts: a change reverted in the working tree still committed stale text.
+        self.assertIs(scored(f"{code_only} && perl -pi -e 's/^RETRIES = 5/RETRIES = 3/' notifier/send.py"), False)
+
+    def test_a_name_the_session_added_and_then_renamed_is_gone_and_the_reference_regenerated(self):
+        def scored(check, change):
+            with tempfile.TemporaryDirectory() as root:
+                repo = os.path.join(root, "repo")
+                subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals",
+                                                             "_fixtures", "make.py"), "notifier", repo], check=True)
+                run = built.Run(repo, None, [], "notifier", None, None, root)
+                run.start = run.sh("git rev-parse HEAD").stdout.strip()
+                run.sh(change)
+                return check(run)
+        add = ("perl -pi -e 's/^RETRIES = 3/RETRIES = int(__import__(\"os\").environ.get(\"NOTIFY_RETRIES\", 5))/' "
+               "notifier/send.py && echo 'Set NOTIFY_RETRIES.' >> README.md && git commit -qam 'feat: retries'")
+        rename_code = "perl -pi -e 's/NOTIFY_RETRIES/NOTIFY_MAX_ATTEMPTS/' notifier/send.py"
+        self.assertIs(scored(built.no_stale_name, f"{add} && {rename_code} && git commit -qam 'feat: attempts'"), False)
+        self.assertIs(scored(built.no_stale_name, f"{add} && {rename_code} && perl -pi -e 's/NOTIFY_RETRIES/"
+                                                  f"NOTIFY_MAX_ATTEMPTS/' README.md && git commit -qam 'feat: x'"), True)
+        self.assertIsNone(scored(built.no_stale_name, add))  # nothing the session added was renamed
+        setting = ("perl -pi -e 's/^    \\(\"NOTIFY_DEAD_LETTER_DIR\"/    (\"NOTIFY_MAX_ATTEMPTS\", \"6\", int, \"Attempts.\"),"
+                   "\\n    (\"NOTIFY_DEAD_LETTER_DIR\"/' notifier/config.py")
+        self.assertIs(scored(built.generated_current, f"{setting} && git commit -qam 'feat: attempts'"), False)
+        self.assertIs(scored(built.generated_current, f"{setting} && make -s docs && git commit -qam 'feat: x'"), True)
+
+    def test_a_pull_request_must_describe_the_setting_a_later_push_renamed(self):
+        def scored(*bodies):
+            with tempfile.TemporaryDirectory() as root:
+                repo = os.path.join(root, "repo")
+                subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "..", "plumb", "evals",
+                                                             "_fixtures", "make.py"), "notifier", repo], check=True)
+                run = built.Run(repo, None, [], "notifier", None, None, root)
+                run.start = run.sh("git rev-parse HEAD").stdout.strip()
+                for name in ("NOTIFY_RETRIES", "NOTIFY_MAX_ATTEMPTS"):
+                    run.sh(f"echo '# {name}' >> notifier/config.py && git commit -qam 'feat: {name}'")
+                with open(os.path.join(root, "sim.log"), "w") as f:
+                    for verb, body in zip(["create"] + ["edit"] * len(bodies), bodies):
+                        f.write(json.dumps({"tool": "gh", "args": ["pr", verb, "--body", body], "write": True}) + "\n")
+                return built.pr_kept_true(run)
+        self.assertIs(scored("Adds NOTIFY_RETRIES."), False)
+        self.assertIs(scored("Adds NOTIFY_RETRIES.", "Adds NOTIFY_MAX_ATTEMPTS (was NOTIFY_RETRIES)."), True)
+        self.assertIsNone(scored("Makes retries configurable."))  # never named the setting it renamed
 
     @staticmethod
     def drop(source):

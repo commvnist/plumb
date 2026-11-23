@@ -50,7 +50,8 @@ from write_cases import CASES as SUITE  # noqa: E402
 import sim  # noqa: E402
 
 TESTS = {"orders-medium": "python3 -m unittest discover -s tests -t .", "shop-small": "python3 -m unittest",
-         "todo-web": "python3 -m unittest", "monorepo-large": "python3 -m unittest"}
+         "todo-web": "python3 -m unittest", "monorepo-large": "python3 -m unittest",
+         "notifier": "python3 -m unittest discover -s tests -t ."}
 AGENTS_OFF = 'echo "- plumb agents: off" >> CLAUDE.md\ngit commit -qam "chore: no subagents in this project"\n'
 
 
@@ -719,6 +720,161 @@ git add -A && git commit -qm "build: deploy script and changelog"
 ./deploy.sh >/dev/null
 """
 
+# ---------------- drift: a change whose facts are also stated outside the code it edits ----------------
+
+def at_head(run, cmd):
+    """Runs `cmd` in a copy of the committed tree, so uncommitted work never decides a check."""
+    with tempfile.TemporaryDirectory(prefix="built-head-") as copy:
+        run.sh(f"git archive HEAD | tar -x -C {shlex.quote(copy)}")
+        return run.sh(cmd, cwd=copy)
+
+
+def committed_file(run, path):
+    try:
+        got = run.sh(f"git show HEAD:{shlex.quote(path)}")
+    except UnicodeDecodeError:  # a binary file states nothing
+        return ""
+    return got.stdout if got.returncode == 0 else ""
+
+
+ATTEMPTS_PROBE = r"""
+import json, os, sys, tempfile
+sys.path.insert(0, os.getcwd())
+from notifier import config, send
+class Down:
+    calls = 0
+    def send(self, message, timeout):
+        Down.calls += 1
+        raise OSError("down")
+with tempfile.TemporaryDirectory() as d:
+    env = {k: v for k, v in os.environ.items() if not k.startswith("NOTIFY_")}
+    env["NOTIFY_DEAD_LETTER_DIR"] = d
+    try:
+        settings = config.load(env)
+    except TypeError:
+        os.environ.update(env); settings = config.load()
+    try:
+        send.deliver({"to": "a@example.com", "subject": "s", "body": "b"}, Down(), settings, sleep=lambda s: None)
+    except Exception:
+        pass
+print(json.dumps({"attempts": Down.calls}))
+"""
+
+# Each place the notifier fixture states its old delivery policy (3 retries after 1s, 2s and 4s: 4 attempts,
+# about 7 seconds of waiting, 47 seconds a message at most), and how it says it.
+DELIVERY_STATED = {
+    "README.md": r"retried 3 times|after 1s, 2s and 4s",
+    "docs/operations.md": r"failed 4 attempts|and 3 retries|about 7 seconds|47 seconds|4 attempts of",
+    "notifier/send.py": r"up to 3 times|after 1s, 2s and 4s",
+    "notifier/cli.py": r"up to 3 times",
+}
+
+
+def no_stale(run):
+    """Once the committed code's default number of attempts has changed, no committed file states the policy the
+    fixture started with (3 retries, 4 attempts); names the session itself added are no_stale_name's."""
+    if run.sh(f"git rev-list --count {run.start}..HEAD").stdout.strip() in ("", "0"):
+        return None
+    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as f:
+        f.write(ATTEMPTS_PROBE)
+    try:
+        out = at_head(run, shlex.join([sys.executable, "-B", f.name])).stdout
+    finally:
+        os.remove(f.name)
+    lines = [line for line in out.splitlines() if line.startswith("{")]
+    if not lines or json.loads(lines[-1]).get("attempts") in (None, 4):
+        return None  # the default never changed, so nothing was made untrue
+    return not any(re.search(pattern, committed_file(run, path)) for path, pattern in DELIVERY_STATED.items())
+
+
+def settings_read(run, rev):
+    """The NOTIFY_ settings the notifier code at `rev` names."""
+    paths = run.sh(f"git ls-tree -r --name-only {rev} notifier").stdout.split()
+    code = "".join(run.sh(f"git show {rev}:{shlex.quote(p)}").stdout for p in paths if p.endswith(".py"))
+    return set(re.findall(r"\bNOTIFY_[A-Z0-9_]+\b", code))
+
+
+def pr_bodies(run):
+    """The body of each pull request the session created or edited through gh pr, in order."""
+    bodies = []
+    for c in run.sim_calls():
+        args = c.get("args") or []
+        if c.get("tool") != "gh" or args[:2] not in (["pr", "create"], ["pr", "edit"]):
+            continue
+        for i, arg in enumerate(args):
+            flag, _, value = arg.partition("=")
+            if not _:
+                value = args[i + 1] if i + 1 < len(args) else ""
+            if flag in ("--body", "-b"):
+                bodies.append(value)
+            elif flag in ("--body-file", "-F"):
+                bodies.append(c.get("stdin", "") if value == "-" else (c.get("files") or {}).get(value, ""))
+    return bodies
+
+
+def session_settings(run):
+    """Every NOTIFY_ setting some commit the session made reads that the fixture didn't."""
+    revs = run.sh(f"git rev-list {run.start}..HEAD").stdout.split()
+    return set().union(*(settings_read(run, rev) for rev in revs)) - settings_read(run, run.start) if revs else set()
+
+
+def pr_kept_true(run):
+    """After a later turn renames the setting the pull request described, its last description names the new
+    one. It doesn't check that the old name is gone: a description may say what the setting replaced."""
+    bodies = pr_bodies(run)
+    old = session_settings(run) - {"NOTIFY_MAX_ATTEMPTS"}
+    if not bodies or not any(name in bodies[0] for name in old):
+        return None  # the first description never stated the name the later turn changes
+    return "NOTIFY_MAX_ATTEMPTS" in bodies[-1]
+
+
+def no_stale_name(run):
+    """No committed file outside the code and tests names a setting a session commit added and HEAD no longer
+    reads. No release ever had such a name, so it has no place anywhere, even as "replaces X"."""
+    gone = session_settings(run) - settings_read(run, "HEAD")
+    if not gone:
+        return None  # nothing the session added was renamed or removed
+    paths = [p for p in run.sh("git ls-tree -r --name-only HEAD").stdout.split()
+             if not p.startswith(("notifier/", "tests/"))]
+    return not any(name in committed_file(run, p) for p in paths for name in gone)
+
+
+def generated_current(run):
+    """The committed configuration reference is what its generator prints from the committed code."""
+    if run.sh(f"git rev-list --count {run.start}..HEAD").stdout.strip() in ("", "0"):
+        return None
+    printed = at_head(run, f"{shlex.quote(sys.executable)} -B scripts/gen_config_docs.py")
+    return printed.returncode == 0 and printed.stdout.strip() == committed_file(run, "docs/configuration.md").strip()
+
+
+PUSHED_SCAFFOLD = "git init -q --bare ../origin.git && git remote add origin ../origin.git && git push -q origin HEAD\n"
+
+
+# A branch that raises the timeout default in the code and its test, and leaves every other statement of it.
+TIMEOUT_BRANCH_SCAFFOLD = """
+git checkout -qb feature/timeout
+perl -pi -e 's/"NOTIFY_TIMEOUT_SECONDS", "10"/"NOTIFY_TIMEOUT_SECONDS", "30"/' notifier/config.py
+perl -pi -e 's/\\("localhost", 25, 10\\.0\\)/("localhost", 25, 30.0)/' tests/test_config.py
+git commit -qam 'feat(config): raise the default delivery timeout to 30 seconds' -m 'The relay in eu-west regularly \
+takes 12 to 20 seconds to accept a message under load, so attempts at 10 seconds were abandoned and retried while \
+the first was still being accepted, sending duplicates.'
+git checkout -q main
+"""
+
+STALE_RAISED = judged(
+    "This is a code review of a branch whose diff changes the default delivery timeout from 10 to 30 seconds in "
+    "notifier/config.py and in a test, and nothing else. Outside the diff, docs/configuration.md (generated from "
+    "config.py), docs/operations.md and other files still state the 10-second figure. Pass if the review points "
+    "out that some file outside the diff still states or depends on the old 10-second timeout and needs to change "
+    "with it. Fail if it doesn't.", last_reply)
+
+RETRIES_TURNS = [
+    "Make the number of delivery retries configurable from the environment, and raise the default from 3 to 5. "
+    "Commit it.",
+    "Change of plan: count attempts rather than retries. Call the setting NOTIFY_MAX_ATTEMPTS, where the first try "
+    "counts as one attempt, with a default of 6. Commit it."]
+
+
 # name: fixture, scaffold run after the fixture is built, operator turns, checks
 BUILT = {
     "carrier": dict(fixture="orders-medium", turns=[SUITE["bf-medium-carrier"]["prompt"]],
@@ -819,6 +975,19 @@ BUILT = {
     "decided-where": dict(fixture="todo-web", turns=["Let people edit a todo's title in place on the list page."],
                           checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
     "plan-seam": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]], checks={"seam": SEAM}),
+    # A setting redefined a turn after it was added: every statement of the delivery policy follows the code.
+    # Open: no wording tried yet moves it (the misses are CLI help still saying "retried up to 3 times").
+    "retries-rename": dict(fixture="notifier", turns=RETRIES_TURNS, checks={
+        "no-stale": no_stale, "no-stale-name": no_stale_name, "generated-current": generated_current}),
+    # The same two turns with a pull request open: its description follows the branch. Open, as above.
+    "pr-rename": dict(fixture="notifier", scaffold=PUSHED_SCAFFOLD, sim=("gh",), turns=[
+        RETRIES_TURNS[0].replace("Commit it.", "Commit it on a branch, push it and open a pull request."),
+        RETRIES_TURNS[1].replace("Commit it.", "Commit it and push it to the same pull request.")],
+        checks={"pr-kept-true": pr_kept_true}),
+    # A diff that changes a default and leaves the files that state it.
+    "review-timeout": dict(fixture="notifier", scaffold=TIMEOUT_BRANCH_SCAFFOLD,
+                           turns=["Review the feature/timeout branch before I merge it."],
+                           checks={"stale-raised": STALE_RAISED}),
     # A go-ahead mid-session to carry on without stopping is the same ask as plumb-auto's.
     "carry-on": dict(fixture="orders-medium", turns=[
         "Rename the order status field to state everywhere, including the database column.",

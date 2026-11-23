@@ -21,4 +21,3 @@ plumb-plan 3: Decide only what is expensive to reverse
 plumb-refactor 1: Name the goal
 plumb-refactor 3: Move in small steps
 plumb-refactor 4: Report
-plumb-review 2: Read the whole diff, then what it touches
