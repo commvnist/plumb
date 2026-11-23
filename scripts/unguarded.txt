@@ -1,5 +1,4 @@
 plumb 10: Names carry meaning; comments carry what code can't show
-plumb 14: Verify before relying
 plumb 15: Use the project's own checks
 plumb 17: The test floor
 plumb-auto 1: Read until nothing surprises you

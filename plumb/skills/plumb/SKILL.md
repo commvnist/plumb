@@ -22,7 +22,7 @@ The reviewer must vouch for every line. Correct first, then clear, then small.
 11. **Fail loudly, early, with context:** never swallow an error; an error or log line gives what failed, the values involved and what to do next, never secrets or personal data.
 12. **Never fake success:** never weaken or delete a test to go green.
 13. **Claims need evidence:** quote what you ran and its result.
-14. **Verify before relying:** use only what exists.
+14. **Verify before relying:** use only what exists; a premise from a request, issue, doc or instruction file is a claim until the code, history or a run confirms it, wherever that evidence lives; show a false one with its line before building on it.
 15. **Use the project's own checks,** before the first edit and after the last.
 16. **A test earns its place** by catching a realistic break; see it fail on that break and name the break.
 17. **The test floor:** one test per bug fix or new outcome a caller would notice; none for code that decides nothing.
