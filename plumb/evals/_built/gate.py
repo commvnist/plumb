@@ -1,0 +1,125 @@
+"""Reads run.py results and says, for each check, what the gate decides and what to run next.
+
+  python3 _built/gate.py <results.json> [<results.json> ...] [--main main] [--new new]
+
+Give one results file per agent model (each run.py run writes its model into every result). Models are kept
+apart: each has its own pass rate, so they are never pooled into one count.
+
+Two questions, in this order:
+
+1. Does the case reproduce the failure? Main must fail a check at least twice in its first six measured runs
+   on a model. If it doesn't, the answer is "case didn't reproduce": the case is too easy, too short or on the
+   wrong model to show the failure the reviewers saw, so it says nothing about the wording, and the item stays
+   open with the case marked for a harder one. Only models where the case reproduces go on to question 2.
+2. Does the wording beat main? An exact test stratified by model (each model's runs compared only with its
+   own, the conditional form of Cochran-Mantel-Haenszel), one-sided. The wording lands at p <= 0.05. Runs go
+   in stages of 6, 18 and 30 per arm per model: below 18, a candidate ahead of main is run on; at 18 or more,
+   one no better than main is dropped; at 30, anything not landed is dropped as undecided, with the power the
+   runs had to find a gain.
+"""
+import argparse
+import json
+from math import comb
+
+REPRODUCE_RUNS, REPRODUCE_FAILS = 6, 2
+STAGES = (6, 18, 30)
+ALPHA = 0.05
+
+
+def hypergeom(k, total, n_new, n_main):
+    """P(new arm holds k of `total` passes) when passes fall at random between the arms."""
+    if k < 0 or k > n_new or total - k < 0 or total - k > n_main:
+        return 0.0
+    return comb(n_new, k) * comb(n_main, total - k) / comb(n_new + n_main, total)
+
+
+def stratified_p(strata):
+    """One-sided exact p that the new arm's passes, summed over models, are this high or higher by chance.
+
+    `strata` holds (main passes, main runs, new passes, new runs) per model."""
+    dist = {0: 1.0}
+    for a, n, b, m in strata:
+        total = a + b
+        step = {k: hypergeom(k, total, m, n) for k in range(0, m + 1)}
+        nxt = {}
+        for s, ps in dist.items():
+            for k, pk in step.items():
+                if pk:
+                    nxt[s + k] = nxt.get(s + k, 0.0) + ps * pk
+        dist = nxt
+    observed = sum(b for _, _, b, _ in strata)
+    return sum(p for s, p in dist.items() if s >= observed)
+
+
+def power(n, base=0.5, gain=0.9, alpha=ALPHA):
+    """Chance that n runs per arm on one model find a true rise from `base` to `gain`."""
+    def binom(k, p):
+        return comb(n, k) * p ** k * (1 - p) ** (n - k)
+    return sum(binom(a, base) * binom(b, gain) for a in range(n + 1) for b in range(n + 1)
+               if stratified_p([(a, n, b, n)]) <= alpha)
+
+
+def tally(results, main, new):
+    """{(case, check): {model: {arm: [bool, ...]}}}, measured runs only, in run order."""
+    rows = {}
+    for r in sorted(results, key=lambda r: r["run"]):
+        for check, ok in r["checks"].items():
+            if ok is not None and r["arm"] in (main, new):
+                rows.setdefault((r["case"], check), {}).setdefault(r.get("model", "?"), {}) \
+                    .setdefault(r["arm"], []).append(ok)
+    return rows
+
+
+def decide(by_model, main, new):
+    reproduced, notes = {}, []
+    for model, arms in sorted(by_model.items()):
+        first = arms.get(main, [])[:REPRODUCE_RUNS]
+        if len(first) < REPRODUCE_RUNS:
+            notes.append(f"{model}: main {sum(first)}/{len(first)}, needs {REPRODUCE_RUNS} measured runs")
+        elif len(first) - sum(first) < REPRODUCE_FAILS:
+            notes.append(f"{model}: main {sum(first)}/{len(first)}, case didn't reproduce")
+        else:
+            reproduced[model] = arms
+    if not reproduced:
+        return "case didn't reproduce" if notes and all("reproduce" in n for n in notes) else "run main", notes
+    strata, cells = [], []
+    for model, arms in reproduced.items():
+        a, b = arms.get(main, []), arms.get(new, [])
+        if not b:
+            cells.append(f"{model}: main {sum(a)}/{len(a)}, reproduces")
+            continue
+        strata.append((sum(a), len(a), sum(b), len(b)))
+        cells.append(f"{model}: main {sum(a)}/{len(a)} new {sum(b)}/{len(b)}")
+    if not strata:
+        return "reproduces; gate the wording", notes + cells
+    p = stratified_p(strata)
+    n = min(min(s[1], s[3]) for s in strata)
+    ahead = sum(s[2] / s[3] for s in strata) > sum(s[0] / s[1] for s in strata)
+    cells.append(f"p = {p:.3f}")
+    if p <= ALPHA:
+        return "land", notes + cells
+    if n >= STAGES[-1]:
+        return f"drop: undecided at {n} (power for 50%->90% was {power(n):.0%})", notes + cells
+    if n >= STAGES[1] and not ahead:
+        return "drop: no better than main", notes + cells
+    nxt = next(s for s in STAGES if s > n)
+    return f"run each arm to {nxt}", notes + cells
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("results", nargs="+")
+    ap.add_argument("--main", default="main")
+    ap.add_argument("--new", default="new")
+    a = ap.parse_args()
+    results = []
+    for path in a.results:
+        with open(path) as f:
+            results += json.load(f)
+    for (case, check), by_model in sorted(tally(results, a.main, a.new).items()):
+        verdict, detail = decide(by_model, a.main, a.new)
+        print(f"{case:18} {check:18} {verdict}\n{'':38}" + "; ".join(detail))
+
+
+if __name__ == "__main__":
+    main()

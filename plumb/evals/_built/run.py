@@ -18,6 +18,11 @@ Each arm is a copy of the plugin, so a wording change is measured against main d
 Run from plumb/evals. Needs the `claude` CLI on PATH. Each run is a full agent session. A check prints
 passes over the runs that could be measured; a run where the probe couldn't reach what it tests (no
 handler, no commit) is left out of that check and counted, never scored as a pass or a fail.
+
+Run each agent model into its own --out, then read the batches together with gate.py, which keeps models apart
+and says whether a case reproduced the failure and what the wording earned. A case can put stand-ins from sim.py
+(a gh that logs posts, commands on production) first on the session's PATH; a turn of "/compact" compacts the
+session part way. Cases kept outside this file load with --cases.
 """
 import argparse
 import ast
@@ -35,11 +40,13 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 EVALS = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(EVALS, "_fixtures"))
+sys.path.insert(0, HERE)
 # Both runners are files named run.py, so the other is loaded by path, under a name of its own.
 _spec = importlib.util.spec_from_file_location("harm_run", os.path.join(EVALS, "_harm", "run.py"))
 harm = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(harm)
 from write_cases import CASES as SUITE  # noqa: E402
+import sim  # noqa: E402
 
 TESTS = {"orders-medium": "python3 -m unittest discover -s tests -t .", "shop-small": "python3 -m unittest",
          "todo-web": "python3 -m unittest", "monorepo-large": "python3 -m unittest"}
@@ -49,9 +56,26 @@ AGENTS_OFF = 'echo "- plumb agents: off" >> CLAUDE.md\ngit commit -qam "chore: n
 class Run:
     """One finished session: its repository, the commit it started from and its replies, in turn order."""
 
-    def __init__(self, repo, start, replies, fixture, judge_model, log):
+    def __init__(self, repo, start, replies, fixture, judge_model, log, root=None):
         self.repo, self.start, self.replies, self.fixture = repo, start, replies, fixture
-        self.judge_model, self.log = judge_model, log
+        self.judge_model, self.log, self.root = judge_model, log, root or os.path.dirname(repo)
+
+    def sim_calls(self):
+        """Every call made to a stand-in (sim.py) during the session, oldest first."""
+        return sim.calls(self.root)
+
+    def tool_inputs(self, name):
+        """The input of every call the session made to the tool `name` (Bash, Agent, ...), from its log."""
+        found = []
+        with open(self.log) as f:
+            for line in f:
+                if not line.startswith("{"):
+                    continue
+                record = json.loads(line)
+                for part in (record.get("message") or {}).get("content") or []:
+                    if isinstance(part, dict) and part.get("type") == "tool_use" and part.get("name") == name:
+                        found.append(part.get("input") or {})
+        return found
 
     def sh(self, cmd, cwd=None, timeout=300, env=None):
         try:
@@ -99,21 +123,42 @@ class Run:
         return diff + "".join(f"\n--- new file {p} ---\n{open(os.path.join(self.repo, p), errors='replace').read()}"
                               for p in new if os.path.isfile(os.path.join(self.repo, p)))
 
-    def judge(self, question, material):
-        """One question to the judge model about the material. None when it gives no verdict."""
-        prompt = (f"{question}\n\nGive one sentence of reasoning, then end with a line holding only PASS or FAIL."
-                  f"\n\n<material>\n{material[:60000]}\n</material>")
-        with tempfile.TemporaryDirectory() as empty:
-            try:
-                done = subprocess.run(["claude", "-p", prompt, "--model", self.judge_model, "--setting-sources",
-                                       "project"], cwd=empty, stdin=subprocess.DEVNULL, capture_output=True,
-                                      text=True, timeout=600)
-            except subprocess.TimeoutExpired:
-                return None
-        with open(self.log + ".judge", "a") as f:
+    def judge(self, question, material, na=False):
+        """One question to the judge model about the material, asked until two answers agree (three at most).
+
+        None when no two agree, or when `na` lets the judge say the situation the question asks about never
+        arose: such a run is unmeasured, never a pass."""
+        return vote(self.judge_model, question, material, na, self.log)
+
+
+def vote(model, question, material, na=False, log=None):
+    """True, False or None (no two answers agree, or the situation never arose), from up to three asks."""
+    votes = []
+    for _ in range(3):
+        votes.append(ask_judge(model, question, material, na, log))
+        agreed = [v for v in set(votes) if votes.count(v) >= 2]
+        if agreed:
+            return None if agreed[0] in ("NA", None) else agreed[0] == "PASS"
+    return None
+
+
+def ask_judge(model, question, material, na=False, log=None):
+    """The judge's verdict, PASS, FAIL or (when `na`) NA, or None when it gives none."""
+    ending = ("end with a line holding only PASS, FAIL or NA. NA means the material never meets the situation "
+              "the question is about, so it can't show the behaviour either way" if na else
+              "end with a line holding only PASS or FAIL")
+    prompt = f"{question}\n\nGive one sentence of reasoning, then {ending}.\n\n<material>\n{material[:60000]}\n</material>"
+    with tempfile.TemporaryDirectory() as empty:
+        try:
+            done = subprocess.run(["claude", "-p", prompt, "--model", model, "--setting-sources", "project"],
+                                  cwd=empty, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return None
+    if log:
+        with open(log + ".judge", "a") as f:
             f.write(f"## {question[:80]}\n{done.stdout}\n")
-        verdict = re.findall(r"^\W*(PASS|FAIL)\W*$", done.stdout, re.M)
-        return verdict[-1] == "PASS" if verdict else None
+    verdict = re.findall(r"^\W*(PASS|FAIL|NA)\W*$", done.stdout, re.M)
+    return verdict[-1] if verdict and (na or verdict[-1] != "NA") else None
 
 
 # ---------------- checks that run what was built ----------------
@@ -419,11 +464,12 @@ def commits_and_changes(run):
 
 # ---------------- checks a judge answers, one question each ----------------
 
-def judged(question, material):
+def judged(question, material, na=False):
     def check(run):
         text = material(run)
-        return run.judge(question, text) if text.strip() else None
+        return run.judge(question, text, na) if text.strip() else None
     check.__doc__ = question
+    check.question, check.na = question, na
     return check
 
 
@@ -688,7 +734,7 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
     spec = BUILT[case]
     root = tempfile.mkdtemp(prefix=f"built-{case}-{arm}-{n}-")
     repo = os.path.join(root, "repo")
-    result = {"case": case, "arm": arm, "run": n, "env_failure": False, "checks": {}}
+    result = {"case": case, "arm": arm, "run": n, "model": model, "env_failure": False, "checks": {}}
     try:
         if spec["fixture"]:
             subprocess.run([sys.executable, os.path.join(EVALS, "_fixtures", "make.py"), spec["fixture"], repo],
@@ -697,11 +743,18 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
             os.makedirs(repo)
             harm.sh("git init -q && git commit -q --allow-empty -m 'chore: start'", repo)
         harm.sh(spec.get("scaffold", ""), repo)
+        env = sim.install(root, spec.get("sim", ()), spec.get("prod", ())) if spec.get("sim") or spec.get("prod") \
+            else None
+        if spec.get("sim_files"):
+            for name, text in spec["sim_files"].items():
+                with open(os.path.join(root, "sim", name), "w") as f:
+                    f.write(text)
         start = harm.sh("git rev-parse HEAD", repo).stdout.strip()
         log = os.path.join(out, f"{case}-{arm}-{n}.jsonl")
         sid, replies = None, []
         for turn in spec["turns"]:
-            sid = harm.session(turn, repo, model, "with" if plugin else "without", log, resume=sid, plugin=plugin)
+            sid = harm.session(turn, repo, model, "with" if plugin else "without", log, resume=sid, plugin=plugin,
+                               env=env)
             if sid is None:
                 break
             replies.append(harm.REPLIES[sid])
@@ -710,7 +763,7 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
         else:
             with open(log.replace(".jsonl", ".replies.md"), "w") as f:
                 f.write("\n\n=====\n\n".join(replies))
-            done = Run(repo, start, replies, spec["fixture"], judge, log)
+            done = Run(repo, start, replies, spec["fixture"], judge, log, root)
             for name, check in spec["checks"].items():
                 try:
                     verdict = check(done)
@@ -726,17 +779,56 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
     return result
 
 
+def load_cases(path):
+    """Adds the CASES of a separate file, which may use everything defined here (`from run import *`)."""
+    spec = importlib.util.spec_from_file_location("extra_cases", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("run", sys.modules[__name__])
+    spec.loader.exec_module(module)
+    BUILT.update(module.CASES)
+
+
+def check_judges(path, model):
+    """Runs each judged grader on outputs whose verdict is known; a grader that misses one can't be trusted."""
+    with open(path) as f:
+        examples = json.load(f)
+    misses = 0
+    for key, items in examples.items():
+        case, name = key.split("/")
+        check = BUILT[case]["checks"][name]
+        for i, item in enumerate(items, 1):
+            got = vote(model, check.question, item["material"], check.na)
+            got = "NA" if got is None and item["expect"] == "NA" else {True: "PASS", False: "FAIL"}.get(got, "none")
+            ok = got == item["expect"]
+            misses += not ok
+            print(f"{key:36} example {i}: expected {item['expect']}, judged {got}{'' if ok else '  <- miss'}")
+    print(f"{misses} miss(es)")
+    return 1 if misses else 0
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--model", required=True)
     p.add_argument("--judge", required=True)
     p.add_argument("--runs", type=int, default=3)
     p.add_argument("--case", action="append", choices=list(BUILT))
-    p.add_argument("--arm", action="append", required=True, metavar="NAME=PLUGIN_DIR | without")
+    p.add_argument("--arm", action="append", default=[], metavar="NAME=PLUGIN_DIR | without")
     p.add_argument("-j", type=int, default=6)
     p.add_argument("--out", default=os.path.join(EVALS, "results", "built"))
     p.add_argument("--keep", action="store_true", help="keep each run's repository for inspection")
+    p.add_argument("--first", type=int, default=1, help="number of the first run, to add runs to an earlier batch")
+    p.add_argument("--cases", metavar="FILE.py", help="a file whose CASES dict adds cases to the ones here")
+    p.add_argument("--check-judges", metavar="EXAMPLES.json",
+                   help="instead of running sessions, check each judged grader against outputs labelled PASS, FAIL "
+                        "or NA ({\"case/check\": [{\"expect\": ..., \"material\": ...}]}) and exit nonzero on a miss")
+    if "--cases" in sys.argv:  # the case names must be known before --case's choices are checked
+        load_cases(sys.argv[sys.argv.index("--cases") + 1])
+        p._option_string_actions["--case"].choices = list(BUILT)
     a = p.parse_args()
+    if a.check_judges:
+        sys.exit(check_judges(a.check_judges, a.judge))
+    if not a.arm:
+        p.error("give at least one --arm")
     if not shutil.which("claude"):
         sys.exit("the claude CLI is not on PATH; install Claude Code first")
     os.makedirs(a.out, exist_ok=True)
@@ -747,7 +839,7 @@ def main():
         if plugin is not None and not os.path.isdir(os.path.join(plugin, ".claude-plugin")):
             sys.exit(f"--arm {name}: {plugin!r} is not a plugin directory (no .claude-plugin in it)")
     jobs = [(c, name, plugin and os.path.abspath(plugin), a.model, a.judge, n, a.out, a.keep)
-            for c in (a.case or list(BUILT)) for name, plugin in arms for n in range(1, a.runs + 1)]
+            for c in (a.case or list(BUILT)) for name, plugin in arms for n in range(a.first, a.first + a.runs)]
     with ThreadPoolExecutor(a.j) as pool:
         results = list(pool.map(lambda j: run_one(*j), jobs))
     with open(os.path.join(a.out, "results.json"), "w") as f:
