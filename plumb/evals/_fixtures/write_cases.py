@@ -528,7 +528,7 @@ git commit -qam "Add bill splitting and unit prices"
             "quality": llm(f"""
                 Pass only if all hold:
                 - The consumer is safe on redelivery (the broker delivers at least once, as the shipping consumer documents): a duplicate event doesn't fail or change state twice, and an unknown order is handled as the shipping consumer handles it.
-                - It follows the shipping consumer's conventions (store.set_status, one log event per message with an outcome).
+                - It follows the shipping consumer's conventions (store functions for data access, one log event per message with an outcome).
                 - A test covers redelivery, and tests were run and passed.
                 - {REPORT}"""),
         }),
@@ -561,7 +561,7 @@ git commit -qam "Add bill splitting and unit prices"
             "both-current": llm("""
                 Pass if, while the old and new columns both exist, the plan keeps both current (writing both, or a
                 trigger or backfill that keeps them in step) so code of either version reads correct data, and
-                removes the old column only after no deployed code reads it."""),
+                removes the old column only after no deployed code reads or writes it."""),
             "unknowns": llm("""
                 Pass if the plan names what it doesn't yet know (for example which callers or clients read the
                 status field, or how large the orders table is), each with the step that settles it, and puts the
