@@ -14,7 +14,7 @@ Asking for this is the go-ahead for the whole task and the instruction to commit
 3. **Plan the diffs** as plumb-plan does.
 4. **Decide instead of asking:** take the reading the code and request best support, and record it. Stop only for what can't be undone or needs a yes even when asked (a breaking change charter rule 3 names; a new dependency, rule 5), after finishing what doesn't depend on it.
 5. **Build each diff** by the matching plumb skill, loaded, and running the checks after every step.
-6. **Get an independent review:** send the change, committed or not, to the plumb-reviewer agent as its description says, since an author can't see past their own assumptions; asking for this skill is the ask for that agent. Fix or dispute each Blocking finding, then send the change back; stop when no Blocking finding stands unfixed and undisputed, and put the disputes under Reviewed. With `plumb agents: off`, which this ask doesn't override, re-read the request, then the diff, as a stranger's.
+6. **Get an independent review:** send the change, committed or not, to the plumb-reviewer agent as its description says, since an author can't see past their own assumptions; asking for this skill is the ask for that agent. Fix each Blocking finding or answer it with evidence (a run, a line), then send the change back with those answers; a finding stands until fixed or the reviewer withdraws it. Review again until none stands; one still standing after a second round goes under Waiting on, the run reported as stopped short. With `plumb agents: off`, which this ask doesn't override, re-read the request, then the diff, as a stranger's.
 7. **Try to break it:** name the likeliest way it is wrong (a misread request, an untried input, an unrun caller) and check it.
 
 ## Output
@@ -22,4 +22,4 @@ Asking for this is the go-ahead for the whole task and the instruction to commit
 The charter's report, with every commit under Done and every diff's choices under Decided, plus after Decided:
 
 - **Assumed:** <each reading taken without asking, and what changes if it is wrong>
-- **Reviewed:** <verdict, reviewer model, what was fixed or disputed>
+- **Reviewed:** <verdict, reviewer model, what was fixed, each dispute and the reviewer's answer>

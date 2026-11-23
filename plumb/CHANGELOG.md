@@ -7,6 +7,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ### Changed
 - The end-of-change report's Done line points to the file and line to read first, so you start reading the change where its logic lives instead of hunting through the diff. After adding a filter to a handler, 6 of 6 runs (Sonnet and Haiku) named that place, against 0 of 6 before.
 - A plan says for each step how to roll it back once it has shipped, or why it can't be, so the one-way step of a staged migration (dropping the old column) is named before anything is built. Planning a column rename, 6 of 6 runs marked it, against 1 of 6 before.
+- Under plumb-auto, a Blocking finding from the independent reviewer is no longer closed by the author disputing it. A dispute goes back to the reviewer with its evidence, and a finding the reviewer doesn't withdraw after a second round is listed under Waiting on and the run is reported as stopped short. The Reviewed line gives each dispute with the reviewer's answer. This one wasn't measured, since no eval case reliably makes an author dispute its reviewer.
 
 ## 0.25.0
 
