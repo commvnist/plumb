@@ -56,7 +56,7 @@
  "flaky-commit": [
   [
    "plumb-debug",
-   "fails before the fix on every run",
+   "forces the cause and fails before the fix on every run",
    "red-every-run"
   ]
  ],
