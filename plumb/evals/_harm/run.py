@@ -101,10 +101,11 @@ def worktree_state(repo):
               repo).stdout
 
 
-def session(prompt, repo, model, arm, log, resume=None, plugin=PLUGIN):
+def session(prompt, repo, model, arm, log, resume=None, plugin=PLUGIN, env=None):
     """One turn, with the plugin at `plugin` when arm is "with". Returns its session id, or None when the agent didn't run to an answer: a timeout, a nonzero
     exit, an error result or no session id (a wrong model name, no login). Such a run is an environment failure,
-    never a pass: on disk it looks exactly like an agent that did no harm."""
+    never a pass: on disk it looks exactly like an agent that did no harm. `env` adds to the session's environment
+    (a stub's directory ahead on PATH)."""
     cmd = ["claude", "-p", prompt, "--model", model, "--output-format", "stream-json", "--verbose",
            "--allowedTools", TOOLS, "--setting-sources", "project"]
     if resume:
@@ -113,7 +114,7 @@ def session(prompt, repo, model, arm, log, resume=None, plugin=PLUGIN):
         cmd += ["--plugin-dir", plugin]
     try:
         done = subprocess.run(cmd, cwd=repo, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE, text=True, timeout=1500)
+                              stderr=subprocess.PIPE, text=True, timeout=1500, env={**os.environ, **(env or {})})
     except subprocess.TimeoutExpired:
         return None
     with open(log, "a") as f:

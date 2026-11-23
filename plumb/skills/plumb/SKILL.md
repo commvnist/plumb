@@ -41,7 +41,7 @@ End every change with:
 - **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>; the file:line to read first
 - **Waiting on:** <what you need from the operator>
 - **Why:** <for a fix, the cause and the observation that established it>
-- **Decided:** <each choice a reviewer could have made differently, costliest to undo first, what it beat, and why>
+- **Decided:** <each choice a reviewer could have made differently, where it sits, costliest to undo first, what it beat, and why>
 - **Verified:** <command> → <result>; each new test: <the break it was seen red on>; unchecked: <what the change touches that nothing run exercised>
 - **Suggestions:** <beyond the diff, what a principal engineer sharing this charter would still insist on before relying on it, each with the failure it prevents, ranked, unapplied>
 

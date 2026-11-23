@@ -2,6 +2,14 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- An audit says what it didn't reach. Its Verified line now ends with what the audit left unexamined, and each auditor agent returns that with its findings, so a partial audit no longer reads as a whole one. Auditing a twelve-service repository in one session, 5 of 6 runs on the smaller model named what they hadn't read, against 0 of 6 before; the stronger model already did.
+- An audit's Delete list says, for each item, what the search that shows it unused can't see, such as callers outside the repository. Asked what could be deleted from a library whose functions other projects import, 17 of 18 runs on the smaller model named the outside callers their search couldn't reach, against 11 of 18 before.
+- A pull request description says what was run to show the change works and what nothing exercised, and a project's pull request template no longer replaces plumb's own sections: the description is written inside the template, under headings for what it lacks. In a repository whose template has only a summary and a checklist, 17 of 18 runs on the smaller model gave the command run and its result, against 7 of 18 before; why and risk were measured too and showed no clear change.
+- Each choice under Decided in the end-of-change report says where it sits in the code, so a reviewer can judge it without searching for it first. After adding in-place editing to a todo list, 8 of 31 runs on the smaller model located every decision, against 1 of 30 before; the stronger model rarely did either way (1 of 28 against 0 of 28).
+
 ## 0.27.0
 
 ### Changed

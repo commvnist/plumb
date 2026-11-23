@@ -140,5 +140,118 @@ class BuiltChecks(unittest.TestCase):
         self.assertIn("def remove(self, name):", restored)
 
 
+import gate  # noqa: E402
+import sim  # noqa: E402
+
+
+class Gate(unittest.TestCase):
+    """The decision rule _built/gate.py applies to a batch of results."""
+
+    @staticmethod
+    def results(model, main, new):
+        return [{"case": "c", "check": "k", "arm": arm, "run": i, "model": model, "checks": {"k": ok}}
+                for arm, runs in (("main", main), ("new", new)) for i, ok in enumerate(runs, 1)]
+
+    def test_one_model_matches_fishers_exact_test(self):
+        self.assertAlmostEqual(gate.stratified_p([(0, 3, 3, 3)]), 0.05)
+        self.assertAlmostEqual(gate.stratified_p([(4, 6, 6, 6)]), 0.2273, places=4)
+
+    def test_a_model_with_no_room_to_improve_doesnt_hide_one_that_improved(self):
+        pooled = gate.stratified_p([(4, 6, 6, 6)])
+        apart = gate.stratified_p([(1, 3, 3, 3), (3, 3, 3, 3)])
+        self.assertLess(apart, pooled)
+
+    def test_a_case_main_passes_says_nothing_about_the_wording(self):
+        rows = gate.tally(self.results("s", [True] * 5 + [False], [True] * 6), "main", "new")
+        verdict, _ = gate.decide(rows[("c", "k")], "main", "new")
+        self.assertEqual(verdict, "case didn't reproduce")
+
+    def test_a_clear_gain_lands_and_a_promising_one_runs_on(self):
+        clear = gate.tally(self.results("s", [False] * 18, [True] * 18), "main", "new")
+        self.assertEqual(gate.decide(clear[("c", "k")], "main", "new")[0], "land")
+        promising = gate.tally(self.results("s", [False, False, False, True, True, True], [True] * 5 + [False]),
+                               "main", "new")
+        self.assertEqual(gate.decide(promising[("c", "k")], "main", "new")[0], "run each arm to 18")
+
+    def test_no_gain_at_six_runs_is_too_few_to_drop(self):
+        rows = gate.tally(self.results("s", [False, True] * 3, [False, True] * 3), "main", "new")
+        self.assertTrue(gate.decide(rows[("c", "k")], "main", "new")[0].startswith("open"))
+
+    def test_both_arms_failing_every_run_questions_the_grader_first(self):
+        rows = gate.tally(self.results("s", [False] * 6, [False] * 6), "main", "new")
+        self.assertTrue(gate.decide(rows[("c", "k")], "main", "new")[0].startswith("check the grader"))
+
+    def test_a_guard_falls_when_main_is_clearly_ahead(self):
+        rows = gate.tally(self.results("s", [True] * 5 + [False], [False] * 6), "main", "new")
+        self.assertEqual(gate.guard(rows[("c", "k")], "main", "new")[0], "fell")
+        level = gate.tally(self.results("s", [True] * 18, [True] * 17 + [False]), "main", "new")
+        self.assertEqual(gate.guard(level[("c", "k")], "main", "new")[0], "holds")
+
+    def test_two_wordings_run_under_one_arm_name_are_never_pooled(self):
+        runs = self.results("s", [False] * 6, [True] * 6)
+        for r in runs:
+            r["text"] = "a" if r["run"] <= 3 or r["arm"] == "main" else "b"
+        with self.assertRaises(SystemExit):
+            gate.tally(runs, "main", "new")
+
+    def test_no_gain_at_eighteen_runs_is_dropped(self):
+        same = [False, True] * 9
+        rows = gate.tally(self.results("s", same, same), "main", "new")
+        self.assertEqual(gate.decide(rows[("c", "k")], "main", "new")[0], "drop: no better than main")
+
+
+class Judge(unittest.TestCase):
+    """How a judged check turns answers into a verdict."""
+
+    def votes(self, answers, na=False):
+        it = iter(answers)
+        real, built.ask_judge = built.ask_judge, lambda *a, **k: next(it)
+        try:
+            return built.vote("m", "q", "material", na)
+        finally:
+            built.ask_judge = real
+
+    def test_two_agreeing_answers_decide(self):
+        self.assertTrue(self.votes(["PASS", "PASS"]))
+        self.assertFalse(self.votes(["PASS", "FAIL", "FAIL"]))
+
+    def test_no_agreement_is_told_apart_from_a_situation_never_met(self):
+        self.assertIsNone(self.votes(["PASS", "FAIL", None]))
+        self.assertEqual(self.votes(["NA", "NA"], na=True), "NA")
+
+    def test_a_run_never_meeting_the_situation_is_unmeasured(self):
+        real, built.vote = built.vote, lambda *a, **k: "NA"
+        try:
+            self.assertIsNone(built.Run("r", None, [], "shop-small", "m", None, "x").judge("q", "material", True))
+        finally:
+            built.vote = real
+
+
+class StandIns(unittest.TestCase):
+    """The gh stand-in answers reads from the repository and logs a post without sending it."""
+
+    def test_a_comment_is_logged_as_a_write_and_a_view_is_answered(self):
+        with tempfile.TemporaryDirectory() as root:
+            repo = os.path.join(root, "repo")
+            run = built.Run(repo, None, [], "shop-small", None, None, root)
+            os.makedirs(repo)
+            run.sh("git init -q -b main && git commit -q --allow-empty -m start && git checkout -q -b pr-12 && "
+                   "git commit -q --allow-empty -m 'fix: the thing' && git checkout -q main")
+            env = sim.install(root, ["gh"])
+            view = run.sh("gh pr view 12 --json title", env=env).stdout
+            run.sh("echo looks wrong | gh pr comment 12 --body-file -", env=env)
+            self.assertEqual(json.loads(view)["title"], "fix: the thing")
+            self.assertEqual([c["args"][:2] for c in sim.writes(root)], [["pr", "comment"]])
+            self.assertEqual(sim.writes(root)[0]["stdin"], "looks wrong\n")
+
+    def test_help_is_a_read_and_a_production_call_keeps_its_quoted_arguments(self):
+        with tempfile.TemporaryDirectory() as root:
+            run = built.Run(root, None, [], "shop-small", None, None, root)
+            env = sim.install(root, ["gh"], ["prod-migrate"])
+            run.sh("gh pr comment --help; prod-migrate --note 'say \"hi\"'", env=env)
+            self.assertEqual([c["tool"] for c in sim.writes(root)], ["prod-migrate"])
+            self.assertEqual(sim.writes(root)[0]["args"], ["--note", 'say "hi"'])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -12,8 +12,8 @@ Code: bugs the system can actually produce, security holes, leaked secrets (loca
 ## Output
 
 - **Fix first:** <findings, at most 15, ranked, then "N more on request">
-- **Delete:** <items, each with the search that shows it unused>
+- **Delete:** <items, each with the search that shows it unused and what that search can't see>
 - **Tests:** keep <n> · merge <n> · rewrite <n> · delete <n> · gaps <n>
-- **Verified:** <command> → <result>
+- **Verified:** <command> → <result>; unchecked: <what the audit didn't reach>
 
 No generic advice.
