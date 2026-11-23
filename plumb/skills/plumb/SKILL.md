@@ -38,7 +38,7 @@ Each artifact keeps one shape, set by what its reader can't get elsewhere: a com
 
 End every change with:
 
-- **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>
+- **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>; the file:line to read first
 - **Waiting on:** <what you need from the operator>
 - **Why:** <for a fix, the cause and the observation that established it>
 - **Decided:** <each choice a reviewer could have made differently, costliest to undo first, what it beat, and why>

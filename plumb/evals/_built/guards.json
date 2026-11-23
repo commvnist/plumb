@@ -49,7 +49,7 @@
  "two-diffs": [
   [
    "plumb",
-   "- **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>\n- **Waiting on:**",
+   "- **Done:** <commit subject, marked uncommitted if it is; if the work stopped short, that first>; the file:line to read first\n- **Waiting on:**",
    "ask-early"
   ]
  ],
@@ -79,6 +79,13 @@
    "plumb-ship",
    "recorded where the project keeps what shipped",
    "way-back-recorded"
+  ]
+ ],
+ "filter-report": [
+  [
+   "plumb",
+   "the file:line to read first",
+   "read-first"
   ]
  ]
 }
