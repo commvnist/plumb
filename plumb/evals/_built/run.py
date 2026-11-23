@@ -662,6 +662,34 @@ EOF
 git commit -qam "feat(pricing): add bulk_discount"
 '''
 
+# A staged rename whose instances roll over one by one: no step drops a column the step before it still writes.
+SEAM = judged(
+    "This is a plan to rename a database column in stages, deployed to several instances that roll over one by "
+    "one. Fail if any one step (one diff or one release) both removes the old column and is the first to stop "
+    "the code writing to it, so instances of the previous step, still running during the rollout, would write a "
+    "column that no longer exists. Pass if the plan stops writing the old column in one step and drops it only "
+    "in a later step, or never drops it.", last_reply)
+
+
+def reviewer_sent(run):
+    """Told to carry on through several diffs without stopping, the session had them independently reviewed."""
+    if not run.commits():
+        return None
+    return any("reviewer" in (i.get("subagent_type") or "") for i in run.tool_inputs("Agent"))
+
+
+def posted_verdict(run):
+    """The review posted on the pull request carries the verdict given to the operator: request changes."""
+    # A review, line comments or a plain comment: loose comments carry no verdict state at all.
+    posts = [c for c in run.sim_calls() if c.get("tool") == "gh" and c.get("write")
+             and (c["args"][:2] in (["pr", "review"], ["pr", "comment"])
+                  or any(re.search(r"pulls/\d+/(reviews|comments)|issues/\d+/comments", a) for a in c["args"]))]
+    if not posts or not re.search(r"request(ing)? changes|REQUEST_CHANGES", run.replies[0], re.I):
+        return None  # nothing posted, or a verdict that asks for no changes
+    sent = json.dumps(posts)  # arguments, stdin and the files a body was read from
+    return "request-changes" in sent or "REQUEST_CHANGES" in sent
+
+
 # A report whose decisions each say where in the code they sit.
 DECIDED_WHERE = judged(
     "This is an agent's report on a change it made. Look at the decisions it lists (under Decided or similar). "
@@ -790,6 +818,18 @@ BUILT = {
         checks={"pr-verified": PR_VERIFIED}),
     "decided-where": dict(fixture="todo-web", turns=["Let people edit a todo's title in place on the list page."],
                           checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
+    "plan-seam": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]], checks={"seam": SEAM}),
+    # A go-ahead mid-session to carry on without stopping is the same ask as plumb-auto's.
+    "carry-on": dict(fixture="orders-medium", turns=[
+        "Rename the order status field to state everywhere, including the database column.",
+        "Go ahead with the plan. Commit each step, and carry on through all of the steps without stopping "
+        "between them."], checks={"reviewer-sent": reviewer_sent}),
+    # Pull request 12 is the loyalty-cap branch, whose only test of the cap is deleted.
+    "review-post": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
+                        + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[
+        "Review PR 12 before I merge it.",
+        "Post that as review comments on the pull request, the way they should appear on the lines."],
+        checks={"posted-verdict": posted_verdict}),
 }
 
 

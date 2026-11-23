@@ -2,6 +2,20 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- A plan that stages a change to stored data or an outside contract stops using the old form in one step and removes it in a later one, and keeps each step working while instances of the step before it still run. Before, plans for a column rename tended to stop writing the old column in the same release that dropped it, so instances still on the previous release failed every write during a rolling deploy. Planning that rename, 8 of 12 runs (Sonnet and Haiku) kept the two apart, against 3 of 12 before.
+- Being told part way through a session to carry on through several changes without stopping now brings in plumb-auto, as the same words do at the start of a session, so each change gets its independent review before the run ends. Told to go ahead with a staged column rename and carry on through every step, 11 of 11 runs dispatched the reviewer, against 6 of 12 before; on Sonnet, two changes asked for in one request still stop after the first.
+- A review posted to the pull request carries the verdict given in the reply as its state, so a review that asks for changes blocks the merge instead of landing as a plain comment. Asked to review a pull request that deletes its only test of a changed cap and then to post the review, 18 of 18 runs on Sonnet posted it as a request for changes, against 11 of 18 before.
+- The regression test plumb-debug writes forces the cause it locks, so it fails before the fix on every run instead of on the runs where chance produces the fault. For a cart whose name order came from a set, 15 of 24 runs (Sonnet and Haiku) wrote a test that failed on every hash seed, against 5 of 24 before.
+- An audit reports a check the code needs and lacks as a finding, never as an area it couldn't reach. Before, an audit of a billing API that takes an API key and a customer id, and checks neither, listed the missing authorization under "unchecked". Auditing that API, 6 of 36 runs (Sonnet and Haiku) reported that any key can bill any customer, against 0 of 36 before; the smaller model moved most (5 of 18 from 0 of 18), and the stronger one rarely did either way.
+
+### Fixed
+- The commit check no longer mistakes a local commit for one handed to another program when an earlier part of the same shell command holds a double quote inside single quotes (a `sed` script, say). Such a commit was checked only for credit lines and first person, so a subject outside Conventional Commits, a missing body or skipped hooks went unflagged.
+- A commit whose message mentions a `gh` command that posts (in a heredoc) is no longer checked as if it had posted to a pull request or issue.
+- Text posted with `gh` on its own line after another command (`cd` first, say) is checked for voice and credit lines like any other post.
+
 ## 0.28.0
 
 ### Changed

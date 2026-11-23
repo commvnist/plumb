@@ -56,7 +56,7 @@
  "flaky-commit": [
   [
    "plumb-debug",
-   "fails before the fix on every run",
+   "forces the cause and fails before the fix on every run",
    "red-every-run"
   ]
  ],
@@ -135,6 +135,34 @@
    "plumb",
    "where it sits",
    "decided-where"
+  ]
+ ],
+ "plan-seam": [
+  [
+   "plumb-plan",
+   "each step correct while the one before it still runs",
+   "seam"
+  ]
+ ],
+ "carry-on": [
+  [
+   "user-prompt",
+   "plumb-auto too when told to go on without stopping",
+   "reviewer-sent"
+  ]
+ ],
+ "review-post": [
+  [
+   "plumb-review",
+   "A review posted to the host carries this verdict as its state",
+   "posted-verdict"
+  ]
+ ],
+ "audit-billing": [
+  [
+   "plumb-audit",
+   "a check the code needs and lacks is a finding, never an unchecked area",
+   "trusted-input"
   ]
  ]
 }
