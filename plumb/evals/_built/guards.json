@@ -157,5 +157,12 @@
    "A review posted to the host carries this verdict as its state",
    "posted-verdict"
   ]
+ ],
+ "audit-billing": [
+  [
+   "plumb-audit",
+   "a check the code needs and lacks is a finding, never an unchecked area",
+   "trusted-input"
+  ]
  ]
 }
