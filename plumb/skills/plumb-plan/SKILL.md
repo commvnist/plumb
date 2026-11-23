@@ -17,7 +17,7 @@ A plan is a proposal in the reply. It changes no code and waits for a go-ahead.
 ## Output
 
 - **Goal:** <the outcomes>
-- **Steps:** one numbered line per diff: <commit subject> — <what it delivers> — ~<n> lines
+- **Steps:** one numbered line per diff: <commit subject> — <what it delivers> — ~<n> lines — <its way back once shipped, or why it has none>
 - **Decisions:** one line each: <decision>: <choice>, because <reason>; gives up <what the alternative offered>; record: <its decision record>
 - **Unknowns:** <each, and the step that settles it>
 - **Waiting on:** <the go-ahead, and any questions>

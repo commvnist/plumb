@@ -6,6 +6,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ### Changed
 - The end-of-change report's Done line points to the file and line to read first, so you start reading the change where its logic lives instead of hunting through the diff. After adding a filter to a handler, 6 of 6 runs (Sonnet and Haiku) named that place, against 0 of 6 before.
+- A plan says for each step how to roll it back once it has shipped, or why it can't be, so the one-way step of a staged migration (dropping the old column) is named before anything is built. Planning a column rename, 6 of 6 runs marked it, against 1 of 6 before.
 
 ## 0.25.0
 

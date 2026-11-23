@@ -87,5 +87,12 @@
    "the file:line to read first",
    "read-first"
   ]
+ ],
+ "plan-steps": [
+  [
+   "plumb-plan",
+   "its way back once shipped, or why it has none",
+   "way-back-per-step"
+  ]
  ]
 }
