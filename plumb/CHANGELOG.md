@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.28.0
 
 ### Changed
 - An audit says what it didn't reach. Its Verified line now ends with what the audit left unexamined, and each auditor agent returns that with its findings, so a partial audit no longer reads as a whole one. Auditing a twelve-service repository in one session, 5 of 6 runs on the smaller model named what they hadn't read, against 0 of 6 before; the stronger model already did.
