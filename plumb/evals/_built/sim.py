@@ -46,8 +46,20 @@ api_write = args[:1] == ["api"] and any(a in ("-X", "--method", "-f", "-F", "--f
                                          for a in args) and not any(a in ("GET", "get") for a in args)
 help_only = any(a in ("--help", "-h") for a in args) or args[:1] in (["--version"], ["help"], [])
 write = not help_only and ((pair not in READS and args[:1] != ["api"]) or api_write)
+
+def sent_files():
+    """What each file the call reads its body from held when it ran: a later run may reuse the same path."""
+    found = {}
+    for flag, value in zip(args, args[1:]):
+        path = value if flag in ("--input", "--body-file", "-F") else ""
+        path = path.split("=@", 1)[1] if "=@" in path else path.lstrip("@") if flag == "-F" else path
+        if path and path != "-" and os.path.isfile(path):
+            found[path] = open(path, errors="replace").read()
+    return found
+
+
 with open(LOG, "a") as f:
-    f.write(json.dumps({"tool": "gh", "args": args, "stdin": stdin, "write": write}) + "\n")
+    f.write(json.dumps({"tool": "gh", "args": args, "stdin": stdin, "files": sent_files(), "write": write}) + "\n")
 if write:
     print(f"https://github.example/acme/shop/pull/{number()}#posted")
     sys.exit(0)
