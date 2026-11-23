@@ -28,9 +28,30 @@ FIRST="(^|\\\\n|[^[:alnum:]_/@-])(I|I'm|I've|I'll|I'd|[Mm]e|[Mm]y|mine|[Ww]e|[Ww
 dir=$(printf '%s' "$input" | grep -Eo '"cwd" *: *"([^"\\]|\\.)*"' | head -n 1 | sed 's/.*: *"//; s/"$//; s/\\\\/\\/g')
 [ -n "$dir" ] || dir=.
 
+# The command without its heredoc bodies, then also without quoted text (a message), so a message naming
+# "git commit", "gh pr create", "-n" or "-q" doesn't count; each separator starts a new line.
+Q=$(printf '\001')
+unheredoc=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
+  | awk '{ gsub(/\\n/, "\n"); print }' \
+  | awk -v q="'" 'BEGIN { op = "(^|[^<])<<-?[ \t]*[\\\\\"" q "]*[A-Za-z_][A-Za-z0-9_]*" }
+      skip { line = $0; sub(/^([ \t]|\\t)*/, "", line); if (line == end) skip = 0; next }
+      { print; if (match($0, op)) { end = substr($0, RSTART, RLENGTH); sub(/^.*<<-?[ \t]*/, "", end)
+          gsub(/[^A-Za-z0-9_]/, "", end); skip = 1 } }' \
+  | awk 'BEGIN { ORS = "\\n" } { print }')
+skeleton=$(printf '%s' "$unheredoc" \
+  | sed "s/\\\\\"/$Q/g" \
+  | awk -v q="'" -v d="$Q" '{ out = ""; s = 0
+      # Left to right, so a double quote inside single quotes (or the reverse) opens nothing.
+      for (i = 1; i <= length($0); i++) { c = substr($0, i, 1)
+        if (s == 0) { if (c == q) s = 1; else if (c == d) s = 2; else out = out c }
+        else if ((s == 1 && c == q) || (s == 2 && c == d)) s = 0 }
+      print out }' \
+  | sed 's/\\n/;/g' | tr ';&|' '\n\n\n')
+
 # Text posted to a pull request, review or issue is held to the same voice as a commit message,
 # whether it is written inline, read from a file, or sent through the API.
-if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
+# A quoted gh (bash -c '...') still posts, so only heredoc bodies are left out here.
+if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]][^;&|]*(pulls|issues|comments|reviews))'; then
   posted=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//')
   # A path may be quoted, and gh api -F reads a file named after =@.
   note=""
@@ -59,24 +80,8 @@ fi
 # A newline inside the JSON command is the two characters \n, so it counts as a boundary too.
 printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_-]|\\n)git([[:space:]][^;&|]*)?[[:space:]]commit([[:space:]]|\\|"|$)' || exit 0
 
-# commit's own arguments: heredoc bodies and quoted text (a message) are dropped, so a message saying
-# "commit", "-n" or "-q" doesn't count, and the command is cut at the next separator.
-Q=$(printf '\001')
-commit_args=$(printf '%s' "$command" | sed 's/^"command" *: *"//; s/"$//' \
-  | awk '{ gsub(/\\n/, "\n"); print }' \
-  | awk -v q="'" 'BEGIN { op = "(^|[^<])<<-?[ \t]*[\\\\\"" q "]*[A-Za-z_][A-Za-z0-9_]*" }
-      skip { line = $0; sub(/^([ \t]|\\t)*/, "", line); if (line == end) skip = 0; next }
-      { print; if (match($0, op)) { end = substr($0, RSTART, RLENGTH); sub(/^.*<<-?[ \t]*/, "", end)
-          gsub(/[^A-Za-z0-9_]/, "", end); skip = 1 } }' \
-  | awk 'BEGIN { ORS = "\\n" } { print }' \
-  | sed "s/\\\\\"/$Q/g" \
-  | awk -v q="'" -v d="$Q" '{ out = ""; s = 0
-      # Left to right, so a double quote inside single quotes (or the reverse) opens nothing.
-      for (i = 1; i <= length($0); i++) { c = substr($0, i, 1)
-        if (s == 0) { if (c == q) s = 1; else if (c == d) s = 2; else out = out c }
-        else if ((s == 1 && c == q) || (s == 2 && c == d)) s = 0 }
-      print out }' \
-  | sed 's/\\n/;/g' | tr ';&|' '\n\n\n' \
+# commit's own arguments, cut at the next separator.
+commit_args=$(printf '%s\n' "$skeleton" \
   | grep -E -m 1 '(^|[^[:alnum:]_-])git([[:space:]].*)?[[:space:]]commit([[:space:]]|$)' \
   | sed -E 's/.*[[:space:]]commit([[:space:]]|$)/ /')
 

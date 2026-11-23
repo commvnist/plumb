@@ -12,6 +12,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ### Fixed
 - The commit check no longer mistakes a local commit for one handed to another program when an earlier part of the same shell command holds a double quote inside single quotes (a `sed` script, say). Such a commit was checked only for credit lines and first person, so a subject outside Conventional Commits, a missing body or skipped hooks went unflagged.
+- A commit whose message mentions a `gh` command that posts (in a heredoc) is no longer checked as if it had posted to a pull request or issue.
 
 ## 0.28.0
 

@@ -287,6 +287,12 @@ class CheckCommit(unittest.TestCase):
         self.assertIn("isn't Conventional Commits", out)
         self.assertNotIn("hands a commit", out)
 
+    def test_a_commit_message_naming_a_gh_post_is_not_a_post(self):
+        git(self.repo, "commit", "-q", "--allow-empty", "-m", "test: log posted files\n\nA review sent with gh api.")
+        command = ("git commit -q -F - <<'EOF'\ntest: log posted files\n\n"
+                   "A review sent with `gh api repos/o/r/pulls/1/reviews --input /tmp/r.json` was lost.\nEOF")
+        self.assertNotIn("text just posted", hook_output(self.repo, command))
+
     def test_says_when_posted_text_is_blank_or_unreadable(self):
         empty = os.path.join(self.repo, "empty.md")
         open(empty, "w").close()
