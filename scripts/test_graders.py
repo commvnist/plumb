@@ -187,6 +187,13 @@ class Gate(unittest.TestCase):
         level = gate.tally(self.results("s", [True] * 18, [True] * 17 + [False]), "main", "new")
         self.assertEqual(gate.guard(level[("c", "k")], "main", "new")[0], "holds")
 
+    def test_two_wordings_run_under_one_arm_name_are_never_pooled(self):
+        runs = self.results("s", [False] * 6, [True] * 6)
+        for r in runs:
+            r["text"] = "a" if r["run"] <= 3 or r["arm"] == "main" else "b"
+        with self.assertRaises(SystemExit):
+            gate.tally(runs, "main", "new")
+
     def test_no_gain_at_eighteen_runs_is_dropped(self):
         same = [False, True] * 9
         rows = gate.tally(self.results("s", same, same), "main", "new")

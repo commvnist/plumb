@@ -19,8 +19,8 @@ Two questions, in this order:
    the grader is checked on a known-good output before the wording is called ineffective.
 
 The first six main runs both decide that a case reproduces and count in the comparison, and each stage is a
-fresh look at the data; a simulation of a wording with no effect put the chance of a false landing at 4.6% to
-6.6% against the nominal 5%, which this rule accepts.
+fresh look at the data; a simulation of a wording with no effect put the chance of a false landing at 4% to 7%
+against the nominal 5% when main passes at most 60% of runs, up to 8% at 80%, which this rule accepts.
 
 With --guard, every check is read as a guard: it fell when main beats the change at p <= 0.05, and it holds
 once each arm has 18 runs per model without that. A trim is a guard question on its deciding cases.
@@ -69,7 +69,14 @@ def power(n, base=0.5, gain=0.9, alpha=ALPHA):
 
 def tally(results, main, new):
     """{(case, check): {model: {arm: [bool, ...]}}}, measured runs only, in run order."""
-    rows = {}
+    rows, texts = {}, {}
+    for r in results:
+        if r["arm"] in (main, new) and "text" in r:
+            texts.setdefault((r["case"], r.get("model", "?"), r["arm"]), set()).add(r["text"])
+    mixed = sorted(k for k, v in texts.items() if len(v) > 1)
+    if mixed:
+        raise SystemExit("results from different plugin texts share an arm name; pass one arm's files at a time: "
+                         + "; ".join(f"{c} on {m}, arm {a}" for c, m, a in mixed))
     for r in sorted(results, key=lambda r: r["run"]):
         for check, ok in r["checks"].items():
             if ok is not None and r["arm"] in (main, new):

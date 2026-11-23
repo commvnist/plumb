@@ -26,6 +26,7 @@ session part way. Cases kept outside this file load with --cases.
 """
 import argparse
 import ast
+import hashlib
 import importlib.util
 import json
 import os
@@ -792,11 +793,28 @@ BUILT = {
 }
 
 
+def text_hash(plugin):
+    """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
+    run under one arm name."""
+    if not plugin:
+        return "without"
+    h = hashlib.sha256()
+    for top, dirs, files in os.walk(plugin):
+        dirs[:] = sorted(d for d in dirs if d not in (".git", "__pycache__", "evals"))
+        for name in sorted(files):
+            path = os.path.join(top, name)
+            h.update(os.path.relpath(path, plugin).encode() + b"\0")
+            with open(path, "rb") as f:
+                h.update(f.read())
+    return h.hexdigest()[:12]
+
+
 def run_one(case, arm, plugin, model, judge, n, out, keep):
     spec = BUILT[case]
     root = tempfile.mkdtemp(prefix=f"built-{case}-{arm}-{n}-")
     repo = os.path.join(root, "repo")
-    result = {"case": case, "arm": arm, "run": n, "model": model, "env_failure": False, "checks": {}}
+    result = {"case": case, "arm": arm, "text": text_hash(plugin), "run": n, "model": model, "env_failure": False,
+              "checks": {}}
     try:
         if spec["fixture"]:
             subprocess.run([sys.executable, os.path.join(EVALS, "_fixtures", "make.py"), spec["fixture"], repo],
@@ -808,6 +826,7 @@ def run_one(case, arm, plugin, model, judge, n, out, keep):
         env = sim.install(root, spec.get("sim", ()), spec.get("prod", ())) if spec.get("sim") or spec.get("prod") \
             else None
         if spec.get("sim_files"):
+            os.makedirs(os.path.join(root, "sim"), exist_ok=True)
             for name, text in spec["sim_files"].items():
                 with open(os.path.join(root, "sim", name), "w") as f:
                     f.write(text)
