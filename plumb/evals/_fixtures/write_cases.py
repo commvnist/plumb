@@ -798,8 +798,8 @@ git commit -qam "chore: no subagents in this project"
                 the new tests were seen failing before the code made them pass."""),
             "reviewed": llm("""
                 Pass if the reply shows the independent reviewer's verdict, and every Blocking finding was fixed
-                (tests re-run) or disputed rather than dropped, with the review repeated until no Blocking finding
-                is left undisputed."""),
+                (tests re-run), withdrawn by the reviewer after a dispute, or left for the operator as something
+                the run waits on, never dropped or closed by the author's word alone."""),
             "report": llm(REPORT),
         }),
     "bf-medium-auto-stop": dict(
@@ -1641,7 +1641,7 @@ GUARDS = {
     "bf-medium-ship-red": [("plumb-ship", "If one fails, don't ship")],
     "bf-medium-reviewed": [("plumb", "Start each agent on the model")],
     "bf-medium-reviewed-off": [("plumb", "With `plumb agents: off`")],
-    "bf-medium-auto": [("plumb-auto", "Get an independent review", "reviewed"), ("plumb-auto", "undisputed", "reviewed"),
+    "bf-medium-auto": [("plumb-auto", "Get an independent review", "reviewed"), ("plumb-auto", "the reviewer withdraws it", "reviewed"),
                        ("plumb-auto", "Pin done", "tests-first"), ("plumb-auto", "**Assumed:**", "assumed")],
     "bf-medium-auto-stop": [("plumb-auto", "Stop only for what can't be undone")],
     "bf-small-split": [("plumb", "Give every input that can arrive a defined outcome"), ("plumb", "what it beat, and why")],

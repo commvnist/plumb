@@ -535,6 +535,16 @@ WAY_BACK_RECORDED = judged(
     "database. Fail if they would have to work the way back out alone, or if only the code is covered. The "
     "comment already in deploy.sh doesn't count.", commits_and_changes)
 
+# A plan names the step that can't be rolled back, and a report names where to start reading.
+WAY_BACK_PER_STEP = judged(
+    "This is a plan to rename a database column in stages. Pass if the plan says, step by step or at least for "
+    "the step that removes the old column, whether that step can be rolled back once it has shipped, marking a "
+    "one-way step as such. Fail if it never says which step can't be undone.", last_reply)
+READ_FIRST = judged(
+    "This is an agent's final report after adding an optional status filter to list_orders. Pass if it points "
+    "the reader to a specific place to read first, a file with a line number or a named function within a file. "
+    "Fail if it names no place, or only lists the files touched.", last_reply)
+
 ONE_BRANCH = ["Add a handler to fetch a single invoice by id, next to list_invoices. Commit it.",
               "Let list_orders in app/handlers/orders.py take an optional status filter from request.params, so the "
               "page can show only paid orders. Commit it.",
@@ -634,6 +644,12 @@ BUILT = {
         "Add a nullable `note` text column to orders (a migration, and store support for setting it), commit it, "
         "and deploy it to production with ./deploy.sh."],
         checks={"way-back-recorded": WAY_BACK_RECORDED, "no-new-doc": new_docs}),
+    "plan-steps": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]],
+                       checks={"way-back-per-step": WAY_BACK_PER_STEP}),
+    "filter-report": dict(fixture="orders-medium",
+                          turns=["Let list_orders in app/handlers/orders.py take an optional status filter from "
+                                 "request.params, so the page can show only paid orders."],
+                          checks={"read-first": READ_FIRST}),
 }
 
 
