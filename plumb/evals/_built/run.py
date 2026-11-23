@@ -661,6 +661,11 @@ EOF
 git commit -qam "feat(pricing): add bulk_discount"
 '''
 
+# A report whose decisions each say where in the code they sit.
+DECIDED_WHERE = judged(
+    "This is an agent's report on a change it made. Look at the decisions it lists (under Decided or similar). "
+    "Pass if every listed decision names where it sits in the code: a file, function, route or other symbol. Fail "
+    "if any listed decision names no location.", last_reply, na=True)
 ONE_BRANCH = ["Add a handler to fetch a single invoice by id, next to list_invoices. Commit it.",
               "Let list_orders in app/handlers/orders.py take an optional status filter from request.params, so the "
               "page can show only paid orders. Commit it.",
@@ -782,6 +787,8 @@ BUILT = {
     "pr-template": dict(fixture="shop-small", scaffold=PR_TEMPLATE_SCAFFOLD, turns=[
         "Write the pull request for this branch. There is no remote, so give the full text in your reply."],
         checks={"pr-verified": PR_VERIFIED}),
+    "decided-where": dict(fixture="todo-web", turns=["Let people edit a todo's title in place on the list page."],
+                          checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
 }
 
 
