@@ -108,5 +108,26 @@
    "a premise from a request, issue, doc or instruction file is a claim",
    "assumed"
   ]
+ ],
+ "audit-scope": [
+  [
+   "plumb-audit",
+   "unchecked: <what the audit didn't reach>",
+   "audit-scope"
+  ]
+ ],
+ "audit-delete": [
+  [
+   "plumb-audit",
+   "and what that search can't see",
+   "blind-spots"
+  ]
+ ],
+ "pr-template": [
+  [
+   "plumb-ship",
+   "what was run and what nothing exercised",
+   "pr-verified"
+  ]
  ]
 }

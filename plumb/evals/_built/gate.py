@@ -13,9 +13,10 @@ Two questions, in this order:
    open with the case marked for a harder one. Only models where the case reproduces go on to question 2.
 2. Does the wording beat main? An exact test stratified by model (each model's runs compared only with its
    own, the conditional form of Cochran-Mantel-Haenszel), one-sided. The wording lands at p <= 0.05. Runs go
-   in stages of 6, 18 and 30 per arm per model: below 18, a candidate ahead of main is run on; at 18 or more,
-   one no better than main is dropped; at 30, anything not landed is dropped as undecided, with the power the
-   runs had to find a gain.
+   in stages of 6, 18 and 30 per arm per model: a candidate ahead of main is run on to the next stage, one no
+   better than main is dropped at any stage, and at 30 anything not landed is dropped as undecided, with the
+   power the runs had to find a gain. When both arms fail every run, check the grader on a known-good output
+   before calling the wording ineffective.
 """
 import argparse
 import json
@@ -100,7 +101,7 @@ def decide(by_model, main, new):
         return "land", notes + cells
     if n >= STAGES[-1]:
         return f"drop: undecided at {n} (power for 50%->90% was {power(n):.0%})", notes + cells
-    if n >= STAGES[1] and not ahead:
+    if not ahead:
         return "drop: no better than main", notes + cells
     nxt = next(s for s in STAGES if s > n)
     return f"run each arm to {nxt}", notes + cells
