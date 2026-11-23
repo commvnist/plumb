@@ -164,5 +164,12 @@
    "a check the code needs and lacks is a finding, never an unchecked area",
    "trusted-input"
   ]
+ ],
+ "review-timeout": [
+  [
+   "plumb-review",
+   "Read the whole diff, then what it touches",
+   "stale-raised"
+  ]
  ]
 }

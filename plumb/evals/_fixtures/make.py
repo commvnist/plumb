@@ -1,7 +1,7 @@
 """Builds the seeded repositories plumb's eval cases start from.
 
 Usage: python3 make.py <fixture> <dest>
-Fixtures: shop-small, orders-medium, monorepo-large, todo-web.
+Fixtures: shop-small, orders-medium, monorepo-large, todo-web, notifier.
 Each one is written into <dest> and committed as a git repository with a
 short history, so brownfield cases have real code, tests and log to read.
 """
@@ -794,8 +794,321 @@ def todo_web(root):
     commit(root, "feat: todo list page over a JSON API")
 
 
+# --- notifier: a mail-delivery service whose settings are stated outside the code ----
+
+# Each delivery fact is also stated in a generated reference (docs/configuration.md), README prose, a runbook,
+# .env.example, a compose file, CLI help, a docstring and the changelog, so a change that misses one shows.
+NOTIFIER = {
+    "notifier/__init__.py": "",
+    "notifier/config.py": '''
+        """Settings read from the environment once, at startup.
+
+        SETTINGS is the single list of every setting; scripts/gen_config_docs.py renders it into
+        docs/configuration.md.
+        """
+        import os
+        from dataclasses import dataclass
+
+        # (environment variable, default, type, description)
+        SETTINGS = [
+            ("NOTIFY_SMTP_HOST", "localhost", str, "SMTP server to deliver through."),
+            ("NOTIFY_SMTP_PORT", "25", int, "SMTP server port."),
+            ("NOTIFY_TIMEOUT_SECONDS", "10", float, "How long one delivery attempt may take before it is abandoned."),
+            ("NOTIFY_DEAD_LETTER_DIR", "/var/spool/notifier/dead", str,
+             "Where messages that could not be delivered are written."),
+        ]
+
+
+        @dataclass(frozen=True)
+        class Settings:
+            smtp_host: str
+            smtp_port: int
+            timeout_seconds: float
+            dead_letter_dir: str
+
+
+        def load(environ=os.environ):
+            """Reads every setting from `environ`, falling back to its default."""
+            values = {}
+            for name, default, kind, _ in SETTINGS:
+                raw = environ.get(name, default)
+                try:
+                    values[name] = kind(raw)
+                except ValueError:
+                    raise ValueError(f"{name}={raw!r} is not a valid {kind.__name__}") from None
+            return Settings(
+                smtp_host=values["NOTIFY_SMTP_HOST"],
+                smtp_port=values["NOTIFY_SMTP_PORT"],
+                timeout_seconds=values["NOTIFY_TIMEOUT_SECONDS"],
+                dead_letter_dir=values["NOTIFY_DEAD_LETTER_DIR"],
+            )
+    ''',
+    "notifier/send.py": '''
+        """Delivery of one message, with retries."""
+        import time
+
+        from notifier import dead_letter
+
+        RETRIES = 3
+
+
+        class DeliveryError(Exception):
+            pass
+
+
+        def deliver(message, transport, settings, sleep=time.sleep):
+            """Delivers `message` through `transport`.
+
+            A failed attempt is retried up to 3 times, after 1s, 2s and 4s. When the last retry fails too, the
+            message is written to the dead-letter directory and DeliveryError is raised.
+            """
+            last = None
+            for attempt in range(RETRIES + 1):
+                if attempt:
+                    sleep(2 ** (attempt - 1))
+                try:
+                    transport.send(message, timeout=settings.timeout_seconds)
+                    return attempt + 1
+                except OSError as e:
+                    last = e
+            dead_letter.write(settings.dead_letter_dir, message)
+            raise DeliveryError(f"gave up on message to {message['to']} after {RETRIES + 1} attempts: {last}")
+    ''',
+    "notifier/dead_letter.py": '''
+        import json
+        import os
+        import time
+
+
+        def write(directory, message):
+            """Writes `message` to `directory` as one JSON file, named by time so files never collide."""
+            os.makedirs(directory, exist_ok=True)
+            path = os.path.join(directory, f"{time.time_ns()}.json")
+            tmp = path + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(message, f)
+            os.replace(tmp, path)
+            return path
+    ''',
+    "notifier/cli.py": '''
+        """Command line: python3 -m notifier.cli send --to ADDRESS --subject TEXT --body TEXT"""
+        import argparse
+        import smtplib
+        import sys
+
+        from notifier import config, send
+
+
+        class SmtpTransport:
+            def __init__(self, settings):
+                self.settings = settings
+
+            def send(self, message, timeout):
+                with smtplib.SMTP(self.settings.smtp_host, self.settings.smtp_port, timeout=timeout) as smtp:
+                    smtp.sendmail("notifier@localhost", [message["to"]],
+                                  f"Subject: {message['subject']}\\n\\n{message['body']}")
+
+
+        def main(argv=None):
+            parser = argparse.ArgumentParser(prog="notifier")
+            sub = parser.add_subparsers(dest="command", required=True)
+            one = sub.add_parser("send", help="send one message now; a failed attempt is retried up to 3 times")
+            one.add_argument("--to", required=True)
+            one.add_argument("--subject", required=True)
+            one.add_argument("--body", required=True)
+            args = parser.parse_args(argv)
+            settings = config.load()
+            message = {"to": args.to, "subject": args.subject, "body": args.body}
+            try:
+                attempts = send.deliver(message, SmtpTransport(settings), settings)
+            except send.DeliveryError as e:
+                print(e, file=sys.stderr)
+                return 1
+            print(f"delivered in {attempts} attempt(s)")
+            return 0
+
+
+        if __name__ == "__main__":
+            sys.exit(main())
+    ''',
+    "scripts/gen_config_docs.py": '''
+        """Renders notifier.config.SETTINGS as docs/configuration.md (run `make docs`)."""
+        import os
+        import sys
+
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from notifier.config import SETTINGS  # noqa: E402
+
+        lines = [
+            "<!-- Generated by scripts/gen_config_docs.py from notifier/config.py. Do not edit by hand. -->",
+            "# Configuration",
+            "",
+            "Every setting is read from the environment at startup.",
+            "",
+            "| Variable | Default | Description |",
+            "|---|---|---|",
+        ]
+        for name, default, _, description in SETTINGS:
+            lines.append(f"| `{name}` | `{default}` | {description} |")
+        print("\\n".join(lines))
+    ''',
+    "Makefile": '''
+        .PHONY: test docs
+
+        test:
+        \tpython3 -m unittest discover -s tests -t .
+
+        docs:
+        \tpython3 scripts/gen_config_docs.py > docs/configuration.md
+    ''',
+    "tests/__init__.py": "",
+    "tests/test_send.py": '''
+        import tempfile
+        import unittest
+
+        from notifier import config, send
+
+
+        class FlakyTransport:
+            def __init__(self, failures):
+                self.failures, self.calls = failures, 0
+
+            def send(self, message, timeout):
+                self.calls += 1
+                if self.calls <= self.failures:
+                    raise OSError("connection refused")
+
+
+        def settings(directory):
+            return config.load({"NOTIFY_DEAD_LETTER_DIR": directory})
+
+
+        MESSAGE = {"to": "a@example.com", "subject": "hi", "body": "hello"}
+
+
+        class DeliverTest(unittest.TestCase):
+            def test_delivers_after_transient_failures(self):
+                with tempfile.TemporaryDirectory() as d:
+                    transport = FlakyTransport(failures=2)
+                    self.assertEqual(send.deliver(MESSAGE, transport, settings(d), sleep=lambda s: None), 3)
+
+            def test_gives_up_after_three_retries(self):
+                with tempfile.TemporaryDirectory() as d:
+                    transport, waits = FlakyTransport(failures=100), []
+                    with self.assertRaises(send.DeliveryError):
+                        send.deliver(MESSAGE, transport, settings(d), sleep=waits.append)
+                    self.assertEqual(transport.calls, 4)
+                    self.assertEqual(waits, [1, 2, 4])
+    ''',
+    "tests/test_config.py": '''
+        import unittest
+
+        from notifier import config
+
+
+        class LoadTest(unittest.TestCase):
+            def test_defaults(self):
+                s = config.load({})
+                self.assertEqual((s.smtp_host, s.smtp_port, s.timeout_seconds), ("localhost", 25, 10.0))
+
+            def test_rejects_a_bad_number(self):
+                with self.assertRaisesRegex(ValueError, "NOTIFY_SMTP_PORT"):
+                    config.load({"NOTIFY_SMTP_PORT": "twenty-five"})
+    ''',
+    "README.md": '''
+        # notifier
+
+        Delivers transactional mail (receipts, password resets) through an SMTP relay.
+
+        ## Running
+
+        ```
+        python3 -m notifier.cli send --to someone@example.com --subject "Receipt" --body "Thanks"
+        ```
+
+        Settings come from the environment; see [docs/configuration.md](docs/configuration.md) for every variable
+        and its default, and `.env.example` for a starting point.
+
+        ## Delivery
+
+        A message that fails is retried 3 times, after 1s, 2s and 4s. If the last retry fails too, the message is
+        written to the dead-letter directory, and `notifier` exits with status 1.
+
+        ## Development
+
+        `make test` runs the tests. `make docs` regenerates docs/configuration.md from notifier/config.py.
+    ''',
+    "docs/operations.md": '''
+        # Operating notifier
+
+        ## Dead letters
+
+        Every file in `NOTIFY_DEAD_LETTER_DIR` is a message that failed 4 attempts (the first try and 3 retries,
+        about 7 seconds in all). Check the SMTP relay first; once it is healthy, replay a file with:
+
+        ```
+        python3 -m notifier.cli send --to "$(jq -r .to FILE)" --subject "$(jq -r .subject FILE)" --body "$(jq -r .body FILE)"
+        ```
+
+        ## Slow relay
+
+        A delivery attempt is abandoned after `NOTIFY_TIMEOUT_SECONDS`. With the defaults, one message can hold a
+        worker for up to 47 seconds (4 attempts of 10 seconds plus 7 seconds of waiting) before it is dead-lettered.
+    ''',
+    ".env.example": '''
+        NOTIFY_SMTP_HOST=smtp.internal
+        NOTIFY_SMTP_PORT=25
+        NOTIFY_TIMEOUT_SECONDS=10
+        NOTIFY_DEAD_LETTER_DIR=/var/spool/notifier/dead
+    ''',
+    "deploy/docker-compose.yml": '''
+        services:
+          notifier:
+            build: ..
+            environment:
+              NOTIFY_SMTP_HOST: smtp.internal
+              NOTIFY_SMTP_PORT: "25"
+              NOTIFY_TIMEOUT_SECONDS: "10"
+              NOTIFY_DEAD_LETTER_DIR: /var/spool/notifier/dead
+            volumes:
+              - dead-letters:/var/spool/notifier/dead
+        volumes:
+          dead-letters: {}
+    ''',
+    "CHANGELOG.md": '''
+        # Changelog
+
+        ## Unreleased
+
+        ## 1.4.0
+
+        - Dead-lettered messages are written atomically, so a crash never leaves half a file.
+
+        ## 1.3.0
+
+        - `NOTIFY_TIMEOUT_SECONDS` sets how long one delivery attempt may take (default 10).
+    ''',
+    ".gitignore": "__pycache__/\n*.pyc\n",
+    "CONTRIBUTING.md": '''
+        # Contributing
+
+        - `make test` must pass.
+        - Every change a user or operator would notice gets a line under `## Unreleased` in CHANGELOG.md.
+        - Commits follow Conventional Commits.
+    ''',
+}
+
+
+
+def notifier(root):
+    init(root)
+    write(root, NOTIFIER)
+    subprocess.run("python3 scripts/gen_config_docs.py > docs/configuration.md", shell=True, cwd=root, check=True)
+    commit(root, "feat: notifier service")
+
+
 FIXTURES = {"shop-small": shop_small, "orders-medium": orders_medium, "monorepo-large": monorepo_large,
-            "todo-web": todo_web}
+            "todo-web": todo_web, "notifier": notifier}
 
 if __name__ == "__main__":
     FIXTURES[sys.argv[1]](os.path.abspath(sys.argv[2]))
