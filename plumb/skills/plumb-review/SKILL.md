@@ -16,6 +16,8 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 ## Output
 
+A review posted to the host carries this verdict as its state.
+
 - **Verdict:** approve | approve with suggestions | request changes, on <the commit judged>, with the reason
 - **Blocking:** <findings, or none>
 - **Suggestions:** <findings>

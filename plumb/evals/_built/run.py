@@ -678,6 +678,16 @@ def reviewer_sent(run):
     return any("reviewer" in (i.get("subagent_type") or "") for i in run.tool_inputs("Agent"))
 
 
+def posted_verdict(run):
+    """The review posted on the pull request carries the verdict given to the operator: request changes."""
+    reviews = [c for c in run.sim_calls() if c.get("tool") == "gh" and c.get("write")
+               and (c["args"][:2] == ["pr", "review"] or any("reviews" in a for a in c["args"]))]
+    if not reviews or not re.search(r"request(ing)? changes|REQUEST_CHANGES", run.replies[0], re.I):
+        return None  # nothing posted, or a verdict that asks for no changes
+    sent = json.dumps(reviews)  # arguments, stdin and the files a body was read from
+    return "request-changes" in sent or "REQUEST_CHANGES" in sent
+
+
 # A report whose decisions each say where in the code they sit.
 DECIDED_WHERE = judged(
     "This is an agent's report on a change it made. Look at the decisions it lists (under Decided or similar). "
@@ -812,7 +822,160 @@ BUILT = {
         "Rename the order status field to state everywhere, including the database column.",
         "Go ahead with the plan. Commit each step, and carry on through all of the steps without stopping "
         "between them."], checks={"reviewer-sent": reviewer_sent}),
-} check(s) couldn't be measured; "
+    # Pull request 12 is the loyalty-cap branch, whose only test of the cap is deleted.
+    "review-post": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
+                        + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[
+        "Review PR 12 before I merge it.",
+        "Post that as review comments on the pull request, the way they should appear on the lines."],
+        checks={"posted-verdict": posted_verdict}),
+}
+
+
+def text_hash(plugin):
+    """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
+    run under one arm name."""
+    if not plugin:
+        return "without"
+    h = hashlib.sha256()
+    for top, dirs, files in os.walk(plugin):
+        dirs[:] = sorted(d for d in dirs if d not in (".git", "__pycache__", "evals"))
+        for name in sorted(files):
+            path = os.path.join(top, name)
+            h.update(os.path.relpath(path, plugin).encode() + b"\0")
+            with open(path, "rb") as f:
+                h.update(f.read())
+    return h.hexdigest()[:12]
+
+
+def run_one(case, arm, plugin, model, judge, n, out, keep):
+    spec = BUILT[case]
+    root = tempfile.mkdtemp(prefix=f"built-{case}-{arm}-{n}-")
+    repo = os.path.join(root, "repo")
+    result = {"case": case, "arm": arm, "text": text_hash(plugin), "run": n, "model": model, "env_failure": False,
+              "checks": {}}
+    try:
+        if spec["fixture"]:
+            subprocess.run([sys.executable, os.path.join(EVALS, "_fixtures", "make.py"), spec["fixture"], repo],
+                           check=True, capture_output=True)
+        else:  # greenfield: an empty repository with one commit to start from
+            os.makedirs(repo)
+            harm.sh("git init -q && git commit -q --allow-empty -m 'chore: start'", repo)
+        harm.sh(spec.get("scaffold", ""), repo)
+        env = sim.install(root, spec.get("sim", ()), spec.get("prod", ())) if spec.get("sim") or spec.get("prod") \
+            else None
+        if spec.get("sim_files"):
+            os.makedirs(os.path.join(root, "sim"), exist_ok=True)
+            for name, text in spec["sim_files"].items():
+                with open(os.path.join(root, "sim", name), "w") as f:
+                    f.write(text)
+        start = harm.sh("git rev-parse HEAD", repo).stdout.strip()
+        log = os.path.join(out, f"{case}-{arm}-{n}.jsonl")
+        sid, replies = None, []
+        for turn in spec["turns"]:
+            sid = harm.session(turn, repo, model, "with" if plugin else "without", log, resume=sid, plugin=plugin,
+                               env=env)
+            if sid is None:
+                break
+            replies.append(harm.REPLIES[sid])
+        if sid is None:
+            result["env_failure"] = True
+        else:
+            with open(log.replace(".jsonl", ".replies.md"), "w") as f:
+                f.write("\n\n=====\n\n".join(replies))
+            done = Run(repo, start, replies, spec["fixture"], judge, log, root)
+            for name, check in spec["checks"].items():
+                try:
+                    verdict = check(done)
+                except Exception as e:  # one broken check must not lose the others
+                    verdict, result[f"error-{name}"] = None, repr(e)[:300]
+                result["checks"][name] = None if verdict is None else bool(verdict)
+    except Exception as e:
+        result.update(env_failure=True, error=repr(e)[:300])
+    if keep:
+        result["dir"] = root
+    else:
+        shutil.rmtree(root, ignore_errors=True)
+    return result
+
+
+def load_cases(path):
+    """Adds the CASES of a separate file, which may use everything defined here (`from run import *`)."""
+    spec = importlib.util.spec_from_file_location("extra_cases", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault("run", sys.modules[__name__])
+    spec.loader.exec_module(module)
+    BUILT.update(module.CASES)
+
+
+def check_judges(path, model):
+    """Runs each judged grader on outputs whose verdict is known; a grader that misses one can't be trusted."""
+    with open(path) as f:
+        examples = json.load(f)
+    misses = 0
+    for key, items in examples.items():
+        case, name = key.split("/")
+        check = BUILT[case]["checks"][name]
+        for i, item in enumerate(items, 1):
+            got = {True: "PASS", False: "FAIL", "NA": "NA"}.get(vote(model, check.question, item["material"], check.na),
+                                                                "no agreement")
+            ok = got == item["expect"]
+            misses += not ok
+            print(f"{key:36} example {i}: expected {item['expect']}, judged {got}{'' if ok else '  <- miss'}")
+    print(f"{misses} miss(es)")
+    return 1 if misses else 0
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--model")
+    p.add_argument("--judge", required=True)
+    p.add_argument("--runs", type=int, default=3)
+    p.add_argument("--case", action="append", choices=list(BUILT))
+    p.add_argument("--arm", action="append", default=[], metavar="NAME=PLUGIN_DIR | without")
+    p.add_argument("-j", type=int, default=6)
+    p.add_argument("--out", default=os.path.join(EVALS, "results", "built"))
+    p.add_argument("--keep", action="store_true", help="keep each run's repository for inspection")
+    p.add_argument("--first", type=int, default=1, help="number of the first run, to add runs to an earlier batch")
+    p.add_argument("--cases", metavar="FILE.py", help="a file whose CASES dict adds cases to the ones here")
+    p.add_argument("--check-judges", metavar="EXAMPLES.json",
+                   help="instead of running sessions, check each judged grader against outputs labelled PASS, FAIL "
+                        "or NA ({\"case/check\": [{\"expect\": ..., \"material\": ...}]}) and exit nonzero on a miss")
+    if "--cases" in sys.argv:  # the case names must be known before --case's choices are checked
+        load_cases(sys.argv[sys.argv.index("--cases") + 1])
+        p._option_string_actions["--case"].choices = list(BUILT)
+    a = p.parse_args()
+    if a.check_judges:
+        sys.exit(check_judges(a.check_judges, a.judge))
+    if not a.arm or not a.model:
+        p.error("give --model and at least one --arm")
+    if not shutil.which("claude"):
+        sys.exit("the claude CLI is not on PATH; install Claude Code first")
+    os.makedirs(a.out, exist_ok=True)
+    arms = [(arm.split("=", 1) + [None])[:2] for arm in a.arm]
+    for name, plugin in arms:
+        if plugin is None and name != "without":
+            sys.exit(f"--arm {name}: give its plugin directory as {name}=<dir>, or use 'without'")
+        if plugin is not None and not os.path.isdir(os.path.join(plugin, ".claude-plugin")):
+            sys.exit(f"--arm {name}: {plugin!r} is not a plugin directory (no .claude-plugin in it)")
+    jobs = [(c, name, plugin and os.path.abspath(plugin), a.model, a.judge, n, a.out, a.keep)
+            for c in (a.case or list(BUILT)) for name, plugin in arms for n in range(a.first, a.first + a.runs)]
+    with ThreadPoolExecutor(a.j) as pool:
+        results = list(pool.map(lambda j: run_one(*j), jobs))
+    with open(os.path.join(a.out, "results.json"), "w") as f:
+        json.dump(results, f, indent=1)
+    rows, unmeasured = {}, 0
+    for r in results:
+        for check, ok in r["checks"].items():
+            if ok is None:
+                unmeasured += 1
+            else:
+                rows.setdefault((r["case"], check), {}).setdefault(r["arm"], []).append(ok)
+    for (case, check), by_arm in sorted(rows.items()):
+        cells = "  ".join(f"{name} {sum(by_arm[name])}/{len(by_arm[name])}" for name, _ in arms if name in by_arm)
+        print(f"{case:14} {check:16} {cells}")
+    failures = sum(r["env_failure"] for r in results)
+    if failures or unmeasured:
+        print(f"{failures} run(s) didn't reach an answer and {unmeasured} check(s) couldn't be measured; "
               "they are left out above, so rerun before deciding on a thin row")
 
 

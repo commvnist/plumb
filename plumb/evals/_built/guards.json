@@ -150,5 +150,12 @@
    "plumb-auto too when told to go on without stopping",
    "reviewer-sent"
   ]
+ ],
+ "review-post": [
+  [
+   "plumb-review",
+   "A review posted to the host carries this verdict as its state",
+   "posted-verdict"
+  ]
  ]
 }
