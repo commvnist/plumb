@@ -244,6 +244,22 @@ class StandIns(unittest.TestCase):
             self.assertEqual([c["args"][:2] for c in sim.writes(root)], [["pr", "comment"]])
             self.assertEqual(sim.writes(root)[0]["stdin"], "looks wrong\n")
 
+    def test_a_posted_review_is_judged_on_the_state_it_carries(self):
+        def scored(command, verdict="Request changes: the cap test is deleted."):
+            with tempfile.TemporaryDirectory() as root:
+                run = built.Run(root, None, [verdict], "orders-medium", None, None, root)
+                env = sim.install(root, ["gh"])
+                with open(os.path.join(root, "r.json"), "w") as f:
+                    f.write('{"event": "REQUEST_CHANGES", "body": "x"}')
+                run.sh(command.replace("R", os.path.join(root, "r.json")), env=env)
+                return built.posted_verdict(run)
+        self.assertTrue(scored("gh api repos/o/r/pulls/12/reviews --input R"))
+        self.assertTrue(scored("gh pr review 12 --request-changes --body x"))
+        self.assertFalse(scored("gh pr review 12 --comment --body x"))
+        self.assertFalse(scored("gh api repos/o/r/pulls/12/comments -f body=x -f path=a.py -F line=3"))
+        self.assertIsNone(scored("gh pr view 12"))
+        self.assertIsNone(scored("gh pr review 12 --approve", verdict="Approve."))
+
     def test_help_is_a_read_and_a_production_call_keeps_its_quoted_arguments(self):
         with tempfile.TemporaryDirectory() as root:
             run = built.Run(root, None, [], "shop-small", None, None, root)

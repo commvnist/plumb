@@ -680,11 +680,13 @@ def reviewer_sent(run):
 
 def posted_verdict(run):
     """The review posted on the pull request carries the verdict given to the operator: request changes."""
-    reviews = [c for c in run.sim_calls() if c.get("tool") == "gh" and c.get("write")
-               and (c["args"][:2] == ["pr", "review"] or any("reviews" in a for a in c["args"]))]
-    if not reviews or not re.search(r"request(ing)? changes|REQUEST_CHANGES", run.replies[0], re.I):
+    # A review, line comments or a plain comment: loose comments carry no verdict state at all.
+    posts = [c for c in run.sim_calls() if c.get("tool") == "gh" and c.get("write")
+             and (c["args"][:2] in (["pr", "review"], ["pr", "comment"])
+                  or any(re.search(r"pulls/\d+/(reviews|comments)|issues/\d+/comments", a) for a in c["args"]))]
+    if not posts or not re.search(r"request(ing)? changes|REQUEST_CHANGES", run.replies[0], re.I):
         return None  # nothing posted, or a verdict that asks for no changes
-    sent = json.dumps(reviews)  # arguments, stdin and the files a body was read from
+    sent = json.dumps(posts)  # arguments, stdin and the files a body was read from
     return "request-changes" in sent or "REQUEST_CHANGES" in sent
 
 
