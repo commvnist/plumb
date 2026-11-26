@@ -16,7 +16,7 @@ Approve a change that leaves the codebase better and safe to ship; taste is not 
 
 ## Output
 
-A review posted to the host carries this verdict as its state; each finding sits at its line, unnumbered, in the operator's voice (charter rule 19); the body holds only what the lines can't.
+A review posted to the host carries this verdict as its state; each finding sits at its line, unnumbered, in charter rule 19's voice; the body holds only what the lines can't.
 
 - **Verdict:** approve | approve with suggestions | request changes, on <the commit judged>, with the reason
 - **Blocking:** <findings, or none>
