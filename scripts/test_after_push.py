@@ -10,14 +10,14 @@ HOOK = os.path.join(os.path.dirname(__file__), "..", "plumb", "hooks", "after-pu
 REMINDER = "charter rule 20"
 
 
-def run(command, transcript_lines=(), output=" * [new branch]      HEAD -> main", copilot=False, transcript=True):
+def run(command, transcript_lines=(), output=" * [new branch]      HEAD -> main", copilot=False, transcript=True, stderr=None):
     with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as t:
         for line in transcript_lines:
             t.write(json.dumps(line, separators=(",", ":")) + "\n")
     try:
         payload = {"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": command}}
-        if output is not None:
-            payload["tool_response"] = {"stdout": output}
+        if output is not None or stderr is not None:
+            payload["tool_response"] = {"stdout": output or "", "stderr": stderr or ""}
         if transcript:
             payload["transcript_path"] = t.name
         env = {k: v for k, v in os.environ.items() if k != "COPILOT_PLUGIN_ROOT"}
@@ -64,6 +64,11 @@ class AfterPush(unittest.TestCase):
     def test_says_nothing_without_a_transcript(self):
         # Without one there is no way to say it only once, and a reminder on every push is noise.
         self.assertEqual(run("git push", transcript=False), "")
+
+    def test_a_push_reported_on_stderr_is_reminded(self):
+        # Git writes push progress to stderr; a tool may report it in a field of its own.
+        out = run("git push", output=None, stderr=" * [new branch]      HEAD -> main")
+        self.assertIn(REMINDER, said(out))
 
     def test_a_tool_that_reports_no_output_is_reminded(self):
         self.assertIn(REMINDER, said(run("git push", output=None)))
