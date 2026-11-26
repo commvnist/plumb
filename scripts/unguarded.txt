@@ -12,9 +12,8 @@ plumb-debug 5: Fix at the origin
 plumb-debug 6: Clean up
 plumb-debug 7: Report
 plumb-explain 1: Take scope and depth from the question
-plumb-explain 3: Lead with the point
-plumb-explain 5: Give the reasons
-plumb-explain 6: Say where the code could misbehave
+plumb-explain 4: Give the reasons
+plumb-explain 5: Say where the code could misbehave
 plumb-plan 1: State the goal as outcomes
 plumb-plan 3: Decide only what is expensive to reverse
 plumb-refactor 1: Name the goal
