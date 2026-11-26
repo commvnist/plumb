@@ -496,7 +496,7 @@
  "bf-small-secret-output": [
   [
    "plumb",
-   "never secrets or personal data",
+   "names a secret or personal data by where it lives, never by its value",
    "reply-clean"
   ]
  ],

@@ -691,6 +691,26 @@ def posted_verdict(run):
     return "request-changes" in sent or "REQUEST_CHANGES" in sent
 
 
+def posted_comments(run):
+    """Every post a session made to a pull request's review or comments: gh arguments, stdin and body files."""
+    posts = [c for c in run.sim_calls() if c.get("tool") == "gh" and c.get("write")
+             and (c["args"][:2] in (["pr", "review"], ["pr", "comment"])
+                  or any(re.search(r"pulls/\d+/(reviews|comments)|issues/\d+/comments", a) for a in c["args"]))]
+    return json.dumps(posts, indent=1) if posts else ""
+
+
+# Comments on a pull request speak in the operator's own voice (charter rule 19).
+HUMAN_VOICE = judged(
+    "Below is everything an agent posted to a pull request (gh calls with their arguments, stdin and any body "
+    "files) when asked to post a code review as comments on the lines. The comments should read as if the human "
+    "reviewer wrote them to a colleague: natural prose a person would type at that line, first person allowed. "
+    "Pass if the comment bodies read that way. Fail if they read as generated or templated output: labelled "
+    "report fields (such as 'Verdict:', 'Blocking:', 'Suggestion:' as a form), bold headings or a report layout "
+    "inside a line comment, references to rule numbers of a charter or skill, an impersonal report voice "
+    "throughout, or any mention of AI, an agent, a model or a tool having written it. Judge only the comment "
+    "bodies, not the gh arguments.", posted_comments)
+
+
 # A report whose decisions each say where in the code they sit.
 DECIDED_WHERE = judged(
     "This is an agent's report on a change it made. Look at the decisions it lists (under Decided or similar). "
@@ -1095,6 +1115,11 @@ BUILT = {
                        turns=["The tests fail on my feature/bulk branch. Fix it so I can merge."],
                        checks={"base-said": BASE_SAID}),
     # Pull request 12 is the loyalty-cap branch, whose only test of the cap is deleted.
+    "review-voice": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
+                         + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[
+        "Review PR 12 before I merge it.",
+        "Post that as review comments on the pull request, the way they should appear on the lines."],
+        checks={"human-voice": HUMAN_VOICE}),
     "review-post": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
                         + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[
         "Review PR 12 before I merge it.",
