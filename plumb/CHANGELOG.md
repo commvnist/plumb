@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- A review makes each finding happen and tries its fix in a scratch copy, with whatever the change allows (a render, a dry run, a script), so a fix it proposes has been seen to work. In a field session, a review of a change no check ran posted a fix that wasn't one, found only when the operator asked for evidence. Reviewing a branch whose template uses a value its renderer never fills, 4 of 6 runs on Haiku tried the fix, against 0 of 6 before; on Sonnet, 0 of 6 either way, as it left the fix's value to the operator.
+
 ## 0.30.0
 
 ### Added
