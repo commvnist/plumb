@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR 11](0011-pull-request-comments-in-the-operators-own-voice.md): comments on a pull request speak in the operator's own voice.
 
 ## Context
 

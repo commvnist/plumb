@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- A comment on a pull request (a review, a line comment, a reply) is written as you would write it to a colleague, first person where natural, so it reads as yours rather than as generated text. Everything else plumb commits or posts stays in the neutral technical voice, and nothing anywhere mentions AI. The posted-text check no longer flags first person in a pull request comment and still flags a credit line there.
+
 ## 0.32.0
 
 ### Changed

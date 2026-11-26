@@ -135,7 +135,8 @@ class CheckCommit(unittest.TestCase):
     def test_flags_pull_request_text_crediting_ai_or_in_the_first_person(self):
         cases = [
             ('gh pr create --title "feat: add tax" --body "Adds tax.\n\nGenerated with Claude Code"', "credits an AI tool"),
-            ('gh pr comment 4 --body "I fixed the rounding."', "first person"),
+            ('gh pr comment 4 --body "I fixed the rounding."', None),
+            ('gh pr comment 4 --body "Fixed the rounding.\n\nGenerated with Claude Code"', "credits an AI tool"),
             ('gh issue create --title "Rounding is off" --body "Steps: add 2.345"', None),
         ]
         for command, flag in cases:
@@ -197,7 +198,12 @@ class CheckCommit(unittest.TestCase):
             f.write("Adds tax.\n\nGenerated with Claude Code\n")
         cases = [
             ("gh api repos/o/r/pulls -f title='feat: tax' -f body='I added tax.'", "first person"),
-            ('gh pr review 4 --comment --body "We should round later."', "first person"),
+            ('gh pr review 4 --comment --body "We should round later."', None),
+            ("gh api repos/o/r/pulls/4/comments -f body='I think this drops the last cent.'", None),
+            ("gh api repos/o/r/pulls/4/reviews -f event=COMMENT -f body='My only worry is the rounding.'", None),
+            ("gh api repos/o/r/pulls/comments/9/replies -f body='I moved it, thanks.'", None),
+            ('gh issue comment 4 --body "I can reproduce this."', "first person"),
+            ('gh pr edit 4 --body "I reworked the rounding."', "first person"),
             ('gh pr merge 4 --squash --body "Merged after I checked it."', "first person"),
             ("gh pr create --title 'feat: tax' --body-file body.md", "credits an AI tool"),
             ('gh pr create --title "feat: tax" --body-file "body.md"', "credits an AI tool"),
@@ -294,7 +300,7 @@ class CheckCommit(unittest.TestCase):
         self.assertNotIn("text just posted", hook_output(self.repo, command))
 
     def test_a_post_on_its_own_line_after_another_command_is_checked(self):
-        out = hook_output(self.repo, "cd /tmp\ngh pr comment 1 --body 'I fixed it.'", "")
+        out = hook_output(self.repo, "cd /tmp\ngh issue comment 1 --body 'I fixed it.'", "")
         self.assertIn("first person", out)
 
     def test_says_when_posted_text_is_blank_or_unreadable(self):
@@ -322,7 +328,7 @@ class CheckCommit(unittest.TestCase):
         # A post is already on a shared system, and the operator may have approved its wording, so the hook
         # never tells the agent to edit it on its own; an unreadable file is never reported as checked.
         cases = [
-            "gh pr comment 4 --body 'We should round later.'",
+            "gh issue comment 4 --body 'We should round later.'",
             "gh pr comment 187 --body-file /worker/scratch/c187.md",
             "cat > /worker/scratch/c187.md <<'EOF'\nCan we switch this?\nEOF\ngh pr comment 187 --body-file /worker/scratch/c187.md",
         ]
