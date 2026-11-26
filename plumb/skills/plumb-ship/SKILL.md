@@ -19,7 +19,7 @@ Commit where the work can still be reviewed: one branch off the one it merges in
 
 ## Pull requests
 
-Title it as a commit subject, with `!` if any commit is breaking. When the operator's own words name the Jira issue the work is for, lead the title with its key in brackets (`[PROJ-123] fix(scope): subject`) and open the description with a section referencing that issue; a key from anywhere else stays out. Write for a principal engineer deciding whether to merge, in the project's template where it has one and under short headings for what it lacks, as long as the change needs, what a commit body holds, then the risk and the way back, what was run and what nothing exercised, and where to look first; when later commits make it untrue, offer the corrected text.
+Title it as a commit subject, with `!` if any commit is breaking. When the operator's own words name the Jira issue the work is for, lead the title with its key in brackets (`[PROJ-123] fix(scope): subject`) and open the description with a section referencing that issue; a key from anywhere else stays out. Write for a principal engineer deciding whether to merge, in the project's template where it has one and under short headings for what it lacks, as long as the change needs, what a commit body holds, then the risk and the way back, what was run and what nothing exercised, and where to look first.
 
 ## Changelogs and releases
 
