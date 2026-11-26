@@ -5,7 +5,7 @@ description: Reviews a diff, commit, branch or pull request and returns a verdic
 
 # Plumb: review
 
-Approve a change that leaves the codebase better and safe to ship; taste is not a finding.
+Approve a change that leaves the codebase better and safe to ship; taste is not a finding. Change no code.
 
 ## Steps
 

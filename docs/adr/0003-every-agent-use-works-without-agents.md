@@ -30,4 +30,8 @@ Requiring agents would shut out the smallest budgets plumb is meant to fit. Drop
 
 ## Update, 2026-11-19
 
-Two details above no longer match the skills since the 0.11.0 trim, though the decision stands. The report has no Unverified line: what nothing exercised goes under Verified as "unchecked", and plumb-auto with agents off re-reads the request, then the diff, as a stranger's. "plumb's Authority" is now the charter's precedence line, under its opening line.
+Two details above no longer match the skills since the 0.11.0 trim, though the decision stands. The report has no Unverified line: what nothing exercised goes under Verified as "unchecked", and plumb-auto with agents off re-reads the request, then the diff, as a stranger's. "plumb's Authority" is now the charter's closing precedence line.
+
+## Update, 2026-11-26
+
+The precedence line now sits directly under the charter's opening line rather than at its end.

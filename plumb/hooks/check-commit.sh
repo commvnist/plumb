@@ -74,7 +74,10 @@ if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr
     && note="$note It credits an AI tool; remove that, as charter rule 19 says, unless the operator or the project's rules asked for it."
   # A comment on a pull request (a review, a line comment, a reply) speaks in the operator's own voice, so
   # first person is theirs to use there; a description, title, merge body or issue stays impersonal.
-  printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+(pr[[:space:]]+(comment|review)|api[[:space:]][^;&|]*pulls/([0-9]+/)?(comments|reviews))' \
+  # Decided on the command's skeleton (quoted text gone, one command per line), so a body that only mentions
+  # gh pr comment, or a description posted alongside a comment, is still checked.
+  ! printf '%s\n' "$skeleton" | grep -E '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]])' \
+    | grep -Evq '(^|[^[:alnum:]_-])gh[[:space:]]+(pr[[:space:]]+(comment|review)|api[[:space:]][^;&|]*pulls/([0-9]+/)?(comments|reviews))' \
     || { printf '%s\n' "$posted" | grep -Eq "$FIRST" \
       && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."; }
   # The post is already on a shared system, so a correction to it is the operator's call (charter rule 2).

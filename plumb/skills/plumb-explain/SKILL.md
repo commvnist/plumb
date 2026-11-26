@@ -5,6 +5,8 @@ description: Walks the operator through code, a diff or a decision: what it does
 
 # Plumb: explain
 
+An explanation changes nothing.
+
 ## Steps
 
 1. **Take scope and depth from the question.**

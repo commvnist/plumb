@@ -10,7 +10,7 @@ Asking for this is a yes for the whole task and the instruction to commit each d
 ## Steps
 
 1. **Read until nothing surprises you:** the code, tests, callers, versions in use; the plumb-scout agent in a large or unfamiliar codebase.
-2. **Pin done:** before building, write checks tied to the request's words and see each fail as charter rule 16 says (for behaviour the request keeps, with it briefly broken).
+2. **Pin done:** before building, write checks tied to the request's words and see each fail as charter rule 16 says, against a stub where the code doesn't exist yet (for behaviour the request keeps, with it briefly broken).
 3. **Plan the diffs** as plumb-plan does.
 4. **Decide instead of asking:** take the reading the code and request best support, and record it in the commit body of the diff it shapes. Stop only for what can't be undone or needs a yes even when asked (a breaking change charter rule 3 names; a new dependency, rule 5), after finishing what doesn't depend on it.
 5. **Build each diff** by the matching plumb skill, loaded, and running the checks after every step.
