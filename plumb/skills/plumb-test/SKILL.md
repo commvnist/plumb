@@ -5,9 +5,9 @@ description: The standard for when a test should exist and what makes a good one
 
 # Plumb: test
 
-A test should exist when someone relies on the behaviour, you can name a plausible break, and nothing else would catch it. "Add tests" asks for those, not coverage: say in one line what you left untested and why.
+A test should exist when someone relies on the behaviour, you can name a realistic break, and nothing else would catch it. "Add tests" asks for those, not coverage: say in one line what you left untested and why.
 
-A good test asserts outcomes through the surface a caller uses and is named for the behaviour and condition, so a failure reads as a sentence. Expected values come from what the behaviour should be (a spec, a doc), never from the code's output; where code and stated behaviour disagree, say so. Cases that differ only by data share one table.
+A good test asserts outcomes through the public surface, with real collaborators where fast and deterministic, and is named for the behaviour and condition, so a failure reads as a sentence. Expected values come from what the behaviour should be (a spec, a doc, a case worked by hand), never from the code's output (characterization tests aside); where code and stated behaviour disagree, say so. Each test shows the data its outcome depends on; cases that differ only by data share one table.
 
 ## Keep, merge, rewrite or delete
 

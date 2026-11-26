@@ -43,11 +43,11 @@ Every phase that changes code ends with the same short report: what was done, wh
 
 A report for a small change reads like this:
 
-- **Done:** fix(pricing): accept thousands separators in typed prices (uncommitted)
+- **Done:** fix(pricing): accept thousands separators in typed prices (uncommitted); read shop/pricing.py:6 first
 - **Waiting on:** a yes to commit.
 - **Why:** `Decimal("1,200.50")` raises; `parse_price` passed the text to `Decimal` with the comma still in it (shop/pricing.py:6).
-- **Decided:** accept a comma only before a group of three digits, over stripping every comma: stripping would read "1,50" (a European decimal comma) as 150.
-- **Verified:** `python3 -m unittest` → 6 tests OK; the "1,200.50" test failed on the old code with the same error; the "1,50" test failed against comma stripping, which read it as 150.
+- **Decided:** `parse_price` (shop/pricing.py:6) accepts a comma only before a group of three digits, over stripping every comma: stripping would read "1,50" (a European decimal comma) as 150.
+- **Verified:** `python3 -m unittest` → 6 tests OK; the "1,200.50" test failed on the old code with the same error; the "1,50" test failed against comma stripping, which read it as 150; unchecked: the checkout form that calls `parse_price`, which no test drives.
 - **Suggestions:** 1. The price field accepts any text; showing the expected format beside it would stop "1,50" before it reaches `parse_price`.
 
 Read Decided and Suggestions first: they are where you agree, overrule, or pick what comes next, by number.
@@ -61,7 +61,7 @@ Each of these is on purpose:
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
 - **It stops after each diff.** A multi-step plan waits for you after each step: commit it yourself or tell it to, then say to go on, so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
-- **Nothing it writes says an AI wrote it.** Code, comments, commits and pull requests are written in a neutral technical voice, never "I" or "we", never mention AI help or the agents, models or sessions behind the work (unless the work is itself about AI), carry no co-author or generated-by lines, and are committed under your own git identity.
+- **Nothing it writes says an AI wrote it.** Code, comments, commits and pull requests are written in a neutral technical voice, never "I" or "we" (a comment on a pull request is the exception: it reads as you wrote it, in your own voice), never mention AI help or the agents, models or sessions behind the work (unless the work is itself about AI), carry no co-author or generated-by lines, and are committed under your own git identity.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
 - **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and where else the same mistake appears. If what you ask rests on a fact about the code that isn't true, it shows you the line and waits. Ask for something it can see failing and it follows you, naming the risk once.
@@ -85,7 +85,7 @@ Plumb names no model for its agents. Unless you choose, each one runs on your to
 What each role needs, to help you spend where it counts:
 
 - **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
-- **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one.
+- **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one, and a model other than your session's judges its work with less bias toward it.
 
 Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
 

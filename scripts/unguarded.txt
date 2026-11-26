@@ -4,7 +4,7 @@ plumb 17: The test floor
 plumb-auto 1: Read until nothing surprises you
 plumb-auto 3: Plan the diffs
 plumb-auto 5: Build each diff
-plumb-auto 7: Try to break it
+plumb-auto 6: Try to break it
 plumb-build 1: Size it
 plumb-build 4: Climb the ladder
 plumb-build 6: Review your own diff as its reviewer
