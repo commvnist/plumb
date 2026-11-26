@@ -22,6 +22,7 @@ jobs:
       - run: python3 scripts/test_check_commit.py
       - run: python3 scripts/test_session_start.py
       - run: python3 scripts/test_charter_gate.py
+      - run: python3 scripts/test_after_push.py
       - run: python3 scripts/test_release.py
       - run: python3 scripts/test_graders.py
 

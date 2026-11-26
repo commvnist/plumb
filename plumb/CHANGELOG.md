@@ -2,6 +2,14 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Added
+- The first push or new pull request in a session, or since its last compaction, carries a one-line reminder to offer to record what the session found costly to learn and likely to recur (charter rule 20). In a long field session several such facts (a tool flattening folders, a tag character a registry refuses, a no-op label re-add) went unrecorded because the offer had faded from view by the time the work shipped. Said once, and only where the session's transcript can be read.
+
+### Fixed
+- The check on text posted to a pull request or issue no longer tells the agent to edit the post in place. It now says to show the operator the corrected text and edit only with their yes, since the post is already on a shared system and its wording may be one the operator approved. When a body file can't be read, it says only the command's own text was checked, instead of reporting the file unchecked next to a first-person finding drawn from the command.
+
 ## 0.29.0
 
 ### Changed
