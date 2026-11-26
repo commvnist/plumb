@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- plumb-debug bounds a failure's cause by the nearest state that passes, such as the base branch or an earlier commit, so a failure a branch inherited isn't debugged as the branch's own. In a field session, the decisive check on a failing docs build was whether main failed the same way (it did), made by instinct rather than by the skill. Asked to fix a feature branch whose failing test also fails on main, 18 of 30 runs on Haiku told the operator the failure was already on main, against 10 of 30 before; Sonnet did so 6 of 6 either way.
+
 ## 0.31.0
 
 ### Changed

@@ -178,5 +178,12 @@
    "try its fix in a scratch copy",
    "fix-run"
   ]
+ ],
+ "debug-base": [
+  [
+   "plumb-debug",
+   "the nearest state that passes (the base branch, an earlier commit) bounds the cause",
+   "base-said"
+  ]
  ]
 }

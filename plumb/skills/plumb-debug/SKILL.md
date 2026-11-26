@@ -8,7 +8,7 @@ description: Finds the root cause of a bug from evidence and fixes it at its ori
 ## Steps
 
 1. **Reproduce** the exact error; an intermittent one by forcing its cause. What won't reproduce gets evidence, not a fix.
-2. **Trace** backward from the symptom; test each candidate cause.
+2. **Trace** backward from the symptom; the nearest state that passes (the base branch, an earlier commit) bounds the cause. Test each candidate cause.
 3. **Name the cause** in one sentence.
 4. **Lock it** with one test that forces the cause and fails before the fix on every run.
 5. **Fix at the origin** with the smallest diff, never a suppression.

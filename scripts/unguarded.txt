@@ -8,7 +8,6 @@ plumb-auto 7: Try to break it
 plumb-build 1: Size it
 plumb-build 4: Climb the ladder
 plumb-build 6: Review your own diff as its reviewer
-plumb-debug 2: Trace
 plumb-debug 5: Fix at the origin
 plumb-debug 6: Clean up
 plumb-debug 7: Report
