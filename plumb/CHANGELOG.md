@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.30.0
 
 ### Added
 - The first push or new pull request in a session, or since its last compaction, carries a one-line reminder to offer to record what the session found costly to learn and likely to recur (charter rule 20). In a long field session several such facts (a tool flattening folders, a tag character a registry refuses, a no-op label re-add) went unrecorded because the offer had faded from view by the time the work shipped. Said once, and only where the session's transcript can be read.
