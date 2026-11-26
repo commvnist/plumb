@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.33.0
 
 ### Changed
 - Every skill was revised in ten critical review rounds against the standing authorities (kernel and git patch guidelines, Conventional Commits, Google engineering practices, SemVer, Keep a Changelog, Nygard, Diátaxis, Beck, Feathers, Fowler, Ousterhout, Zeller, Agans, the SRE books, OWASP) and published measurements of how coding agents fail. The main changes:
