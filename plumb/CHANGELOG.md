@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Fixed
+- The check on text posted to a pull request or issue no longer tells the agent to edit the post in place. It now says to show the operator the corrected text and edit only with their yes, since the post is already on a shared system and its wording may be one the operator approved. When a body file can't be read, it says only the command's own text was checked, instead of reporting the file unchecked next to a first-person finding drawn from the command.
+
 ## 0.29.0
 
 ### Changed

@@ -318,6 +318,21 @@ class CheckCommit(unittest.TestCase):
                 else:
                     self.assertEqual(out, "")
 
+    def test_a_post_is_corrected_only_with_the_operators_yes(self):
+        # A post is already on a shared system, and the operator may have approved its wording, so the hook
+        # never tells the agent to edit it on its own; an unreadable file is never reported as checked.
+        cases = [
+            "gh pr comment 4 --body 'We should round later.'",
+            "gh pr comment 187 --body-file /worker/scratch/c187.md",
+            "cat > /worker/scratch/c187.md <<'EOF'\nCan we switch this?\nEOF\ngh pr comment 187 --body-file /worker/scratch/c187.md",
+        ]
+        for command in cases:
+            with self.subTest(command=command):
+                out = hook_output(self.repo, command)
+                self.assertIn("only with their yes", out)
+                self.assertNotIn("Edit it in place", out)
+                self.assertNotIn("went unchecked", out)
+
     def test_a_scope_is_not_first_person(self):
         git(self.repo, "commit", "-q", "--allow-empty", "-m", "fix(us): use the US date format\n\nDates read month first.")
         self.assertEqual(hook_output(self.repo, "git commit -m x"), "")

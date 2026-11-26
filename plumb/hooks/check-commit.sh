@@ -64,7 +64,7 @@ if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr
       posted="$posted\\n$(sed 's/$/\\n/' "$path" | tr -d '\n')"
       [ -n "$(tr -d '[:space:]' < "$path")" ] || note="$note The file $file is empty, so the post is blank; if it replaced text, restore that from the live version's history."
     else
-      note="$note plumb couldn't read $file here (it may be on another machine), so its text went unchecked: check it against charter rule 19."
+      note="$note plumb couldn't read $file here (it may be on another machine), so only the command's own text was checked: check the file's text against charter rule 19."
     fi
   done
   printf '%s' "$posted" | grep -Eq -- "(--body|-b)([[:space:]]+|=)(\\\\\"\\\\\"|'')([[:space:]]|$)" \
@@ -72,8 +72,9 @@ if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr
   printf '%s\n' "$posted" | grep -Eiq "$CREDIT" \
     && note="$note It credits an AI tool; remove that, as charter rule 19 says, unless the operator or the project's rules asked for it."
   printf '%s\n' "$posted" | grep -Eq "$FIRST" \
-    && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says."
-  [ -n "$note" ] && say "plumb: check the text just posted.$note Edit it in place (gh pr edit, gh issue edit or the comment's edit) and tell the operator."
+    && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."
+  # The post is already on a shared system, so a correction to it is the operator's call (charter rule 2).
+  [ -n "$note" ] && say "plumb: check the text just posted.$note If it needs changing, show the operator the corrected text and edit the post only with their yes."
   exit 0
 fi
 
