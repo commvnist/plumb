@@ -85,7 +85,7 @@ Plumb names no model for its agents. Unless you choose, each one runs on your to
 What each role needs, to help you spend where it counts:
 
 - **Scout and auditor** read, search and map. A small, fast model usually does this well, and an audit starts one auditor per area, so their cost multiplies.
-- **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one.
+- **Reviewer** is the last independent check before you merge, and runs only when you ask for it (asking for `plumb-auto` counts). This is where a stronger model pays off, if your budget has one, and a model other than your session's judges its work with less bias toward it.
 
 Every reply that started an agent says which model each ran on, or that it ran on your tool's default when the tool doesn't report which, so you can see what a run cost and spot a setting that didn't take.
 

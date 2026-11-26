@@ -5,17 +5,17 @@ description: Carries a task to a finished, verified result without stopping for 
 
 # Plumb: auto
 
-Asking for this is the go-ahead for the whole task and the instruction to commit each diff, by plumb-ship, on a new local branch: charter rule 4's stops become one final report. Nothing is pushed or deployed unasked; every other rule holds.
+Asking for this is a yes for the whole task and the instruction to commit each diff, by plumb-ship, on a new local branch: charter rule 4's stops become one final report. Nothing is pushed or deployed unasked; every other rule holds.
 
 ## Steps
 
 1. **Read until nothing surprises you:** the code, tests, callers, versions in use; the plumb-scout agent in a large or unfamiliar codebase.
-2. **Pin done:** before writing any code, write checks tied to the request's words and see each fail (for behaviour the request keeps, fail with it briefly broken). A check written first can't be bent to fit the code.
+2. **Pin done:** before building, write checks tied to the request's words and see each fail as charter rule 16 says (for behaviour the request keeps, with it briefly broken).
 3. **Plan the diffs** as plumb-plan does.
-4. **Decide instead of asking:** take the reading the code and request best support, and record it. Stop only for what can't be undone or needs a yes even when asked (a breaking change charter rule 3 names; a new dependency, rule 5), after finishing what doesn't depend on it.
+4. **Decide instead of asking:** take the reading the code and request best support, and record it in the commit body of the diff it shapes. Stop only for what can't be undone or needs a yes even when asked (a breaking change charter rule 3 names; a new dependency, rule 5), after finishing what doesn't depend on it.
 5. **Build each diff** by the matching plumb skill, loaded, and running the checks after every step.
-6. **Get an independent review:** send the change, committed or not, to the plumb-reviewer agent as its description says, since an author can't see past their own assumptions; asking for this skill is the ask for that agent. Fix each Blocking finding or answer it with evidence (a run, a line), then send the change back with those answers; a finding stands until fixed or the reviewer withdraws it. Review again until none stands; one still standing after a second round goes under Waiting on, the run reported as stopped short. With `plumb agents: off`, which this ask doesn't override, re-read the request, then the diff, as a stranger's.
-7. **Try to break it:** name the likeliest way it is wrong (a misread request, an untried input, an unrun caller) and check it.
+6. **Try to break it:** name the likeliest way it is wrong (a misread request, an untried input, an unrun caller) and check it.
+7. **Get an independent review:** send the branch's commits, base to head, to the plumb-reviewer agent as its description says, since an author can't see past their own assumptions; asking for this skill is the ask for that agent. Fix each Blocking finding or answer it with evidence (a run, a line), then send the change back with those answers; a finding stands until the reviewer withdraws it on seeing the fix or evidence; report only after its verdict. Review again until none stands; one still standing after a second round goes under Waiting on, the run reported as stopped short. With `plumb agents: off`, which this ask doesn't override, re-read the request, then the diff, as a stranger's, and say under Reviewed that no independent review ran.
 
 ## Output
 

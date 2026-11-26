@@ -11,7 +11,7 @@ version=$(grep -Eho '"version" *: *"[^"]*"' "$here/../.claude-plugin/plugin.json
 reminder=$(sed "1s/^The plumb plugin is installed\./The plumb plugin${version:+ $version} is installed./" "$here/session-start.md")
 if printf '%s' "$input" | grep -Eq '"source" *: *"compact"'; then
   reminder="$reminder
-The conversation was just compacted, so plumb skills loaded before it are no longer in context: load the charter and the skill for the current phase again before the next change."
+The conversation was just compacted, so plumb skills loaded before it are no longer in context: load the charter and every plumb skill the work was following again before the next change."
 fi
 if [ -n "$COPILOT_PLUGIN_ROOT" ]; then
   text=$(printf '%s\n' "$reminder" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{ printf "%s%s", (NR > 1 ? "\\n" : ""), $0 }')

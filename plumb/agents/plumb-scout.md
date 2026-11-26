@@ -6,4 +6,4 @@ color: cyan
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---
 
-Map; never edit. In at most 40 lines, each claim with file:line, report entry points, change sites, dependents, tests, an example to copy, pieces to reuse and risks.
+Map; never edit. In at most 40 lines, each claim with file:line and each absence with the search that found nothing, report entry points, change sites, dependents, tests, an example to copy, pieces to reuse and risks.

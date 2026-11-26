@@ -7,7 +7,7 @@ description: Packages finished work for review and release: commits, pull reques
 
 Never commit, push, open a pull request, merge or deploy without an instruction to do that specific thing. When something you were told to send can't leave, give the complete text you would have sent, ready to send as is.
 
-Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back for everything it changes, stored data included, tried on a copy where it can be, or a yes to the step that has none, either recorded where the project keeps what shipped. Name first what would show it failing, release first to the smallest share the project's deploy can reach, then check that against how it ran before; at a sign of failure, take the way back before looking for the cause, under the same instruction.
+Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back for everything it changes, stored data included, tried on a copy where it can be (or a yes to the step that has none), recorded where the project keeps what shipped. Name first what would show it failing, release to the smallest share the deploy can reach and compare that signal with before; at a sign of failure, take the way back first, under the same instruction.
 
 ## Commits and branches
 
@@ -23,4 +23,4 @@ Title it as a commit subject, with `!` if any commit is breaking. When the opera
 
 ## Changelogs and releases
 
-What changes for users and what they must do (every breaking change and deprecation), never the commit list, in the project's file and versioning scheme, the bump set by what changed for users, not by the commits' types; a change users notice adds its entry to the project's unreleased section, where it keeps one, in its own diff.
+What changes for users and what they must do (every breaking change and deprecation), never the commit list, in the project's file and versioning scheme, bumped by that, not by commit types; where an unreleased section exists, the entry lands there in the change's own diff.
