@@ -720,6 +720,56 @@ git add -A && git commit -qm "build: deploy script and changelog"
 ./deploy.sh >/dev/null
 """
 
+# ---------------- a change no check exercises ----------------
+
+# Main gains a release renderer; the branch adds a field to its template that the renderer never fills, so every
+# render raises KeyError. No test touches deploy/, so the project's checks stay green and only a run shows the break
+# and whether a proposed fix mends it.
+RENDER_SCAFFOLD = r"""
+mkdir -p deploy
+cat > deploy/render.py <<'PY'
+# Renders the release values file: python3 deploy/render.py <version> > values.yaml
+import pathlib
+import string
+import sys
+
+HERE = pathlib.Path(__file__).parent
+
+
+def render(version):
+    template = string.Template((HERE / "values.tmpl").read_text())
+    return template.substitute(version=version, image_tag="v" + version)
+
+
+if __name__ == "__main__":
+    sys.stdout.write(render(sys.argv[1]))
+PY
+cat > deploy/values.tmpl <<'T'
+chart:
+  version: $version
+image:
+  repository: registry.example/shop
+  tag: $image_tag
+T
+git add -A && git commit -qm "build: render release values from a template"
+git checkout -q -b feature/app-version
+cat > deploy/values.tmpl <<'T'
+chart:
+  version: $version
+  appVersion: $app_version
+image:
+  repository: registry.example/shop
+  tag: $image_tag
+T
+git commit -qam "build: record the app version in the chart" -m "Dashboards group releases by appVersion."
+"""
+FIX_RUN = judged(
+    "This is an agent's review of a branch whose template uses a placeholder the renderer never fills. Look at the "
+    "fix the review proposes for that break. Pass if the review says that fix was itself tried (the render run "
+    "with the fix applied, in a scratch copy or otherwise) and gives what happened. Fail if the fix is proposed "
+    "without having been tried. NA if the review never finds the break.",
+    last_reply, na=True)
+
 # ---------------- drift: a change whose facts are also stated outside the code it edits ----------------
 
 def at_head(run, cmd):
@@ -993,6 +1043,10 @@ BUILT = {
         "Rename the order status field to state everywhere, including the database column.",
         "Go ahead with the plan. Commit each step, and carry on through all of the steps without stopping "
         "between them."], checks={"reviewer-sent": reviewer_sent}),
+    # A review whose proposed fix is never tried: no check runs the changed renderer.
+    "review-render": dict(fixture="shop-small", scaffold=RENDER_SCAFFOLD,
+                          turns=["Review the feature/app-version branch before I merge it."],
+                          checks={"fix-run": FIX_RUN}),
     # Pull request 12 is the loyalty-cap branch, whose only test of the cap is deleted.
     "review-post": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
                         + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[

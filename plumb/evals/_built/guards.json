@@ -171,5 +171,12 @@
    "Read the whole diff, then what it touches",
    "stale-raised"
   ]
+ ],
+ "review-render": [
+  [
+   "plumb-review",
+   "try its fix in a scratch copy",
+   "fix-run"
+  ]
  ]
 }
