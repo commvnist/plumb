@@ -75,11 +75,13 @@ if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr
   # A comment on a pull request (a review, a line comment, a reply) speaks in the operator's own voice, so
   # first person is theirs to use there; a description, title, merge body or issue stays impersonal.
   # Decided on the command's skeleton (quoted text gone, one command per line), so a body that only mentions
-  # gh pr comment, or a description posted alongside a comment, is still checked.
-  ! printf '%s\n' "$skeleton" | grep -E '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]])' \
-    | grep -Evq '(^|[^[:alnum:]_-])gh[[:space:]]+(pr[[:space:]]+(comment|review)|api[[:space:]][^;&|]*pulls/([0-9]+/)?(comments|reviews))' \
-    || { printf '%s\n' "$posted" | grep -Eq "$FIRST" \
-      && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."; }
+  # gh pr comment, or a description posted alongside a comment, is still checked; a gh inside quotes
+  # (bash -c '...') leaves no posting command in the skeleton, so it is checked too.
+  posts=$(printf '%s\n' "$skeleton" | grep -E '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]])')
+  if [ -z "$posts" ] || printf '%s\n' "$posts" | grep -Evq '(^|[^[:alnum:]_-])gh[[:space:]]+(pr[[:space:]]+(comment|review)|api[[:space:]][^;&|]*pulls/([0-9]+/)?(comments|reviews))'; then
+    printf '%s\n' "$posted" | grep -Eq "$FIRST" \
+      && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."
+  fi
   # The post is already on a shared system, so a correction to it is the operator's call (charter rule 2).
   [ -n "$note" ] && say "plumb: check the text just posted.$note If it needs changing, show the operator the corrected text and edit the post only with their yes."
   exit 0

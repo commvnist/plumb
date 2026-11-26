@@ -23,4 +23,4 @@ Title it as a commit subject, with `!` if any commit is breaking. When the opera
 
 ## Changelogs and releases
 
-What changes for users and what they must do (every breaking change and deprecation), never the commit list, in the project's file and versioning scheme, bumped by that, not by commit types; where an unreleased section exists, the entry lands there in the change's own diff.
+What changes for users and what they must do (every breaking change and deprecation), never the commit list, in the project's file and versioning scheme, bumped by that; where an unreleased section exists, the entry lands there in the change's own diff.

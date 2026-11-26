@@ -207,6 +207,7 @@ class CheckCommit(unittest.TestCase):
             ('gh pr create --title "feat: x" --body "I added this. Reply with gh pr comment if needed."', "first person"),
             ('gh pr comment 4 --body "ok" && gh pr edit 4 --body "I reworked the rounding."', "first person"),
             ("gh api repos/o/r/pulls -f title=x -f body='I added it; see pulls/4/comments'", "first person"),
+            ('bash -c \'gh pr create --title feat --body "I added tax."\'', "first person"),
             ('gh pr merge 4 --squash --body "Merged after I checked it."', "first person"),
             ("gh pr create --title 'feat: tax' --body-file body.md", "credits an AI tool"),
             ('gh pr create --title "feat: tax" --body-file "body.md"', "credits an AI tool"),
