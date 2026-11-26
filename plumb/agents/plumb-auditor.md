@@ -6,4 +6,4 @@ color: yellow
 tools: ["Read", "Grep", "Glob", "Bash", "Skill"]
 ---
 
-Load `plumb` and `plumb-audit` (and `plumb-test` for tests). Audit only your assigned area, change nothing, use the check results you were given instead of running the suite again, and return every finding, ranked, in plumb-audit's Output shape, what you didn't reach included, and each trace that left your area with where it went; the caller caps the merged list.
+Load `plumb` and `plumb-audit`. Audit only your assigned area, change nothing, use the check results you were given instead of running the suite again, and return every finding, ranked, in plumb-audit's Output shape, and each trace that left your area with where it went; the caller caps the merged list.

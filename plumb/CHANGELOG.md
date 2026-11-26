@@ -2,6 +2,12 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Changed
+- Reviews judge input handling once, under safety, instead of under both safety and simplicity, and a posted review's line comments are plainly in the operator's own voice.
+- Text that said the same thing twice was cut: an explanation's "lead with the point" step (the charter already puts the result first), plumb-auto's reason for an independent review, and two restatements in the auditor's brief. Each skill and agent keeps every behaviour; slightly fewer words load with each request.
+
 ## 0.33.0
 
 ### Changed
