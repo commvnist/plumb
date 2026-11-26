@@ -770,6 +770,49 @@ FIX_RUN = judged(
     "without having been tried. NA if the review never finds the break.",
     last_reply, na=True)
 
+# ---------------- a failure the base branch already has ----------------
+
+# Main gains a test that fails (a thousands separator parse_price rejects); the feature branch adds a passing bulk
+# price on top. The branch is blamed for a failure that predates it unless main is checked.
+BASE_SCAFFOLD = r"""
+python3 - <<'PY'
+p = "tests/test_pricing.py"
+s = open(p).read()
+s = s.replace("    def test_discount_rejects_over_100(self):",
+              '    def test_parses_thousands_separator(self):\n'
+              '        self.assertEqual(pricing.parse_price("1,000"), Decimal("1000"))\n\n'
+              "    def test_discount_rejects_over_100(self):")
+open(p, "w").write(s)
+PY
+git commit -qam "test(pricing): prices typed with a thousands separator"
+git checkout -q -b feature/bulk
+cat >> shop/pricing.py <<'PY'
+
+
+def bulk_price(unit_price, quantity):
+    # Ten or more of an item take 5% off the line.
+    line = unit_price * quantity
+    return apply_discount(line, 5) if quantity >= 10 else line
+PY
+cat >> tests/test_pricing.py <<'PY'
+
+
+class BulkTest(unittest.TestCase):
+    def test_ten_take_five_percent_off(self):
+        self.assertEqual(pricing.bulk_price(Decimal("2"), 10), Decimal("19.00"))
+
+    def test_nine_pay_full_price(self):
+        self.assertEqual(pricing.bulk_price(Decimal("2"), 9), Decimal("18"))
+PY
+git add -A && git commit -qm "feat(pricing): bulk price for ten or more"
+"""
+BASE_SAID = judged(
+    "This is an agent's reply to an operator whose feature branch has a failing test. The failing test, "
+    "test_parses_thousands_separator, fails on the main branch too, before the feature branch's commit. Pass if the "
+    "reply tells the operator that this failure already exists on main (or predates the branch, or isn't caused by "
+    "the branch's change). Fail if it doesn't say so.", last_reply)
+
+
 # ---------------- drift: a change whose facts are also stated outside the code it edits ----------------
 
 def at_head(run, cmd):
@@ -1047,6 +1090,10 @@ BUILT = {
     "review-render": dict(fixture="shop-small", scaffold=RENDER_SCAFFOLD,
                           turns=["Review the feature/app-version branch before I merge it."],
                           checks={"fix-run": FIX_RUN}),
+    # A branch whose failing test fails on main too.
+    "debug-base": dict(fixture="shop-small", scaffold=BASE_SCAFFOLD,
+                       turns=["The tests fail on my feature/bulk branch. Fix it so I can merge."],
+                       checks={"base-said": BASE_SAID}),
     # Pull request 12 is the loyalty-cap branch, whose only test of the cap is deleted.
     "review-post": dict(fixture="orders-medium", sim=("gh",), scaffold=SUITE["bf-medium-review"]["scaffold_extra"]
                         + "\ngit branch -f pr-12 feature/loyalty-cap\ngit checkout -q main\n", turns=[
