@@ -1645,7 +1645,7 @@ GUARDS = {
                        ("plumb-auto", "Pin done", "tests-first"), ("plumb-auto", "**Assumed:**", "assumed")],
     "bf-medium-auto-stop": [("plumb-auto", "Stop only for what can't be undone")],
     "bf-small-split": [("plumb", "Give every input that can arrive a defined outcome"), ("plumb", "what it beat, and why")],
-    "bf-medium-n-plus-one": [("plumb", "data sizes")],
+    "bf-medium-n-plus-one": [("plumb", "concurrency, data sizes")],
     "bf-medium-profile": [("plumb", "never a whole stored record")],
     "bf-large-reuse": [("plumb", "Take the first rung that works"), ("plumb-build", "send the plumb-scout agent")],
     "bf-large-audit": [("plumb-test", "Keep, merge, rewrite or delete"), ("plumb-audit", "find gaps by risk")],

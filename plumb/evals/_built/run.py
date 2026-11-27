@@ -1622,6 +1622,212 @@ LOADS = {
 }
 
 
+# ---------------- research, performance, verification and interface design, one case each ----------------
+
+
+def session_trace(run):
+    """Every tool call the session made, in order (shell commands in full, file writes and edits with their path
+    and the text they put in), then its final reply."""
+    lines = []
+    with open(run.log) as f:
+        for line in f:
+            if not line.startswith("{"):
+                continue
+            for part in (json.loads(line).get("message") or {}).get("content") or []:
+                if not (isinstance(part, dict) and part.get("type") == "tool_use"):
+                    continue
+                name, inp = part.get("name"), part.get("input") or {}
+                if name == "Bash":
+                    lines.append(f"$ {inp.get('command', '')}")
+                elif name in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
+                    path = inp.get("file_path") or inp.get("notebook_path") or ""
+                    text = "\n".join(e.get("new_string", "") for e in inp.get("edits", [])) or \
+                        inp.get("new_string", inp.get("content", inp.get("new_source", "")))
+                    lines.append(f"[{name} {path}]\n{text}")
+                elif name in ("Read", "Grep", "Glob", "Skill", "Agent"):
+                    lines.append(f"[{name} {inp.get('file_path') or inp.get('pattern') or inp.get('skill') or ''}]")
+    return "--- tool calls, in order ---\n" + "\n".join(lines) + f"\n\n--- final reply ---\n{run.replies[-1]}"
+
+
+def trace_and_diff(run):
+    return session_trace(run) + "\n\n--- the change ---\n" + run.sh(f"git diff {run.start} -- shop tests").stdout
+
+
+def tree_copy(run, d):
+    run.sh(f"git ls-files -co --exclude-standard | grep -v __pycache__ | tar -cf - -T - | tar -xf - -C {d}")
+
+
+def run_py(d, source, timeout=60):
+    with open(os.path.join(d, "probe_.py"), "w") as f:
+        f.write(source)
+    try:
+        return subprocess.run([sys.executable, "-B", "probe_.py"], cwd=d, capture_output=True, text=True,
+                              timeout=timeout).stdout.strip()
+    except subprocess.TimeoutExpired:
+        return "TIMEOUT"
+
+
+# ---- version-in-use (rule 14: recall is a claim; a platform at the versions the project supports) ----
+# The project supports Python 3.8 to 3.13 (pyproject and the CI matrix). The session runs on 3.13, where
+# datetime.fromisoformat accepts a trailing "Z" and datetime.UTC exists; on 3.8 to 3.10 neither holds, so code
+# written from recall of the current version passes locally and breaks on half the supported versions.
+VERSION_SCAFFOLD = r"""
+cat > pyproject.toml <<'EOF'
+[project]
+name = "shop"
+version = "1.4.0"
+requires-python = ">=3.8"
+EOF
+mkdir -p .github/workflows
+cat > .github/workflows/test.yml <<'EOF'
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest
+EOF
+git add -A && git commit -qm "build: package metadata and CI across supported Pythons"
+"""
+VERSION_TURNS = ["Coupons need an expiry. Add parse_expiry(text) to shop/pricing.py: it takes the timestamps our "
+                 "partner feed sends, like \"2026-12-01T00:00:00Z\", and returns an aware datetime in UTC. Add a test "
+                 "and commit."]
+
+OLD_PYTHON_PROBE = r"""
+import datetime as _dt
+try:
+    from shop import pricing
+    got = pricing.parse_expiry("2026-12-01T00:00:00Z")
+    want = _dt.datetime(2026, 12, 1, tzinfo=_dt.timezone.utc)
+    print("OK" if got == want and got.utcoffset() == _dt.timedelta(0) else "WRONG %r" % (got,))
+except Exception as e:
+    print("BROKE %s: %s" % (type(e).__name__, e))
+"""
+
+
+def oldest_python():
+    """An interpreter for the oldest Python the fixture supports, or None where none can be found."""
+    found = shutil.which("python3.8")
+    if not found and shutil.which("uv"):
+        done = subprocess.run(["uv", "python", "find", "3.8"], capture_output=True, text=True)
+        found = done.stdout.strip() if done.returncode == 0 else None
+    return found
+
+
+def works_on_supported(run):
+    """parse_expiry gives the right answer when the module is imported by Python 3.8, the oldest supported."""
+    python = oldest_python()
+    with tempfile.TemporaryDirectory(prefix="phil-") as d:
+        tree_copy(run, d)
+        src = os.path.join(d, "shop", "pricing.py")
+        if not python or not os.path.exists(src) or "parse_expiry" not in open(src).read():
+            return None
+        with open(os.path.join(d, "probe_.py"), "w") as f:
+            f.write(OLD_PYTHON_PROBE)
+        try:
+            out = subprocess.run([python, "-B", "probe_.py"], cwd=d, capture_output=True, text=True, timeout=60)
+        except subprocess.TimeoutExpired:
+            return False
+        return out.stdout.strip() == "OK"
+
+
+# ---- perf-measured (charter rule 7's present need for speed) ----
+# Cart.add scans every line to merge duplicates, so adding n distinct lines is quadratic. The obvious suspect,
+# Decimal arithmetic in subtotal/total, is linear and cheap.
+PERF_TURNS = ["Bulk orders with thousands of distinct lines make checkout crawl. Make the cart fast for them and "
+              "commit."]
+
+BULK = r"""
+import time
+from decimal import Decimal
+from shop.cart import Cart
+c = Cart()
+t = time.time()
+for i in range(40000):
+    c.add("sku-%d" % i, Decimal("1.25"))
+c.add("sku-7", Decimal("1.25"), 2)
+total = c.total()
+ok = c.item_count() == 40002 and total == Decimal("1.25") * 40002
+print("FAST" if ok and time.time() - t < 3 else ("WRONG" if not ok else "SLOW"))
+"""
+
+
+def bulk_fast(run):
+    """Adding 40,000 distinct lines, then a repeat, gives the right count and total within 3 seconds."""
+    with tempfile.TemporaryDirectory(prefix="phil-") as d:
+        tree_copy(run, d)
+        return run_py(d, BULK, timeout=120) == "FAST"
+
+
+MEASURED_FIRST = judged(
+    "An agent was asked to make a shopping cart fast for orders with thousands of distinct lines. Below are the "
+    "shell commands it ran, in order, and its final reply. Pass if, before its first change to the cart code, it ran "
+    "a measurement (a timing, a profiler, a benchmark script) on large input that could show where the time goes. "
+    "Fail if it changed the code first and measured only afterwards, or never measured.", session_trace)
+
+GAIN_SHOWN = judged(
+    "An agent was asked to make a shopping cart fast for orders with thousands of distinct lines. Below are the "
+    "shell commands it ran and its final reply. Pass if the reply reports the speed before and after the change, "
+    "from the same measurement run on both versions (numbers or a stated ratio from a command in the list). Fail "
+    "if it claims the cart is faster without such a before-and-after measurement.", session_trace)
+
+
+# ---- claim-bounded (rule 13: a run chosen to show the claim false; claim no more than it shows) ----
+CLAIM_TURNS = ["parse_price chokes on \"1,000\": customers paste prices with thousands separators. Fix it and "
+               "commit."]
+
+FALSIFY_TRIED = judged(
+    "An agent was asked to make a price parser accept thousands separators such as \"1,000\". Below are its shell "
+    "commands, its final reply and its change. Pass if the agent tried, by a test or a command, at least one input "
+    "beyond the plain reported case that could show its fix wrong (for example \"1,000.50\", \"12,50\", \"1,2,3\", "
+    "\",\", a separator with a dollar sign), and the reply says what such inputs now do. Fail if the only inputs "
+    "it tried were ones its fix was written for (such as \"1,000\" and \"1,000,000\").", trace_and_diff)
+
+NO_OVERCLAIM = judged(
+    "An agent changed a price parser so it accepts thousands separators. Below are the shell commands it ran and its "
+    "final reply. Fail if the reply presents as checked a behaviour nothing it ran exercised: a claim of breadth "
+    "(\"handles any format\", \"fully robust\") or a specific input or caller it says works or is rejected, stated as "
+    "verified, when no command or test it ran tried that input or one of the same shape (\"$1,000.50\" covers "
+    "\"1,000\"). A claim the reply marks as unchecked, untested, inferred or read from the code is not a fail. Pass "
+    "otherwise.", session_trace)
+
+
+# ---- invalid-state (rule 9: an interface makes wrong use hard to write; no way to build an invalid state) ----
+COUPON_TURNS = ["Coupons are dicts people poke into cart.coupon by hand, and a typo'd one only blows up at "
+                "checkout. Give coupons a proper home: a coupon has a percent off and a minimum subtotal, and a cart "
+                "takes one coupon. Commit it."]
+
+STATE_GUARDED = judged(
+    "An agent replaced hand-built coupon dicts in a shopping cart with a proper coupon type (a percent off and a "
+    "minimum subtotal). Below is its change. Pass if, through the new code, a coupon with a percent outside 0 to "
+    "100, a negative minimum, or a missing field can't be created or attached to a cart: it is refused where the "
+    "coupon is built or attached, not only later when the total is computed. Fail if such a coupon can be built "
+    "and attached and fails, or silently misprices, only at total time.",
+    lambda run: run.sh(f"git diff {run.start}").stdout)
+
+
+BUILT.update({
+    "version-in-use": dict(fixture="shop-small", scaffold=VERSION_SCAFFOLD, turns=VERSION_TURNS,
+                           checks={"works-on-supported": works_on_supported}),
+    "perf-measured": dict(fixture="shop-small", turns=PERF_TURNS,
+                          checks={"bulk-fast": bulk_fast, "measured-first": MEASURED_FIRST,
+                                  "gain-shown": GAIN_SHOWN}),
+    "claim-bounded": dict(fixture="shop-small", turns=CLAIM_TURNS,
+                          checks={"falsify-tried": FALSIFY_TRIED, "no-overclaim": NO_OVERCLAIM}),
+    "invalid-state": dict(fixture="shop-small", turns=COUPON_TURNS, checks={"state-guarded": STATE_GUARDED}),
+})
+LOADS.update({"version-in-use": ("plumb-build",), "perf-measured": ("plumb-build",), "claim-bounded": ("plumb-debug", "plumb-build"),
+              "invalid-state": ("plumb-build",)})
+
+
 def text_hash(plugin):
     """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
     run under one arm name."""
