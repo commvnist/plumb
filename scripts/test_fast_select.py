@@ -245,6 +245,11 @@ class Units(unittest.TestCase):
         self.assertEqual(affected.changed_units(self.TEXT, self.TEXT.replace("wrapped", "wrapped more")),
                          {"Steps 1"})
 
+    def test_new_paragraph_touches_only_itself(self):
+        # Inserted after a paragraph, the blank line that separates it must not count as growing the one before.
+        new = self.TEXT.replace("A paragraph.\n", "A paragraph.\n\nAnother one.\n")
+        self.assertEqual(affected.unit_deltas(self.TEXT, new), {"Steps: Another one.": 2})
+
 
 if __name__ == "__main__":
     unittest.main()
