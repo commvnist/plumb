@@ -13,8 +13,8 @@ ADR 10 lands text only with a case that fails without it, and ADR 12 caps a word
 Each change is gated by the question it raises:
 
 - **A rewording, addition or trim in text existing cases guard** is decided against main, as ADR 10 and the evals README's decision rule say.
-- **A new feature the operator asks for,** text main doesn't have and guarded by a case written for it, is gated on its own arm: each of its checks passes in at least two thirds of runs on each model (4 of 6 at the first stage), and the nearest existing cases (the same skill, the rules it leans on) hold against main as guards. Its cases aren't removed for passing on main; they are its baseline from the release it lands in. Its text that loads only when the feature is invoked (a skill's or agent's body) is exempt from ADR 12's word cap; text that loads in every session (a description, a hook's output) is not.
-- **New text no case guards** is reported as owed a case, under ADR 12.
+- **A new feature the operator asks for,** text main doesn't have and guarded by a case written for it, is gated on its own arm: each of its checks passes in at least two thirds of runs on each model (4 of 6 at the first stage; below that at any stage, it doesn't land as written), and the nearest existing cases (the same skill, the rules it leans on) hold against main as guards. Its cases aren't removed for passing on main; they are its baseline from the release it lands in. Its text that loads only when the feature is invoked (a skill's or agent's body) is exempt from ADR 12's word cap; text that loads in every session (a description, a hook's output) is not.
+- **New text no case guards** lands only under ADR 12's conditions, and is listed as owed a case.
 
 ## Consequences
 
