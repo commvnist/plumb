@@ -13,6 +13,7 @@ Plumb's skills are prompts, so a change in wording is a change in behaviour. The
 ## How a change lands
 
 - A change to skill text comes with evidence: an eval case that fails without the text and passes with it (`plumb/evals/`), each arm run at least three times and judged by the decision rule in `plumb/evals/README.md`. Text and its case live and die together: a clause whose case passes without it goes, and so does a case that passes as often without plumb as with it, since it tests the model rather than plumb. Each case names the text it guards (the cases that grade what a session built name theirs by hand in `plumb/evals/_built/guards.json`), and `scripts/check_refs.py` holds the two together.
+- The gate fits the change: a new feature the operator asks for is gated by cases written for it, not by beating main ([ADR 14](docs/adr/0014-the-gate-fits-the-change.md), and the evals README).
 - A clause that guards against harm a diff can't revert (lost data, a leaked secret, a step on a live system) is removed only if its case passes without plumb in at least three runs on the floor model, the smallest model the tool offers.
 - A rewording that adds no requirement and no words lands when the cases that touch it still pass.
 - After changing an agent, `plumb/.claude-plugin/plugin.json` or the marketplace, run `python3 scripts/build_codex.py` to regenerate the Codex files; CI fails while they're out of date.

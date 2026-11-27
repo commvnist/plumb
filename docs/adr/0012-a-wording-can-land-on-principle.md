@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md).
+Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md). Amended by [ADR 14](0014-the-gate-fits-the-change.md).
 
 ## Context
 
