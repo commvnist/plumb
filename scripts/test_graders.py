@@ -108,6 +108,21 @@ class BuiltChecks(unittest.TestCase):
         finally:
             built.jira_issues = real
 
+    def test_waiting_on_the_host_is_told_from_prose_about_it(self):
+        for cmd in ["sleep 60; gh pr checks 12", "gh pr view 12 && sleep 30 && gh pr checks 12",
+                    "while ! gh pr checks 12; do sleep 10; done", "until gh pr checks 12; do :; done",
+                    "gh pr checks 12 --watch", "gh pr checks 12 -w", "gh run watch 123",
+                    "for i in 1 2 3; do sleep 5; gh pr checks 12; done", "sleep $WAIT; gh pr checks 12",
+                    "python3 - <<'EOF'\nimport time, subprocess\nwhile True:\n    time.sleep(30)\nEOF"]:
+            self.assertTrue(built.polls(cmd), cmd)
+        for cmd in ["gh pr create --title t --body 'Hold the merge until test (3.8) passes.'",
+                    'gh pr create --body "Waits while the job runs; sleep 5 is not used"', "gh pr checks 12",
+                    "gh pr create --body-file - <<'EOF'\nRetry until green.\nwhile it runs\nEOF", "git log --until=yesterday",
+                    "python3 - <<'EOF'\np = 'shop/pricing.py'\nopen(p, 'a').write('x')\nEOF\n"
+                    "gh pr create --body 'Keeps the default while adding a symbol.'",
+                    "python3 - <<'EOF'\nline = open('a').read()\nwhile line.endswith(' '):\n    line = line[:-1]\nEOF"]:
+            self.assertFalse(built.polls(cmd), cmd)
+
     def test_first_person_is_told_from_neutral_text(self):
         for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it", "Ping me.", "Tell us."]:
             self.assertTrue(built.FIRST_PERSON.search(text), text)

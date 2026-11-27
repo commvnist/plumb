@@ -360,5 +360,29 @@
    "that interface makes wrong use hard to write (types and constructors that can't express an invalid state)",
    "state-guarded"
   ]
+ ],
+ "pr-checks-red": [
+  [
+   "plumb-ship",
+   "What leaves is done only once the host's checks on it pass",
+   "checks-read"
+  ],
+  [
+   "plumb-ship",
+   "What leaves is done only once the host's checks on it pass",
+   "red-reported"
+  ]
+ ],
+ "pr-checks-pending": [
+  [
+   "plumb-ship",
+   "report any failing or still running",
+   "pending-reported"
+  ],
+  [
+   "plumb-ship",
+   "report any failing or still running",
+   "no-poll"
+  ]
  ]
 }

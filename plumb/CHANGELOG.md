@@ -2,6 +2,11 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Added
+- Pushed work isn't reported done while the host's checks on it fail: after each push, plumb-ship reads them and reports any failing or still running, without waiting on them.
+
 ## 0.37.0
 
 ### Added

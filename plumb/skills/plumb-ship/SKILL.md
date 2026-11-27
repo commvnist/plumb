@@ -9,6 +9,8 @@ Never commit, push, open a pull request, merge or deploy without an instruction 
 
 Ship only what the project's checks have passed on as it stands. If one fails, don't ship: report it and ask before changing code you didn't write. Deploy only with a way back for everything it changes, stored data included (or a yes for a step with none), recorded where the project keeps what shipped; name first what shows failure, release to the smallest share the deploy allows, and at that sign go back first, under the same instruction.
 
+What leaves is done only once the host's checks on it pass: after each push, read them and report any failing or still running, without waiting on them.
+
 ## Commits and branches
 
 One logical change per commit, holding only files the change wrote, staged by name, always in Conventional Commits: `<type>(<scope>)<! if breaking>: <subject>`, the subject an imperative that reads whole in a one-line log (never "fix bug"), type one of `feat`, `fix`, `perf`, `refactor`, `style`, `test`, `docs`, `build`, `ci`, `chore`, `revert`. What the history's own format carries, such as a ticket id, goes in the scope or a footer.

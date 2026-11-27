@@ -123,10 +123,14 @@ def unit_deltas(old, new):
     old_spans, new_spans = units(old), units(new)
     deltas = {}
 
-    def labels(spans, a, b):
+    def labels(spans, a, b, lines):
         found = []
-        # An insertion between units touches the unit it lands in, or the one just before it.
-        for n in range(a, max(b, a + 1)):
+        # An insertion between units touches the unit it lands in, or the one just before it; a blank line the
+        # insertion brings only separates units, so it touches the one before it only when nothing else changed.
+        span = range(a, max(b, a + 1))
+        if any(n < len(lines) and lines[n].strip() for n in span):
+            span = [n for n in span if lines[n].strip()]
+        for n in span:
             u = unit_of(spans, n) or unit_of(spans, n - 1)
             if u and not u[0].startswith("heading") and u[0] not in found:
                 found.append(u[0])
@@ -139,8 +143,10 @@ def unit_deltas(old, new):
                   if tag == "replace" and i2 - i1 == j2 - j1 else [(i1, i2, j1, j2)])
         for a, b, c, d in pieces:
             delta = len(" ".join(new_lines[c:d]).split()) - len(" ".join(old_lines[a:b]).split())
-            gets = labels(new_spans, c, d) if d > c else labels(old_spans, a, b)
-            for label in labels(old_spans, a, b) + labels(new_spans, c, d):
+            gets = labels(new_spans, c, d, new_lines) if d > c else labels(old_spans, a, b, old_lines)
+            # A pure insertion sits wholly in the new text's units; the old side has nothing of it to name.
+            touched = (labels(old_spans, a, b, old_lines) if b > a else []) + labels(new_spans, c, d, new_lines)
+            for label in touched:
                 deltas.setdefault(label, 0)
             for label in gets:
                 deltas[label] += delta
