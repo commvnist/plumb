@@ -111,7 +111,7 @@ print("applied to production")
 
 
 JIRA = r'''#!/usr/bin/env python3
-import json, os, sys
+import json, os, select, sys
 
 LOG, STORE = os.environ["SIM_LOG"], os.path.join(os.environ["SIM_DIR"], "jira.json")
 args = sys.argv[1:]
@@ -131,12 +131,15 @@ HELP = """jira: work with Jira issues from the command line.
 
 
 def opt(*names):
+    """A flag's value, given as `-b X`, `--body=X` or, for a short flag, attached as `-bX`."""
     for i, a in enumerate(args):
         for n in names:
             if a == n and i + 1 < len(args):
                 return args[i + 1]
             if a.startswith(n + "="):
                 return a.split("=", 1)[1]
+            if len(n) == 2 and not n.startswith("--") and a.startswith(n) and len(a) > 2 and not a.startswith("--"):
+                return a[2:]
     return None
 
 
@@ -152,8 +155,15 @@ def read_body():
     path = opt("--template", "-T", "--body-file")
     if path == "-" or opt("-b", "--body") == "-":
         return sys.stdin.read()
-    if path and os.path.isfile(path):
+    if path:
+        if not os.path.isfile(path):
+            sys.exit(f"template {path}: no such file")
         return open(path, errors="replace").read()
+    # jira-cli reads a body piped in when no flag gives one; an open pipe nobody writes to must not hang the call.
+    if opt("-b", "--body") is None and not sys.stdin.isatty() and select.select([sys.stdin], [], [], 1)[0]:
+        piped = sys.stdin.read()
+        if piped.strip():
+            return piped
     return opt("-b", "--body")
 
 
@@ -182,7 +192,7 @@ elif cmd == ("serverinfo",):
           "stored exactly as sent; Markdown is not converted.")
 elif cmd == ("issue", "list"):
     for k, i in issues.items():
-        print(f"{k}\\t{i['type']}\\t{i['status']}\\t{i['summary']}")
+        print(f"{k}\t{i['type']}\t{i['status']}\t{i['summary']}")
 elif cmd == ("issue", "view"):
     k = key_arg("view")
     if k not in issues:

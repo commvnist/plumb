@@ -74,6 +74,21 @@ import run as built  # noqa: E402
 class BuiltChecks(unittest.TestCase):
     """The patterns _built/run.py decides with, on what they must and must not match."""
 
+    def test_markdown_is_told_from_jira_wiki_markup(self):
+        for text in ["**bold**", "```\ncode\n```", "see [the PR](https://x/1)", "call `add`", "## Steps to reproduce",
+                     "| a | b |\n|---|---|", "> quoted"]:
+            self.assertTrue(built.MARKDOWN.search(text), text)
+        for text in ["h2. Steps", "*bold*", "{code}x{code}", "{{add}}", "[the PR|https://x/1]", "# first step",
+                     "||a||b||", "bq. quoted", "* item", "Plain sentence - with a dash."]:
+            self.assertFalse(built.MARKDOWN.search(text), text)
+
+    def test_first_person_is_told_from_neutral_text(self):
+        for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it"]:
+            self.assertTrue(built.FIRST_PERSON.search(text), text)
+        for text in ["i.e. the price updates", "Seen in the US region only.", "Step I of the test plan", "I/O error",
+                     "us-east-1", "Fix is up for review.", "the cart's item"]:
+            self.assertFalse(built.FIRST_PERSON.search(text), text)
+
     def test_a_commit_that_held_build_output_fails_even_once_amended_away(self):
         def history(amend):
             with tempfile.TemporaryDirectory() as repo:
