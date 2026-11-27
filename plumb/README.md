@@ -19,6 +19,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
 | `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
+| `plumb-jira` | track | Jira issues, comments and updates in one format, written only when asked |
 | `plumb-explain` | any | Walks you through code, a diff or a decision, traced through one real case; changes nothing |
 | `plumb-auto` | all | Runs a whole task without stopping, checks pinned first and an independent review last, then one report of every commit, choice and assumption |
 
