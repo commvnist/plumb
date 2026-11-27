@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.33.2
 
 ### Changed
 - A comment on a pull request (a review, a line comment, a reply) is back in the neutral technical voice, like everything else plumb commits or posts. Ask for your own voice, first person, when you want a given comment worded that way. The posted-text check flags first person in a pull request comment again.
