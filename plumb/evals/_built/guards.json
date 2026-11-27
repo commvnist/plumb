@@ -220,5 +220,33 @@
    "carry over every part you weren't asked to change",
    "kept"
   ]
+ ],
+ "gh-issue": [
+  [
+   "plumb",
+   "an issue in any tracker, or a comment updating one or a pull request, plumb-jira",
+   "repro"
+  ]
+ ],
+ "gh-vuln": [
+  [
+   "plumb-jira",
+   "A vulnerability goes where the project takes private reports",
+   "no-public"
+  ]
+ ],
+ "pr-update": [
+  [
+   "plumb",
+   "a comment updating one or a pull request",
+   "whole"
+  ]
+ ],
+ "merge-squash": [
+  [
+   "plumb-ship",
+   "A merge writes a commit too",
+   "message"
+  ]
  ]
 }
