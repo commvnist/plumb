@@ -1042,14 +1042,13 @@ def jira_markup(run):
 # Whole words; I only as a capital standing alone (not "i.e." or a roman numeral after "Step"), and us only in
 # lower case, so "the US region" passes.
 FIRST_PERSON = re.compile(r"(?<![\w/@'.-])(?:(?<!Step )(?<!Phase )I(?:'m|'ve|'ll|'d)?|[Mm]e|[Mm]y|[Mm]ine|[Ww]e|"
-                          r"[Ww]e're|[Ww]e've|us|[Oo]ur|[Oo]urs)(?![\w/'.-])")
+                          r"[Ww]e're|[Ww]e've|us|[Oo]ur|[Oo]urs)(?![\w/'-]|\.\w)")
 
 
 def jira_neutral(run):
     """Nothing the session wrote to Jira is in the first person (charter rule 19)."""
     texts = [" ".join(c["args"]) + "\n" + (c.get("body") or "") for c in jira_writes(run)]
     return None if not texts else not any(FIRST_PERSON.search(t) for t in texts)
-
 
 
 def created_issue(run):

@@ -83,10 +83,10 @@ class BuiltChecks(unittest.TestCase):
             self.assertFalse(built.MARKDOWN.search(text), text)
 
     def test_first_person_is_told_from_neutral_text(self):
-        for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it"]:
+        for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it", "Ping me.", "Tell us."]:
             self.assertTrue(built.FIRST_PERSON.search(text), text)
         for text in ["i.e. the price updates", "Seen in the US region only.", "Step I of the test plan", "I/O error",
-                     "us-east-1", "Fix is up for review.", "the cart's item"]:
+                     "us-east-1", "Fix is up for review.", "the cart's item", "I.e. the price", "Step I. Add item"]:
             self.assertFalse(built.FIRST_PERSON.search(text), text)
 
     def test_a_commit_that_held_build_output_fails_even_once_amended_away(self):

@@ -157,6 +157,8 @@ def read_body():
         return sys.stdin.read()
     if path:
         if not os.path.isfile(path):
+            with open(LOG, "a") as f:  # the attempt is logged, though nothing is sent
+                f.write(json.dumps({"tool": "jira", "args": args, "write": False, "refused": "no such template"}) + "\n")
             sys.exit(f"template {path}: no such file")
         return open(path, errors="replace").read()
     # jira-cli reads a body piped in when no flag gives one; an open pipe nobody writes to must not hang the call.
