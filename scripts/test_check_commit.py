@@ -135,7 +135,7 @@ class CheckCommit(unittest.TestCase):
     def test_flags_pull_request_text_crediting_ai_or_in_the_first_person(self):
         cases = [
             ('gh pr create --title "feat: add tax" --body "Adds tax.\n\nGenerated with Claude Code"', "credits an AI tool"),
-            ('gh pr comment 4 --body "I fixed the rounding."', None),
+            ('gh pr comment 4 --body "I fixed the rounding."', "first person"),
             ('gh pr comment 4 --body "Fixed the rounding.\n\nGenerated with Claude Code"', "credits an AI tool"),
             ('gh issue create --title "Rounding is off" --body "Steps: add 2.345"', None),
         ]
@@ -198,15 +198,12 @@ class CheckCommit(unittest.TestCase):
             f.write("Adds tax.\n\nGenerated with Claude Code\n")
         cases = [
             ("gh api repos/o/r/pulls -f title='feat: tax' -f body='I added tax.'", "first person"),
-            ('gh pr review 4 --comment --body "We should round later."', None),
-            ("gh api repos/o/r/pulls/4/comments -f body='I think this drops the last cent.'", None),
-            ("gh api repos/o/r/pulls/4/reviews -f event=COMMENT -f body='My only worry is the rounding.'", None),
-            ("gh api repos/o/r/pulls/comments/9/replies -f body='I moved it, thanks.'", None),
+            ('gh pr review 4 --comment --body "We should round later."', "first person"),
+            ("gh api repos/o/r/pulls/4/comments -f body='I think this drops the last cent.'", "first person"),
+            ("gh api repos/o/r/pulls/4/reviews -f event=COMMENT -f body='My only worry is the rounding.'", "first person"),
+            ("gh api repos/o/r/pulls/comments/9/replies -f body='I moved it, thanks.'", "first person"),
             ('gh issue comment 4 --body "I can reproduce this."', "first person"),
             ('gh pr edit 4 --body "I reworked the rounding."', "first person"),
-            ('gh pr create --title "feat: x" --body "I added this. Reply with gh pr comment if needed."', "first person"),
-            ('gh pr comment 4 --body "ok" && gh pr edit 4 --body "I reworked the rounding."', "first person"),
-            ("gh api repos/o/r/pulls -f title=x -f body='I added it; see pulls/4/comments'", "first person"),
             ('bash -c \'gh pr create --title feat --body "I added tax."\'', "first person"),
             ('gh pr merge 4 --squash --body "Merged after I checked it."', "first person"),
             ("gh pr create --title 'feat: tax' --body-file body.md", "credits an AI tool"),

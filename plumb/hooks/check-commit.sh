@@ -3,8 +3,7 @@
 # message, so this catches a commit just made whose subject isn't Conventional
 # Commits, that credits an AI tool, is in the first person, has no body or skipped
 # the project's hooks, and asks the agent to fix it while it's still unpushed and
-# cheap. Pull request, review and issue text posted with gh is held to the same voice, except that a comment
-# on a pull request may speak in the first person, as the operator would.
+# cheap. Pull request, review and issue text posted with gh is held to the same voice.
 input=$(cat)
 
 # Only the command counts: a command's output can mention commits too.
@@ -72,16 +71,8 @@ if printf '%s' "$unheredoc" | grep -Eq '(^|[^[:alnum:]_-]|\\n)gh[[:space:]]+((pr
     && note="$note The body is empty, so the post is blank; if it replaced text, restore that from the live version's history."
   printf '%s\n' "$posted" | grep -Eiq "$CREDIT" \
     && note="$note It credits an AI tool; remove that, as charter rule 19 says, unless the operator or the project's rules asked for it."
-  # A comment on a pull request (a review, a line comment, a reply) speaks in the operator's own voice, so
-  # first person is theirs to use there; a description, title, merge body or issue stays impersonal.
-  # Decided on the command's skeleton (quoted text gone, one command per line), so a body that only mentions
-  # gh pr comment, or a description posted alongside a comment, is still checked; a gh inside quotes
-  # (bash -c '...') leaves no posting command in the skeleton, so it is checked too.
-  posts=$(printf '%s\n' "$skeleton" | grep -E '(^|[^[:alnum:]_-])gh[[:space:]]+((pr|issue)[[:space:]]+(create|edit|comment|review|merge)|api[[:space:]])')
-  if [ -z "$posts" ] || printf '%s\n' "$posts" | grep -Evq '(^|[^[:alnum:]_-])gh[[:space:]]+(pr[[:space:]]+(comment|review)|api[[:space:]][^;&|]*pulls/([0-9]+/)?(comments|reviews))'; then
-    printf '%s\n' "$posted" | grep -Eq "$FIRST" \
-      && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."
-  fi
+  printf '%s\n' "$posted" | grep -Eq "$FIRST" \
+    && note="$note It is written in the first person; reword it in a neutral technical voice, as charter rule 19 says, unless the operator asked for or approved this wording."
   # The post is already on a shared system, so a correction to it is the operator's call (charter rule 2).
   [ -n "$note" ] && say "plumb: check the text just posted.$note If it needs changing, show the operator the corrected text and edit the post only with their yes."
   exit 0
