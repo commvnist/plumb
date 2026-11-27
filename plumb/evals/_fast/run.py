@@ -12,8 +12,8 @@ text is unchanged: a wording gated after another on the same main pays only for 
 definition changed since its baseline was recorded is run on both arms again.
 
 Each stage is one call: run at 6, read the verdicts, and call again with --runs 18 (the extra runs are added
-to the earlier ones) where gate.py says to run on. The verdicts follow plumb/evals/README.md: deciding cases
-by the decision rule, guard cases by gate.py --guard. Nothing here changes the bar a wording must clear; it
+to the earlier ones) where gate.py says to run on. The verdicts follow plumb/evals/README.md: feature cases
+on the new arm alone, held and guard cases by gate.py --guard. Nothing here changes the bar a wording must clear; it
 changes which cases are asked.
 
 --dry-run prints the selection and the number of agent sessions it would start, and starts none; with --judge it
@@ -101,7 +101,8 @@ def case_hash(case):
     else:
         paths = sorted(p for p in glob.glob(os.path.join(EVALS, case, "**", "*"), recursive=True) if os.path.isfile(p))
     for path in paths + [os.path.join(EVALS, p) for p in SHARED]:
-        h.update(os.path.relpath(path, EVALS).encode() + b"\0" + open(path, "rb").read())
+        with open(path, "rb") as f:
+            h.update(os.path.relpath(path, EVALS).encode() + b"\0" + f.read())
     return h.hexdigest()[:12]
 
 
@@ -214,7 +215,7 @@ def main():
     for c in selected:
         print(f"  {c:28} {s['why'][c]}")
     for unit in s["owed"]:
-        print(f"owed a case: {unit} adds text no case guards; write a case for it that guards its words")
+        print(f"owed a case: {unit} adds text no case written for it guards; write one that guards its words")
     if s["full"]:
         print(f"full suite: {s['full_why']}: run every case (claude plugin eval and _built/run.py) instead")
         sys.exit(1 if failed else 0)
@@ -283,9 +284,12 @@ def main():
         print(f"\nresults in {os.path.relpath(a.out, ROOT)}/results.json; the agent sessions this call ran cost "
               f"${spent:.2f}, judges not counted")
         print("feature cases (new arm alone):\n" + accept([r for r in records if r["case"] in s["feature"]], models))
-        print("addition cases (must beat main):\n" + gate([r for r in records if r["case"] in s["decide"]], False))
         print("held cases (must hold against main):\n"
               + gate([r for r in records if r["case"] in s["hold"] + s["guard"]], True))
+        if s["reworded"]:
+            print("reworded cases as a decision (read only for a rewording meant to change what they grade, which "
+                  "must beat main; any other rewording or trim needs only to hold):\n"
+                  + gate([r for r in records if r["case"] in s["reworded"]], False))
         fell = []
         for model in models if s["routing"] else []:
             new_pass = routing(PLUGIN, model, s["routing"], os.path.join(a.out, "routing-new"))

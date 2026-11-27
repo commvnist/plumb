@@ -38,7 +38,7 @@ def selection(*edits):
 
 
 def picked(s):
-    return set(s["feature"]) | set(s["decide"]) | set(s["hold"]) | set(s["guard"])
+    return set(s["feature"]) | set(s["hold"]) | set(s["guard"])
 
 
 class Replays(unittest.TestCase):
@@ -88,7 +88,7 @@ class Replays(unittest.TestCase):
 class Selection(unittest.TestCase):
     def test_no_change_selects_nothing(self):
         s = affected.select(MAIN, MAIN, CASES, PROBES)
-        self.assertEqual((s["decide"], s["guard"], s["routing"], s["full"]), ([], [], [], False))
+        self.assertEqual((s["guard"], s["routing"], s["full"]), ([], [], False))
 
     def test_charter_rule_selects_its_cases_not_every_case(self):
         s = selection(("plumb", "5. **Take the first rung that works:**", "5. **Take the lowest rung that works:**"))
@@ -111,16 +111,29 @@ class Selection(unittest.TestCase):
     def test_removed_guarded_phrase_must_hold(self):
         s = selection(("plumb-debug", " an intermittent one by forcing its cause", ""))
         self.assertIn("bf-small-flaky", s["hold"])
+        self.assertIn("bf-small-flaky", s["reworded"])
 
 
 class ChangeType(unittest.TestCase):
-    """The gate fits the change: a rewording holds, an addition to covered text beats main, new text is judged
-    by a case written for it, and new text with no case is owed one."""
+    """The gate fits the change: existing cases hold against main, new or grown text is judged by a case written
+    for it, and new or grown text with none is owed one (ADR 16)."""
 
-    def test_addition_to_covered_text_decides(self):
+    def test_addition_to_covered_text_holds_and_is_owed_a_case(self):
+        # The existing case was built for other text: it shows no regression, never whether the addition works.
         s = selection(("plumb-debug", "1. **Reproduce** the exact error;", "1. **Reproduce** the exact error, "
                        "from the reporter's own steps;"))
-        self.assertIn("bf-small-flaky", s["decide"])
+        self.assertIn("bf-small-flaky", s["hold"])
+        self.assertNotIn("bf-small-flaky", s["reworded"])
+        self.assertEqual(s["owed"], ["plumb-debug Steps 1"])
+
+    def test_addition_to_covered_text_with_its_own_case_is_a_feature(self):
+        new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].replace(
+            "1. **Reproduce** the exact error;", "1. **Reproduce** the exact error, from the reporter's own steps;")})
+        cases = dict(CASES, **{"_built/steps": {"kind": "built", "loads": {"plumb-debug"}, "tags": [],
+                                                 "guards": [("plumb-debug", "from the reporter's own steps")]}})
+        s = affected.select(MAIN, new, cases, PROBES, old_cases=set(CASES))
+        self.assertEqual(s["feature"], ["_built/steps"])
+        self.assertIn("bf-small-flaky", s["hold"])
         self.assertEqual(s["owed"], [])
 
     def test_new_text_with_its_own_case_is_a_feature(self):
@@ -147,15 +160,16 @@ class ChangeType(unittest.TestCase):
         s = selection(("plumb-review", "- **Verdict:** approve | approve with suggestions | request changes,",
                        "- **Verdict:** approve, approve with suggestions or request changes,"))
         self.assertIn("_built/review-scope", s["hold"])
-        self.assertEqual(s["decide"] + s["owed"], [])
+        self.assertEqual(s["owed"], [])
 
-    def test_addition_next_to_a_larger_cut_still_decides(self):
+    def test_addition_next_to_a_larger_cut_is_still_owed(self):
         # Adjacent numbered steps form one hunk; the addition to one isn't netted against the cut to the other.
         s = selection(("plumb-debug", "fails before the fix on every run.",
                        "fails before the fix on every run, and name the break it catches."),
                       ("plumb-debug", "5. **Fix at the origin** with the smallest diff, never a suppression.",
                        "5. **Fix at the origin.**"))
-        self.assertIn("_built/flaky-commit", s["decide"])
+        self.assertIn("_built/flaky-commit", s["hold"])
+        self.assertEqual(s["owed"], ["plumb-debug Steps 4"])
 
     def test_new_case_on_unchanged_length_text_holds(self):
         # A case added for a rewording has no addition to show; it holds against main like any rewording's case.
@@ -170,7 +184,7 @@ class ChangeType(unittest.TestCase):
         new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].rstrip("\n") + "\n" + step + "\n"})
         s = affected.select(MAIN, new, CASES, PROBES)
         self.assertEqual(s["owed"], ["plumb-debug Steps 8"])
-        self.assertEqual(s["feature"] + s["decide"], [])
+        self.assertEqual(s["feature"], [])
 
     def test_section_reference_links_every_unit_under_it(self):
         text = "---\nname: plumb-a\n---\n\nUse plumb-b's \"Output\" here.\n"

@@ -50,7 +50,7 @@ PROBES = {
  "explain-ownership": (O, "", "How do the ownership checks work in this service?", ["explain"], ["audit","review"]),
  "ship-commit": (S, DIRTY_S, "Commit this.", ["ship"], ["build","review"]),
  "ship-notes": (O, "", "Write release notes for the last three commits.", ["ship"], ["review","explain"]),
- "ship-pr": (S, "git checkout -qb feat/cents && " + DIRTY_S + " && git commit -qam 'feat: add cents'", "Write the PR description for this branch.", ["ship"], ["review"]),
+ "ship-pr": (S, "git checkout -qb feat/cents && " + DIRTY_S + " && git commit -qam 'feat: add cents'", "Write the PR description for this branch.", ["ship"], ["review","jira"]),
  "auto-away": (S, "", "Add a format_euro function to shop/pricing.py with tests. I'm heading out for the day, so just get it done without checking in.", ["auto"], ["plan"]),
  "auto-oneshot": (O, "", "One-shot this: add a handler that lets a customer cancel an order that hasn't shipped.", ["auto"], []),
  "auto-not-e2e": (S, "", "Fix the crash in parse_price for inputs like 1,200.50 end to end, including tests.", ["debug"], ["auto"]),
@@ -69,6 +69,9 @@ PROBES.update({
  "ship-bump": (S, "", "Bump the version to 1.2.0.", ["ship"], ["build"]),
  "auto-trust": (O, "", "Take it from here and finish it yourself: add an endpoint that exports a customer's orders as CSV.", ["auto"], ["plan"]),
  "auto-e2e-feature": (S, "", "Build a split_bill(amount, people) helper end to end, tests included.", ["build"], ["auto"]),
+ "jira-bug": (S, "", "File a bug for the parse_price crash on prices like 1,200.50.", ["jira"], ["build","ship","debug"]),
+ "jira-issue": (S, "", "Open a GitHub issue asking for multi-currency support.", ["jira"], ["plan","build"]),
+ "jira-update": (S, "", "Post an update on PROJ-42 saying the coupon minimum fix is merged.", ["jira"], ["ship"]),
 })
 
 
