@@ -1293,6 +1293,9 @@ LOADS = {
     "carry-on": ("plumb-plan", "plumb-auto", "plumb-build", "plumb-ship", "plumb-refactor", "plumb-review", "plumb-reviewer"),
     "review-render": ("plumb-review",), "debug-base": ("plumb-debug",), "review-voice": ("plumb-review",),
     "review-post": ("plumb-review",),
+    # Added after those runs, named from their requests:
+    "review-voice-asked": ("plumb-review",), "jira-bug": ("plumb-jira",), "jira-edit": ("plumb-jira",),
+    "jira-update": ("plumb-jira",),
 }
 
 

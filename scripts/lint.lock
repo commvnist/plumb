@@ -1,11 +1,12 @@
 {
  "words": {
-  "skills/plumb/SKILL.md": 1483,
+  "skills/plumb/SKILL.md": 1439,
   "skills/plumb-audit/SKILL.md": 238,
   "skills/plumb-auto/SKILL.md": 460,
   "skills/plumb-build/SKILL.md": 153,
   "skills/plumb-debug/SKILL.md": 187,
   "skills/plumb-explain/SKILL.md": 141,
+  "skills/plumb-jira/SKILL.md": 443,
   "skills/plumb-plan/SKILL.md": 314,
   "skills/plumb-refactor/SKILL.md": 139,
   "skills/plumb-review/SKILL.md": 259,
@@ -16,7 +17,7 @@
   "agents/plumb-scout.md": 75,
   "hooks/session-start.md": 82,
   "hooks/user-prompt.md": 28,
-  "always loaded": 670
+  "always loaded": 721
  },
  "repeats": {
   "- **verified ** <command> <result> unchecked <what the": [

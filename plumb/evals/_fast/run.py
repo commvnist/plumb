@@ -39,6 +39,8 @@ STATIC = [["python3", "scripts/lint_skills.py"], ["python3", "scripts/check_refs
           ["python3", "plumb/evals/_fixtures/write_cases.py", "--check"], ["python3", "scripts/test_lint_skills.py"],
           ["python3", "scripts/test_fast_select.py"],
           ["python3", "scripts/test_graders.py"]]
+# A feature's case passes in at least this share of runs on each model, from the first stage of runs (ADR 14).
+ACCEPT, FIRST_STAGE = 2 / 3, 6
 SUITE_TOOLS = ["Bash", "Read", "Write", "Edit", "Glob", "Grep", "Skill"]
 
 
@@ -158,6 +160,26 @@ def baseline_path(root, text, model, judge, case):
     return os.path.join(root, text, f"{model}--{judge}", case.replace("/", "__") + ".json")
 
 
+def accept(records):
+    """Whether a feature does what it promises: each check passes in at least ACCEPT of measured runs on each
+    model, with at least a first stage of runs."""
+    rows = {}
+    for r in records:
+        if r["arm"] == "new":
+            for check, ok in r["checks"].items():
+                if ok is not None:
+                    rows.setdefault((r["case"], check), {}).setdefault(r["model"], []).append(ok)
+    lines = []
+    for (case, check), by_model in sorted(rows.items()):
+        cells = [f"{m}: {sum(v)}/{len(v)}" for m, v in sorted(by_model.items())]
+        short = min(len(v) for v in by_model.values()) < FIRST_STAGE
+        ok = all(sum(v) >= ACCEPT * len(v) for v in by_model.values())
+        verdict = (f"run each model to {FIRST_STAGE}" if short else "does what it promises" if ok else
+                   "falls short: below two thirds of runs")
+        lines.append(f"{case:28} {check:18} {verdict}\n{'':48}" + "; ".join(cells))
+    return "\n".join(lines) + "\n"
+
+
 def gate(records, as_guard):
     if not records:
         return ""
@@ -186,10 +208,13 @@ def main():
     failed = static()
     s = affected.select(affected.read_tree(a.base), affected.read_tree(), affected.load_cases(),
                         affected.routing_probes(), a.full)
-    selected = s["decide"] + s["guard"]
-    print(f"\ndecide {len(s['decide'])}, guard {len(s['guard'])}, routing {len(s['routing'])} ({s['routing_why']})")
+    selected = [c for tier in affected.RANK for c in s[tier]]
+    print("\n" + ", ".join(f"{tier} {len(s[tier])}" for tier in affected.RANK)
+          + f", routing {len(s['routing'])} ({s['routing_why']})")
     for c in selected:
         print(f"  {c:28} {s['why'][c]}")
+    for unit in s["owed"]:
+        print(f"owed a case: {unit} adds text no case guards; write a case for it that guards its words")
     if s["full"]:
         print(f"full suite: {s['full_why']}: run every case (claude plugin eval and _built/run.py) instead")
         sys.exit(1 if failed else 0)
@@ -212,7 +237,9 @@ def main():
                     kept = json.load(open(path))
                     if kept["case_hash"] == hashes[c]:
                         have[("main", m, c)] = kept["records"]
-        need = {(arm, m, c): max(0, a.runs - len(have.get((arm, m, c), [])))
+        # A feature's cases were written for text main lacks, so main has nothing to show on them.
+        need = {(arm, m, c): 0 if arm == "main" and c in s["feature"] else
+                max(0, a.runs - len(have.get((arm, m, c), [])))
                 for arm in texts for m in models for c in selected}
         print(f"{sum(need.values())} case sessions to run ({sum(len(v) for v in have.values())} earlier runs "
               f"reused) and {len(s['routing']) * len(models)} routing sessions")
@@ -244,7 +271,7 @@ def main():
                         spent += r.get("cost", 0)
                     records += got
                 if arm == "main":
-                    for c in selected:
+                    for c in [c for c in selected if c not in s["feature"]]:
                         path = baseline_path(a.baseline, texts["main"], model, a.judge, c)
                         os.makedirs(os.path.dirname(path), exist_ok=True)
                         with open(path, "w") as f:
@@ -255,8 +282,10 @@ def main():
             json.dump(records, f, indent=1)
         print(f"\nresults in {os.path.relpath(a.out, ROOT)}/results.json; the agent sessions this call ran cost "
               f"${spent:.2f}, judges not counted")
-        print("deciding cases:\n" + gate([r for r in records if r["case"] in s["decide"]], False))
-        print("guard cases:\n" + gate([r for r in records if r["case"] in s["guard"]], True))
+        print("feature cases (new arm alone):\n" + accept([r for r in records if r["case"] in s["feature"]]))
+        print("addition cases (must beat main):\n" + gate([r for r in records if r["case"] in s["decide"]], False))
+        print("held cases (must hold against main):\n"
+              + gate([r for r in records if r["case"] in s["hold"] + s["guard"]], True))
         fell = []
         for model in models if s["routing"] else []:
             new_pass = routing(PLUGIN, model, s["routing"], os.path.join(a.out, "routing-new"))

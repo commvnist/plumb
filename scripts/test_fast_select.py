@@ -38,7 +38,7 @@ def selection(*edits):
 
 
 def picked(s):
-    return set(s["decide"]) | set(s["guard"])
+    return set(s["feature"]) | set(s["decide"]) | set(s["hold"]) | set(s["guard"])
 
 
 class Replays(unittest.TestCase):
@@ -59,7 +59,7 @@ class Replays(unittest.TestCase):
         # Consistency pass, 2026-11-26: bf-medium-auto Sonnet reviewer 11/18 -> 4/18.
         s = selection(("plumb-auto", ", since an author can't see past their own assumptions", ""),
                       ("plumb-auto", ", and leaves a record they can check every choice against", ""))
-        self.assertIn("bf-medium-auto", s["decide"])
+        self.assertIn("bf-medium-auto", s["hold"])
         self.assertIn("bf-small-route-away", picked(s))
         self.assertIn("auto-away", s["routing"])
 
@@ -92,7 +92,7 @@ class Selection(unittest.TestCase):
 
     def test_charter_rule_selects_its_cases_not_every_case(self):
         s = selection(("plumb", "5. **Take the first rung that works:**", "5. **Take the lowest rung that works:**"))
-        self.assertIn("bf-large-reuse", s["decide"])
+        self.assertIn("bf-large-reuse", s["hold"])
         self.assertLess(len(picked(s)), len(CASES) / 4)
         self.assertEqual(s["routing"], [])
 
@@ -108,9 +108,37 @@ class Selection(unittest.TestCase):
         self.assertEqual(s["added"], ["plumb-jira"])
         self.assertEqual(len(s["routing"]), len(PROBES))
 
-    def test_removed_guarded_phrase_decides(self):
+    def test_removed_guarded_phrase_must_hold(self):
         s = selection(("plumb-debug", " an intermittent one by forcing its cause", ""))
+        self.assertIn("bf-small-flaky", s["hold"])
+
+
+class ChangeType(unittest.TestCase):
+    """The gate fits the change: a rewording holds, an addition to covered text beats main, new text is judged
+    by a case written for it, and new text with no case is owed one."""
+
+    def test_addition_to_covered_text_decides(self):
+        s = selection(("plumb-debug", "1. **Reproduce** the exact error;", "1. **Reproduce** the exact error, "
+                       "from the reporter's own steps;"))
         self.assertIn("bf-small-flaky", s["decide"])
+        self.assertEqual(s["owed"], [])
+
+    def test_new_text_with_its_own_case_is_a_feature(self):
+        step = "8. **Record it** where the team tracks defects."
+        new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].rstrip("\n") + "\n" + step + "\n"})
+        cases = dict(CASES, **{"_built/record": {"kind": "built", "loads": {"plumb-debug"}, "tags": [],
+                                                  "guards": [("plumb-debug", "where the team tracks defects")]}})
+        s = affected.select(MAIN, new, cases, PROBES)
+        self.assertEqual(s["feature"], ["_built/record"])
+        self.assertEqual(s["owed"], [])
+        self.assertIn("bf-small-flaky", s["guard"])
+
+    def test_new_text_without_a_case_is_owed_one(self):
+        step = "8. **Record it** where the team tracks defects."
+        new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].rstrip("\n") + "\n" + step + "\n"})
+        s = affected.select(MAIN, new, CASES, PROBES)
+        self.assertEqual(s["owed"], ["plumb-debug Steps 8"])
+        self.assertEqual(s["feature"] + s["decide"], [])
 
     def test_section_reference_links_every_unit_under_it(self):
         text = "---\nname: plumb-a\n---\n\nUse plumb-b's \"Output\" here.\n"
@@ -147,6 +175,27 @@ class CaseHash(unittest.TestCase):
                 f.write("\n# edited\n")
             run.EVALS = copy
             self.assertNotEqual(run.case_hash("_built/carrier"), before)
+
+
+class FeatureBar(unittest.TestCase):
+    """A feature's case passes in at least two thirds of runs on each model, from six runs."""
+
+    def verdict(self, **runs):
+        run = importlib.util.module_from_spec(importlib.util.spec_from_file_location(
+            "fast_run_bar", os.path.join(ROOT, "plumb", "evals", "_fast", "run.py")))
+        run.__spec__.loader.exec_module(run)
+        records = [{"case": "c", "arm": "new", "model": m, "checks": {"x": ok}}
+                   for m, oks in runs.items() for ok in oks]
+        return run.accept(records)
+
+    def test_two_thirds_on_each_model_passes(self):
+        self.assertIn("does what it promises", self.verdict(h=[True] * 4 + [False] * 2, s=[True] * 6))
+
+    def test_one_model_short_of_two_thirds_fails(self):
+        self.assertIn("falls short", self.verdict(h=[True] * 3 + [False] * 3, s=[True] * 6))
+
+    def test_too_few_runs_asks_for_more(self):
+        self.assertIn("run each model to 6", self.verdict(h=[True] * 3))
 
 
 class Units(unittest.TestCase):

@@ -6,14 +6,23 @@ Run from plumb/evals. It compares the plugin's text (skills, agents, hook texts,
 working tree, splits each file into units (a numbered rule or step, a list item, a paragraph, the frontmatter)
 and reports, for every unit that changed:
 
-- decide: cases that guard a phrase inside a changed unit (_fixtures/guards.json, _built/guards.json). They are
-  the evidence for that text, so they decide the change by the rules in plumb/evals/README.md.
+The gate fits the change. Each case guarding a phrase inside a changed unit (_fixtures/guards.json,
+_built/guards.json) answers the question that kind of change asks:
+
+- feature: the phrase is new, so the case was written for what the text adds. It shows the addition does what
+  it promises, on the new text alone: there is no main behaviour to beat.
+- decide: the unit grew around a phrase main has. The case is the evidence for that text, so the addition must
+  beat main on it by the decision rule in plumb/evals/README.md.
+- hold: the unit was reworded or cut. The case must hold against main, as a trim's deciding cases do.
 - guard: cases that guard a unit the changed one points at, or that points at it ("charter rule 19", "plumb-plan
   step 4", plumb-x's "Section"), and, outside the charter, every case that loads the changed skill or dispatches
   the changed agent. A change is read where it is used: the regressions past gates caught sat in these cases as
   often as in the deciding ones (see scripts/test_fast_select.py).
 - routing: the probes in _fast/routing.py that expect or forbid a skill whose description changed; all of them
   when a skill is added or removed, or a hook text changes, since either can move any request.
+- owed: new or grown text no case guards. No existing case was built for it, so it is owed a case of its own
+  (then gated as a feature) rather than judged by cases about other text; ADR 12's principle lane covers what no
+  case can show.
 - full: the whole suite, only when the selection would cover most of it anyway or --full is given.
 
 Static checks (scripts/lint_skills.py, scripts/check_refs.py and the case checks) cost no tokens and always run.
@@ -36,6 +45,8 @@ NUMBERED = re.compile(r"^(\d+)\. \*\*")
 ITEM = re.compile(r"^(\d+\. |- )")
 # A selection this large saves little over the whole suite and misses what the rest would have shown.
 FULL_SHARE = 0.6
+# The gate each selected case answers, strongest first (plumb/evals/README.md, "The default gate").
+RANK = ["feature", "decide", "hold", "guard"]
 AGENTS = {name[:-3] for name in os.listdir(os.path.join(PLUGIN, "agents"))}
 
 
@@ -110,6 +121,11 @@ def changed_units(old, new):
                 if u and not u[0].startswith("heading"):
                     touched.add(u[0])
     return touched
+
+
+def unit_words(text, label):
+    lines = text.splitlines()
+    return sum(len(" ".join(lines[a:b + 1]).split()) for l, a, b in units(text) if l == label)
 
 
 def rule_numbers(fragment):
@@ -218,8 +234,11 @@ def select(old, new, cases, routing_probes=(), full=False):
                 and agent in (new.get(n) or old.get(n) or "")}
 
     def pick(case, tier, why):
-        if case not in reasons or (tier == "decide" and reasons[case][0] != "decide"):
+        if case not in reasons or RANK.index(tier) < RANK.index(reasons[case][0]):
             reasons[case] = (tier, why)
+
+    def grew(f, label):
+        return unit_words(new.get(f, ""), label) > unit_words(old.get(f, ""), label)
 
     # Units the change points at, or that point at it, by number or section name.
     linked = set()
@@ -245,8 +264,13 @@ def select(old, new, cases, routing_probes=(), full=False):
                 continue
             here = locate(old.get(f, ""), phrase) | locate(new.get(f, ""), phrase)
             hit = here & changed.get(f, set())
-            if hit or (phrase in old.get(f, "") and phrase not in new.get(f, "")):
-                pick(case, "decide", f"guards {phrase!r} in {f} ({', '.join(sorted(hit)) or 'removed'})")
+            where = f"{phrase!r} in {f} ({', '.join(sorted(hit)) or 'removed'})"
+            if hit and phrase not in old.get(f, ""):
+                pick(case, "feature", f"guards {where}, new text: it shows what the text adds")
+            elif hit and any(grew(f, u) for u in hit):
+                pick(case, "decide", f"guards {where}, which grew: the addition must beat main here")
+            elif hit or (phrase in old.get(f, "") and phrase not in new.get(f, "")):
+                pick(case, "hold", f"guards {where}, reworded or cut: it must hold against main")
             elif any((f, u) in linked for u in here):
                 via = sorted(u for u in here if (f, u) in linked)
                 pick(case, "guard", f"guards {f} {', '.join(via)}, which the change points at or which points at it")
@@ -258,6 +282,14 @@ def select(old, new, cases, routing_probes=(), full=False):
                 via = sorted(info["loads"] & dispatchers(f))
                 if via:
                     pick(case, "guard", f"loads {via[0]}, which dispatches {f}")
+
+    # New or grown text that no case guards has nothing here to judge it: it is owed a case written for it.
+    owed = []
+    for f, labels in sorted(changed.items()):
+        guarded = {u for info in cases.values() for g, phrase in info["guards"] if g == f
+                   for u in locate(new.get(f, ""), phrase)}
+        owed += [f"{f} {u}" for u in sorted(labels) if u in {l for l, _, _ in units(new.get(f, ""))}
+                 and grew(f, u) and u not in guarded]
 
     routing = []
     described = {n for n in changed if "frontmatter" in changed[n]}
@@ -276,8 +308,8 @@ def select(old, new, cases, routing_probes=(), full=False):
     return {
         "changed": {n: sorted(u) for n, u in changed.items()},
         "added": added, "removed": removed,
-        "decide": sorted(c for c, (t, _) in reasons.items() if t == "decide"),
-        "guard": sorted(c for c, (t, _) in reasons.items() if t == "guard"),
+        **{tier: sorted(c for c, (t, _) in reasons.items() if t == tier) for tier in RANK},
+        "owed": owed,
         "why": {c: w for c, (_, w) in sorted(reasons.items())},
         "routing": routing, "routing_why": routing_why,
         "full": run_full,
@@ -310,10 +342,12 @@ def main():
     print("changed units:")
     for n, us in s["changed"].items():
         print(f"  {n}: {'; '.join(us) or '(whole file)'}")
-    for tier in ("decide", "guard"):
+    for tier in RANK:
         print(f"{tier} ({len(s[tier])}):")
         for c in s[tier]:
             print(f"  {c:28} {s['why'][c]}")
+    for unit in s["owed"]:
+        print(f"owed a case: {unit} adds text no case guards; write a case for it that guards its words")
     print(f"routing ({len(s['routing'])}): {s['routing_why']}")
     if s["full"]:
         print(f"full suite: {s['full_why']}")

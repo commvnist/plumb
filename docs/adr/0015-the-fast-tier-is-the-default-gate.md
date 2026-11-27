@@ -1,8 +1,8 @@
-# 13. The fast tier is the default gate
+# 15. The fast tier is the default gate
 
 ## Status
 
-Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md).
+Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md); carries out [ADR 14](0014-the-gate-fits-the-change.md)'s gate for each kind of change.
 
 ## Context
 
@@ -12,7 +12,7 @@ The regressions earlier gates caught sat in two places: in a case guarding the c
 
 ## Decision
 
-Each change to plumb's text is gated by `plumb/evals/_fast/run.py`: the static checks, then the cases `_fast/affected.py` selects (those guarding a changed unit decide it; those guarding a unit it points at or that points at it, and outside the charter those loading the changed skill or its dispatcher, guard it), and the routing probes a changed description can move, all under the decision rule in `plumb/evals/README.md`. Main's runs are kept by the hash of main's text and reused while it is unchanged. The whole suite runs only when the selection covers most of it, or the operator asks.
+Each change to plumb's text is gated by `plumb/evals/_fast/run.py`: the static checks, then the cases `_fast/affected.py` selects, and the routing probes a changed description can move. A case guarding a changed unit answers the question its kind of change asks, as ADR 14 sets out: a case written for text main lacks shows the feature works, on the new arm alone; one guarding a unit that grew must see the addition beat main; one guarding a unit reworded or cut must hold. Cases guarding a unit the change points at or that points at it, and outside the charter those loading the changed skill or its dispatcher, are guards. New or grown text no case guards is reported as owed a case. Main's runs are kept by the hash of main's text and reused while it is unchanged. The whole suite runs only when the selection covers most of it, or the operator asks.
 
 ## Consequences
 
