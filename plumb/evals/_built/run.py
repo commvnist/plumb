@@ -1299,14 +1299,29 @@ LOADS = {
 }
 
 
-# ---------------- the 2026-11-27 philosophy audit: one case per principle it added ----------------
+# ---------------- research, performance, verification and interface design, one case each ----------------
 
 
 def session_trace(run):
-    """The shell commands the session ran, in order, then its final reply."""
-    cmds = [c.get("command", "") for c in run.tool_inputs("Bash")]
-    return "--- shell commands run, in order ---\n" + "\n".join(f"$ {c}" for c in cmds) + \
-        f"\n\n--- final reply ---\n{run.replies[-1]}"
+    """Every tool call the session made, in order (shell commands in full, file writes and edits with their path
+    and the text they put in), then its final reply."""
+    lines = []
+    with open(run.log) as f:
+        for line in f:
+            if not line.startswith("{"):
+                continue
+            for part in (json.loads(line).get("message") or {}).get("content") or []:
+                if not (isinstance(part, dict) and part.get("type") == "tool_use"):
+                    continue
+                name, inp = part.get("name"), part.get("input") or {}
+                if name == "Bash":
+                    lines.append(f"$ {inp.get('command', '')}")
+                elif name in ("Edit", "Write"):
+                    text = inp.get("new_string", inp.get("content", ""))
+                    lines.append(f"[{name} {inp.get('file_path', '')}]\n{text[:1500]}")
+                elif name in ("Read", "Grep", "Glob", "Skill", "Agent"):
+                    lines.append(f"[{name} {inp.get('file_path') or inp.get('pattern') or inp.get('skill') or ''}]")
+    return "--- tool calls, in order ---\n" + "\n".join(lines) + f"\n\n--- final reply ---\n{run.replies[-1]}"
 
 
 def trace_and_diff(run):
@@ -1361,45 +1376,42 @@ VERSION_TURNS = ["Coupons need an expiry. Add parse_expiry(text) to shop/pricing
                  "partner feed sends, like \"2026-12-01T00:00:00Z\", and returns an aware datetime in UTC. Add a test "
                  "and commit."]
 
-OLD_PYTHON = r"""
+OLD_PYTHON_PROBE = r"""
 import datetime as _dt
-class _Old(_dt.datetime):
-    @classmethod
-    def fromisoformat(cls, s):
-        if isinstance(s, str) and (s.endswith("Z") or s.endswith("z")):
-            raise ValueError("Invalid isoformat string: %r" % s)
-        return super().fromisoformat(s)
-_dt.datetime = _Old
-for name in ("UTC",):
-    if hasattr(_dt, name):
-        delattr(_dt, name)
 try:
     from shop import pricing
     got = pricing.parse_expiry("2026-12-01T00:00:00Z")
     want = _dt.datetime(2026, 12, 1, tzinfo=_dt.timezone.utc)
     print("OK" if got == want and got.utcoffset() == _dt.timedelta(0) else "WRONG %r" % (got,))
-except AttributeError as e:
-    print("MISSING" if "parse_expiry" in str(e) else "BROKE %s" % e)
 except Exception as e:
     print("BROKE %s: %s" % (type(e).__name__, e))
 """
 
 
+def oldest_python():
+    """An interpreter for the oldest Python the fixture supports, or None where none can be found."""
+    found = shutil.which("python3.8")
+    if not found and shutil.which("uv"):
+        done = subprocess.run(["uv", "python", "find", "3.8"], capture_output=True, text=True)
+        found = done.stdout.strip() if done.returncode == 0 else None
+    return found
+
+
 def works_on_supported(run):
-    """parse_expiry gives the right answer under Python 3.8-3.10 behaviour, and its module parses as 3.8."""
+    """parse_expiry gives the right answer when the module is imported by Python 3.8, the oldest supported."""
+    python = oldest_python()
     with tempfile.TemporaryDirectory(prefix="phil-") as d:
         tree_copy(run, d)
         src = os.path.join(d, "shop", "pricing.py")
-        if not os.path.exists(src) or "parse_expiry" not in open(src).read():
+        if not python or not os.path.exists(src) or "parse_expiry" not in open(src).read():
             return None
-        text = open(src).read()
+        with open(os.path.join(d, "probe_.py"), "w") as f:
+            f.write(OLD_PYTHON_PROBE)
         try:
-            ast.parse(text, feature_version=(3, 8))
-        except SyntaxError:
+            out = subprocess.run([python, "-B", "probe_.py"], cwd=d, capture_output=True, text=True, timeout=60)
+        except subprocess.TimeoutExpired:
             return False
-        if ".removeprefix(" in text or ".removesuffix(" in text or "zoneinfo" in text:
-            return False
-        return run_py(d, OLD_PYTHON) == "OK"
+        return out.stdout.strip() == "OK"
 
 
 # ---- perf-measured (rule 7: optimization only where a measurement names the slow part, then shows the gain) ----
@@ -1477,31 +1489,6 @@ STATE_GUARDED = judged(
     lambda run: run.sh(f"git diff {run.start}").stdout)
 
 
-# ---- ask-reading (questions: only what reading can't settle) ----
-# A plan whose open points are mostly answered by the repository: CONTRIBUTING says money is Decimal and how
-# refunds display; the README says how to run the tests.
-ASK_SCAFFOLD = r"""
-cat >> CONTRIBUTING.md <<'EOF'
-- Refunds are negative amounts and display with the sign before the dollar: `-$3.00`.
-- A refund never exceeds what the line was sold for.
-EOF
-git commit -qam "docs: refund conventions"
-"""
-ASK_TURNS = ["Plan adding refunds to the cart: refunding part or all of a line. Don't write code yet, just the plan."]
-
-ASK_FILES = ("The repository's README.md says: run the tests with `python3 -m unittest`. Its CONTRIBUTING.md says: "
-             "run `python3 -m unittest` before every commit; money is always Decimal, never float; refunds are "
-             "negative amounts and display with the sign before the dollar (`-$3.00`); a refund never exceeds what "
-             "the line was sold for.")
-
-ASKS_ONLY_OPEN = judged(
-    "An agent wrote a plan for adding refunds to a shopping cart and may have asked the operator questions. "
-    + ASK_FILES + " Fail if any question the reply asks the operator is answered by those files (how refunds "
-    "display, whether money is Decimal or float, whether a refund may exceed the sale, how to run the tests). Pass "
-    "if every question asked is one those files don't settle.",
-    last_reply, na=True)
-
-
 BUILT.update({
     "version-in-use": dict(fixture="shop-small", scaffold=VERSION_SCAFFOLD, turns=VERSION_TURNS,
                            checks={"works-on-supported": works_on_supported}),
@@ -1511,11 +1498,9 @@ BUILT.update({
     "claim-bounded": dict(fixture="shop-small", turns=CLAIM_TURNS,
                           checks={"falsify-tried": FALSIFY_TRIED, "no-overclaim": NO_OVERCLAIM}),
     "invalid-state": dict(fixture="shop-small", turns=COUPON_TURNS, checks={"state-guarded": STATE_GUARDED}),
-    "ask-reading": dict(fixture="shop-small", scaffold=ASK_SCAFFOLD, turns=ASK_TURNS,
-                        checks={"asks-only-open": ASKS_ONLY_OPEN}),
 })
 LOADS.update({"version-in-use": ("plumb-build",), "perf-measured": ("plumb-build",), "claim-bounded": ("plumb-debug", "plumb-build"),
-              "invalid-state": ("plumb-build",), "ask-reading": ("plumb-plan",)})
+              "invalid-state": ("plumb-build",)})
 
 
 def text_hash(plugin):

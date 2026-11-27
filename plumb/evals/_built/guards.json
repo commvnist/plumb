@@ -226,9 +226,24 @@
    "plumb",
    "and so is recall or an agent's report",
    "works-on-supported"
+  ],
+  [
+   "plumb",
+   "(for a dependency or platform, at the versions the project supports)",
+   "works-on-supported"
   ]
  ],
  "perf-measured": [
+  [
+   "plumb",
+   "no option, abstraction or optimization without a present need",
+   "bulk-fast"
+  ],
+  [
+   "plumb",
+   "the data sizes the code will meet",
+   "bulk-fast"
+  ],
   [
    "plumb",
    "a measurement that names the slow part, then shows the gain",
@@ -245,15 +260,8 @@
  "invalid-state": [
   [
    "plumb",
-   "that interface makes wrong use hard to write",
+   "that interface makes wrong use hard to write (types and constructors that can't express an invalid state)",
    "state-guarded"
-  ]
- ],
- "ask-reading": [
-  [
-   "plumb",
-   "only what reading can't settle",
-   "asks-only-open"
   ]
  ]
 }
