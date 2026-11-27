@@ -1316,9 +1316,11 @@ def session_trace(run):
                 name, inp = part.get("name"), part.get("input") or {}
                 if name == "Bash":
                     lines.append(f"$ {inp.get('command', '')}")
-                elif name in ("Edit", "Write"):
-                    text = inp.get("new_string", inp.get("content", ""))
-                    lines.append(f"[{name} {inp.get('file_path', '')}]\n{text[:1500]}")
+                elif name in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
+                    path = inp.get("file_path") or inp.get("notebook_path") or ""
+                    text = "\n".join(e.get("new_string", "") for e in inp.get("edits", [])) or \
+                        inp.get("new_string", inp.get("content", inp.get("new_source", "")))
+                    lines.append(f"[{name} {path}]\n{text}")
                 elif name in ("Read", "Grep", "Glob", "Skill", "Agent"):
                     lines.append(f"[{name} {inp.get('file_path') or inp.get('pattern') or inp.get('skill') or ''}]")
     return "--- tool calls, in order ---\n" + "\n".join(lines) + f"\n\n--- final reply ---\n{run.replies[-1]}"
@@ -1414,7 +1416,7 @@ def works_on_supported(run):
         return out.stdout.strip() == "OK"
 
 
-# ---- perf-measured (rule 7: optimization only where a measurement names the slow part, then shows the gain) ----
+# ---- perf-measured (charter rule 7's present need for speed) ----
 # Cart.add scans every line to merge duplicates, so adding n distinct lines is quadratic. The obvious suspect,
 # Decimal arithmetic in subtotal/total, is linear and cheap.
 PERF_TURNS = ["Bulk orders with thousands of distinct lines make checkout crawl. Make the cart fast for them and "
