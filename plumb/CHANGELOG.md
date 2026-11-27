@@ -10,6 +10,12 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 - Verification looks for the run that would prove a claim false, and a report claims no more than its runs show (rule 13).
 - An interface makes wrong use hard to write: its types and constructors can't express an invalid state (rule 9).
 
+## 0.36.0
+
+### Added
+- `plumb-jira` covers every common issue type and comment. Each type falls into a kind with its own shape: defect (bug, a defect found in testing), need (story, feature, improvement), work (task, sub-task, technical debt), container (epic, initiative), question (spike, research), test (test case, test run) and operations (incident, problem, change). A task's summary is an instruction naming the change by its effect, or by its mechanism when that is the work; a story's or epic's names the outcome; a spike's, its question. An epic's work is its linked child issues. Defects, incidents and problems carry a workaround when one is known, and a change says what shows it worked. A comment does one job (an update, a blocker, a question, a handoff, a review or test result, a decision reached elsewhere, a reopen), and closing an issue records the change that resolved it and the evidence it works.
+- `plumb-jira` searches for an existing issue before filing, leaves priority, sprint, fix version, assignee and estimates to the team unless told, uses the issue type you name, and never learns a project's setup by making a trial write. Bugs record how often they happen and the last version without them; a cause no run has proved is marked suspected; a part with nothing known is left out rather than filled with a placeholder.
+
 ## 0.35.0
 
 ### Added

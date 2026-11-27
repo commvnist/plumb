@@ -221,6 +221,75 @@
    "kept"
   ]
  ],
+ "jira-task": [
+  [
+   "plumb-jira",
+   "by its effect, naming the mechanism when the mechanism is the work",
+   "summary"
+  ],
+  [
+   "plumb-jira",
+   "why it is needed, for debt the cost it carries now",
+   "done"
+  ],
+  [
+   "plumb-jira",
+   "Use the type the operator names",
+   "type"
+  ]
+ ],
+ "jira-story": [
+  [
+   "plumb-jira",
+   "leaving out a part with nothing known rather than holding its place",
+   "no-placeholder"
+  ]
+ ],
+ "jira-epic": [
+  [
+   "plumb-jira",
+   "linked as children and each whole without it",
+   "children"
+  ],
+  [
+   "plumb-jira",
+   "not a list kept in its text",
+   "no-list"
+  ]
+ ],
+ "jira-spike": [
+  [
+   "plumb-jira",
+   "a question, the question",
+   "question"
+  ],
+  [
+   "plumb-jira",
+   "and what would settle it",
+   "done"
+  ]
+ ],
+ "jira-dup": [
+  [
+   "plumb-jira",
+   "search for the issue already filed and add to it instead",
+   "no-duplicate"
+  ]
+ ],
+ "jira-close": [
+  [
+   "plumb-jira",
+   "the evidence it works",
+   "resolved-why"
+  ]
+ ],
+ "jira-test": [
+  [
+   "plumb-jira",
+   "steps, each with its expected result",
+   "steps"
+  ]
+ ],
  "gh-issue": [
   [
    "plumb",

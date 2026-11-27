@@ -82,6 +82,32 @@ class BuiltChecks(unittest.TestCase):
                      "||a||b||", "bq. quoted", "* item", "Plain sentence - with a dash."]:
             self.assertFalse(built.MARKDOWN.search(text), text)
 
+    def test_a_spike_summary_passes_only_when_it_states_the_question(self):
+        for text in ["Should prices move from Decimal to integer cents?", "Decide whether prices move to integer cents",
+                     "How do prices cross the payment boundary", "Find out if refunds need fractional cents"]:
+            self.assertTrue(built.QUESTION.search(text), text)
+        for text in ["Move prices to integer cents", "Investigate price representation", "Spike: pricing in cents",
+                     "Integer cents for prices",
+                     "Move prices to integer cents if rounding allows", "Switch prices to integer cents, even if slower",
+                     "Do the integer cents migration", "Is ready: integer cents"]:
+            self.assertFalse(built.QUESTION.search(text), text)
+
+    def test_an_epic_fails_only_for_listing_its_children_in_its_text(self):
+        store = {"SHOP-200": {"type": "Epic", "summary": "Gift cards", "comments": [],
+                              "description": "Customers can buy gift cards, redeem gift cards at checkout and check "
+                                             "their gift card balance"},
+                 "SHOP-201": {"type": "Story", "summary": "Buy gift cards", "description": "", "comments": []},
+                 "SHOP-202": {"type": "Story", "summary": "Redeem gift cards at checkout", "description": "",
+                              "comments": []}}
+        real = built.jira_issues
+        built.jira_issues = lambda run: store
+        try:
+            self.assertTrue(built.epic_no_list(None))
+            store["SHOP-200"]["description"] = "h3. Work\n* Buy gift cards\n* Redeem gift cards at checkout"
+            self.assertFalse(built.epic_no_list(None))
+        finally:
+            built.jira_issues = real
+
     def test_first_person_is_told_from_neutral_text(self):
         for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it", "Ping me.", "Tell us."]:
             self.assertTrue(built.FIRST_PERSON.search(text), text)
@@ -321,6 +347,21 @@ class StandIns(unittest.TestCase):
             self.assertEqual(json.loads(view)["title"], "fix: the thing")
             self.assertEqual([c["args"][:2] for c in sim.writes(root)], [["pr", "comment"]])
             self.assertEqual(sim.writes(root)[0]["stdin"], "looks wrong\n")
+
+    def test_a_pull_request_shows_the_state_a_case_sets_in_plain_and_json_views(self):
+        with tempfile.TemporaryDirectory() as root:
+            repo = os.path.join(root, "repo")
+            run = built.Run(repo, None, [], "shop-small", None, None, root)
+            os.makedirs(repo)
+            run.sh("git init -q -b main && git commit -q --allow-empty -m start && git checkout -q -b pr-12 && "
+                   "git commit -q --allow-empty -m 'fix: the thing' && git checkout -q main")
+            env = sim.install(root, ["gh"])
+            with open(os.path.join(env["SIM_DIR"], "pr-state.json"), "w") as f:
+                json.dump({"state": "MERGED"}, f)
+            plain = run.sh("gh pr view 12", env=env)
+            self.assertEqual(plain.returncode, 0, plain.stderr)
+            self.assertIn("Merged •", plain.stdout)
+            self.assertEqual(json.loads(run.sh("gh pr view 12 --json state", env=env).stdout)["state"], "MERGED")
 
     def test_a_posted_review_is_judged_on_the_state_it_carries(self):
         def scored(command, verdict="Request changes: the cap test is deleted."):
