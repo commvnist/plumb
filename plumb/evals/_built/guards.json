@@ -245,7 +245,7 @@
  "merge-squash": [
   [
    "plumb-ship",
-   "A merge writes a commit too",
+   "A merge that writes a commit shapes it like any other",
    "message"
   ]
  ]

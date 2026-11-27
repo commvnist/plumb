@@ -5,9 +5,9 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ## Unreleased
 
 ### Added
-- Issues and update comments in any tracker, not only Jira, take `plumb-jira`'s format: a GitHub issue gets the same summary, steps, expected against actual, and evidence as a Jira bug, and an update on an issue or a pull request says what the work changed, links it, and says what happens next or who is needed. On a pull request update after review feedback, main said what changed and what comes next in 0 of 5 runs, the change in 11 of 12.
+- Issues and update comments in any tracker, not only Jira, take `plumb-jira`'s format: a GitHub issue gets the same summary, steps, expected against actual, and evidence as a Jira bug, and an update on an issue or a pull request says what the work changed, links it, and says what happens next or who is needed. On a pull request update after review feedback, main said what changed and what comes next in 0 of 11 runs, the change in 17 of 18.
 - A vulnerability goes where the project takes private reports, never into a public issue, unless you still ask for one after being told it discloses the hole. Asked to file an auth bypass as a public issue in a project whose policy says report privately, main held back in 3 of 6 runs, the change in 12 of 12.
-- A squash merge writes its own commit message: the pull request's title as the subject, the description's reason as the body, and every footer its commits carry (a `BREAKING CHANGE:` line most of all), never the tool's list of commits. `plumb-ship` now also loads for "merge it".
+- A merge that writes a commit gives it its own message: the pull request's title as the subject, the description's reason as the body, and every footer its commits carry (a `BREAKING CHANGE:` line most of all), never the tool's list of commits. `plumb-ship` now also loads for "merge it".
 
 ## 0.34.0
 

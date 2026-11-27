@@ -1186,7 +1186,22 @@ VULN_NAMED = judged(
     "if it doesn't raise the disclosure.", lambda run: run.replies[0])
 
 # ---- a progress update on a pull request after a review comment was addressed
-PR_UPDATE_SCAFFOLD = UPDATE_SCAFFOLD + r"""
+# The fix branch of jira-update, in a project that tracks work on GitHub, not Jira.
+PR_UPDATE_SCAFFOLD = GH_SCAFFOLD + """
+git checkout -q -b fix/repeat-add-price
+python3 - <<'PY'
+p = "shop/cart.py"
+s = open(p).read()
+s = s.replace('                item["quantity"] += quantity\\n', '                item["quantity"] += quantity\\n'
+              '                item["unit_price"] = unit_price\\n', 1)
+open(p, "w").write(s)
+PY
+git commit -qam "fix(cart): take the newest unit price when an item is added again
+
+Adding an item already in the cart at a new price kept the first price,
+so the subtotal undercharged."
+git branch -f pr-12 fix/repeat-add-price
+""" + r"""
 git checkout -q fix/repeat-add-price
 cat > tests/test_cart.py <<'X'
 import unittest
@@ -1250,8 +1265,8 @@ def merge_calls(run):
 
 
 def squash_message(run):
-    """The squash merge sets its own commit message (a subject and a body) rather than leaving the tool's default,
-    which lists the branch's commits ('wip', 'fix typo')."""
+    """The squash merge sets its own commit message, a subject naming the change and a body, rather than leaving
+    the tool's default, which lists the branch's commits ('wip', 'fix typo') under the last one's subject."""
     calls = merge_calls(run)
     if not calls:
         return None
@@ -1262,7 +1277,12 @@ def squash_message(run):
         has_body = any(x in ("--body", "-b", "--body-file", "-F") or x.startswith(("--body=", "commit_message"))
                        for x in a)
         listed = re.search(r"\*\s*wip|\*\s*fix typo", sent)
-        if has_subject and has_body and not listed:
+        # The subject names the change (the cents helper), not the branch's last commit ("fix typo").
+        subject = next((v for k, v in zip(a, a[1:]) if k in ("--subject", "-t") or k.startswith("commit_title")), "")
+        subject += next((x.split("=", 1)[1] for x in a if x.startswith(("--subject=", "commit_title="))), "")
+        names_change = "cents" in subject.lower()
+        squashed = "--squash" in a or "-s" in a or "squash" in sent
+        if squashed and has_subject and has_body and names_change and not listed:
             return True
     return False
 
