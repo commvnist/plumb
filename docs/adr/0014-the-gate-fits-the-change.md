@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md).
+Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md). Amended by [ADR 16](0016-an-addition-is-judged-by-its-own-case.md): an addition is gated like a feature.
 
 ## Context
 

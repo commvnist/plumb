@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amended by [ADR 12](0012-a-wording-can-land-on-principle.md) and [ADR 14](0014-the-gate-fits-the-change.md).
+Accepted. Amended by [ADR 12](0012-a-wording-can-land-on-principle.md), [ADR 14](0014-the-gate-fits-the-change.md) and [ADR 16](0016-an-addition-is-judged-by-its-own-case.md).
 
 ## Context
 

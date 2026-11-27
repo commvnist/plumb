@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md); carries out [ADR 14](0014-the-gate-fits-the-change.md)'s gate for each kind of change.
+Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md) and [ADR 12](0012-a-wording-can-land-on-principle.md); carries out [ADR 14](0014-the-gate-fits-the-change.md)'s gate for each kind of change. Amended by [ADR 16](0016-an-addition-is-judged-by-its-own-case.md): no case makes an addition beat main.
 
 ## Context
 
