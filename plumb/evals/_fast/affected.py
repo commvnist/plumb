@@ -9,7 +9,8 @@ and reports, for every unit that changed:
 The gate fits the change. Each case guarding a phrase inside a changed unit (_fixtures/guards.json,
 _built/guards.json) answers the question that kind of change asks:
 
-- feature: the case is new with the change (or its file is), so it was written for what the text adds. It shows the addition does what
+- feature: the case is new with the change (or its file is) and the unit it guards is new or grew, so it was
+  written for what the text adds. It shows the addition does what
   it promises, on the new text alone: there is no main behaviour to beat.
 - decide: the unit grew around a phrase main has. The case is the evidence for that text, so the addition must
   beat main on it by the decision rule in plumb/evals/README.md.
@@ -114,22 +115,35 @@ def changed_units(old, new):
 def unit_deltas(old, new):
     """{label: words the change added to that unit, net} for every unit it touched.
 
-    Counted on the diff's hunks, so a unit whose opening words were reworded (and so whose label differs on the
-    two sides) is still seen to have grown or shrunk by what its hunk added or removed."""
+    Counted line by line where a hunk replaces as many lines as it removes, and per hunk otherwise, each count
+    going to the unit its new lines sit in (its old lines, for a deletion). So an addition to one rule is not
+    netted against a cut to the next, and a unit whose opening words were reworded (and so whose label differs
+    on the two sides) is still seen to grow or shrink by what changed in it."""
     old_lines, new_lines = old.splitlines(), new.splitlines()
     old_spans, new_spans = units(old), units(new)
     deltas = {}
+
+    def labels(spans, a, b):
+        found = []
+        # An insertion between units touches the unit it lands in, or the one just before it.
+        for n in range(a, max(b, a + 1)):
+            u = unit_of(spans, n) or unit_of(spans, n - 1)
+            if u and not u[0].startswith("heading") and u[0] not in found:
+                found.append(u[0])
+        return found
+
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False).get_opcodes():
         if tag == "equal":
             continue
-        delta = len(" ".join(new_lines[j1:j2]).split()) - len(" ".join(old_lines[i1:i2]).split())
-        # An insertion between units touches the unit it lands in, or the one just before it; its words count
-        # only for the units on the side that holds them.
-        for spans, a, b, counts in ((old_spans, i1, i2, i2 > i1), (new_spans, j1, j2, j2 > j1)):
-            for n in range(a, max(b, a + 1)):
-                u = unit_of(spans, n) or unit_of(spans, n - 1)
-                if u and not u[0].startswith("heading"):
-                    deltas[u[0]] = deltas.get(u[0], 0) + (delta if counts else 0)
+        pieces = ([(i1 + k, i1 + k + 1, j1 + k, j1 + k + 1) for k in range(i2 - i1)]
+                  if tag == "replace" and i2 - i1 == j2 - j1 else [(i1, i2, j1, j2)])
+        for a, b, c, d in pieces:
+            delta = len(" ".join(new_lines[c:d]).split()) - len(" ".join(old_lines[a:b]).split())
+            gets = labels(new_spans, c, d) if d > c else labels(old_spans, a, b)
+            for label in labels(old_spans, a, b) + labels(new_spans, c, d):
+                deltas.setdefault(label, 0)
+            for label in gets:
+                deltas[label] += delta
     return deltas
 
 
@@ -192,12 +206,12 @@ def load_cases():
 
 
 def case_names(rev):
-    """The cases a revision has, by the guard lists that name every case that guards text."""
-    names = set()
-    for path, prefix in (("evals/_fixtures/guards.json", ""), ("evals/_built/guards.json", "_built/")):
-        text = git_show(rev, path)
-        names |= {prefix + n for n in json.loads(text)} if text else set()
-    return names
+    """The cases a revision has: its suite case folders and the built cases its runner defines."""
+    listing = subprocess.run(["git", "ls-tree", "-d", "--name-only", f"{rev}:plumb/evals"], cwd=ROOT,
+                             capture_output=True, text=True).stdout.split()
+    names = {d for d in listing if not d.startswith(("_", "results"))}
+    runner = git_show(rev, "evals/_built/run.py") or ""
+    return names | {f"_built/{n}" for n in re.findall(r'^    "([a-z0-9-]+)": dict\(', runner, re.M)}
 
 
 def git_show(rev, path):
@@ -283,7 +297,7 @@ def select(old, new, cases, routing_probes=(), full=False, old_cases=None):
             here = locate(old.get(f, ""), phrase) | locate(new.get(f, ""), phrase)
             hit = here & changed.get(f, set())
             where = f"{phrase!r} in {f} ({', '.join(sorted(hit)) or 'removed'})"
-            if hit and (case not in old_cases or f in added):
+            if hit and (case not in old_cases or f in added) and any(grew(f, u) for u in hit):
                 pick(case, "feature", f"guards {where}, a case new with the change: it shows what the text adds")
             elif hit and any(grew(f, u) for u in hit):
                 pick(case, "decide", f"guards {where}, which grew: the addition must beat main here")

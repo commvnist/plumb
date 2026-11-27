@@ -149,6 +149,22 @@ class ChangeType(unittest.TestCase):
         self.assertIn("_built/review-scope", s["hold"])
         self.assertEqual(s["decide"] + s["owed"], [])
 
+    def test_addition_next_to_a_larger_cut_still_decides(self):
+        # Adjacent numbered steps form one hunk; the addition to one isn't netted against the cut to the other.
+        s = selection(("plumb-debug", "fails before the fix on every run.",
+                       "fails before the fix on every run, and name the break it catches."),
+                      ("plumb-debug", "5. **Fix at the origin** with the smallest diff, never a suppression.",
+                       "5. **Fix at the origin.**"))
+        self.assertIn("_built/flaky-commit", s["decide"])
+
+    def test_new_case_on_unchanged_length_text_holds(self):
+        # A case added for a rewording has no addition to show; it holds against main like any rewording's case.
+        new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].replace("by forcing its cause", "by provoking its cause")})
+        cases = dict(CASES, **{"_built/provoke": {"kind": "built", "loads": {"plumb-debug"}, "tags": [],
+                                                   "guards": [("plumb-debug", "by provoking its cause")]}})
+        s = affected.select(MAIN, new, cases, PROBES, old_cases=set(CASES))
+        self.assertIn("_built/provoke", s["hold"])
+
     def test_new_text_without_a_case_is_owed_one(self):
         step = "8. **Record it** where the team tracks defects."
         new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].rstrip("\n") + "\n" + step + "\n"})
