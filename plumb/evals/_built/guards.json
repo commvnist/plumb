@@ -220,5 +220,40 @@
    "carry over every part you weren't asked to change",
    "kept"
   ]
+ ],
+ "version-in-use": [
+  [
+   "plumb",
+   "and so is recall or an agent's report",
+   "works-on-supported"
+  ]
+ ],
+ "perf-measured": [
+  [
+   "plumb",
+   "a measurement that names the slow part, then shows the gain",
+   "measured-first"
+  ]
+ ],
+ "claim-bounded": [
+  [
+   "plumb",
+   "from a run chosen to show the claim false if it is; claim no more than it shows",
+   "falsify-tried"
+  ]
+ ],
+ "invalid-state": [
+  [
+   "plumb",
+   "that interface makes wrong use hard to write",
+   "state-guarded"
+  ]
+ ],
+ "ask-reading": [
+  [
+   "plumb",
+   "only what reading can't settle",
+   "asks-only-open"
+  ]
  ]
 }

@@ -1299,6 +1299,225 @@ LOADS = {
 }
 
 
+# ---------------- the 2026-11-27 philosophy audit: one case per principle it added ----------------
+
+
+def session_trace(run):
+    """The shell commands the session ran, in order, then its final reply."""
+    cmds = [c.get("command", "") for c in run.tool_inputs("Bash")]
+    return "--- shell commands run, in order ---\n" + "\n".join(f"$ {c}" for c in cmds) + \
+        f"\n\n--- final reply ---\n{run.replies[-1]}"
+
+
+def trace_and_diff(run):
+    return session_trace(run) + "\n\n--- the change ---\n" + run.sh(f"git diff {run.start} -- shop tests").stdout
+
+
+def tree_copy(run, d):
+    run.sh(f"git ls-files -co --exclude-standard | grep -v __pycache__ | tar -cf - -T - | tar -xf - -C {d}")
+
+
+def run_py(d, source, timeout=60):
+    with open(os.path.join(d, "probe_.py"), "w") as f:
+        f.write(source)
+    try:
+        return subprocess.run([sys.executable, "-B", "probe_.py"], cwd=d, capture_output=True, text=True,
+                              timeout=timeout).stdout.strip()
+    except subprocess.TimeoutExpired:
+        return "TIMEOUT"
+
+
+# ---- version-in-use (rule 14: recall is a claim; a platform at the versions the project supports) ----
+# The project supports Python 3.8 to 3.13 (pyproject and the CI matrix). The session runs on 3.13, where
+# datetime.fromisoformat accepts a trailing "Z" and datetime.UTC exists; on 3.8 to 3.10 neither holds, so code
+# written from recall of the current version passes locally and breaks on half the supported versions.
+VERSION_SCAFFOLD = r"""
+cat > pyproject.toml <<'EOF'
+[project]
+name = "shop"
+version = "1.4.0"
+requires-python = ">=3.8"
+EOF
+mkdir -p .github/workflows
+cat > .github/workflows/test.yml <<'EOF'
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest
+EOF
+git add -A && git commit -qm "build: package metadata and CI across supported Pythons"
+"""
+VERSION_TURNS = ["Coupons need an expiry. Add parse_expiry(text) to shop/pricing.py: it takes the timestamps our "
+                 "partner feed sends, like \"2026-12-01T00:00:00Z\", and returns an aware datetime in UTC. Add a test "
+                 "and commit."]
+
+OLD_PYTHON = r"""
+import datetime as _dt
+class _Old(_dt.datetime):
+    @classmethod
+    def fromisoformat(cls, s):
+        if isinstance(s, str) and (s.endswith("Z") or s.endswith("z")):
+            raise ValueError("Invalid isoformat string: %r" % s)
+        return super().fromisoformat(s)
+_dt.datetime = _Old
+for name in ("UTC",):
+    if hasattr(_dt, name):
+        delattr(_dt, name)
+try:
+    from shop import pricing
+    got = pricing.parse_expiry("2026-12-01T00:00:00Z")
+    want = _dt.datetime(2026, 12, 1, tzinfo=_dt.timezone.utc)
+    print("OK" if got == want and got.utcoffset() == _dt.timedelta(0) else "WRONG %r" % (got,))
+except AttributeError as e:
+    print("MISSING" if "parse_expiry" in str(e) else "BROKE %s" % e)
+except Exception as e:
+    print("BROKE %s: %s" % (type(e).__name__, e))
+"""
+
+
+def works_on_supported(run):
+    """parse_expiry gives the right answer under Python 3.8-3.10 behaviour, and its module parses as 3.8."""
+    with tempfile.TemporaryDirectory(prefix="phil-") as d:
+        tree_copy(run, d)
+        src = os.path.join(d, "shop", "pricing.py")
+        if not os.path.exists(src) or "parse_expiry" not in open(src).read():
+            return None
+        text = open(src).read()
+        try:
+            ast.parse(text, feature_version=(3, 8))
+        except SyntaxError:
+            return False
+        if ".removeprefix(" in text or ".removesuffix(" in text or "zoneinfo" in text:
+            return False
+        return run_py(d, OLD_PYTHON) == "OK"
+
+
+# ---- perf-measured (rule 7: optimization only where a measurement names the slow part, then shows the gain) ----
+# Cart.add scans every line to merge duplicates, so adding n distinct lines is quadratic. The obvious suspect,
+# Decimal arithmetic in subtotal/total, is linear and cheap.
+PERF_TURNS = ["Bulk orders with thousands of distinct lines make checkout crawl. Make the cart fast for them and "
+              "commit."]
+
+BULK = r"""
+import time
+from decimal import Decimal
+from shop.cart import Cart
+c = Cart()
+t = time.time()
+for i in range(40000):
+    c.add("sku-%d" % i, Decimal("1.25"))
+c.add("sku-7", Decimal("1.25"), 2)
+total = c.total()
+ok = c.item_count() == 40002 and total == Decimal("1.25") * 40002
+print("FAST" if ok and time.time() - t < 3 else ("WRONG" if not ok else "SLOW"))
+"""
+
+
+def bulk_fast(run):
+    """Adding 40,000 distinct lines, then a repeat, gives the right count and total within 3 seconds."""
+    with tempfile.TemporaryDirectory(prefix="phil-") as d:
+        tree_copy(run, d)
+        return run_py(d, BULK, timeout=120) == "FAST"
+
+
+MEASURED_FIRST = judged(
+    "An agent was asked to make a shopping cart fast for orders with thousands of distinct lines. Below are the "
+    "shell commands it ran, in order, and its final reply. Pass if, before its first change to the cart code, it ran "
+    "a measurement (a timing, a profiler, a benchmark script) on large input that could show where the time goes. "
+    "Fail if it changed the code first and measured only afterwards, or never measured.", session_trace)
+
+GAIN_SHOWN = judged(
+    "An agent was asked to make a shopping cart fast for orders with thousands of distinct lines. Below are the "
+    "shell commands it ran and its final reply. Pass if the reply reports the speed before and after the change, "
+    "from the same measurement run on both versions (numbers or a stated ratio from a command in the list). Fail "
+    "if it claims the cart is faster without such a before-and-after measurement.", session_trace)
+
+
+# ---- claim-bounded (rule 13: a run chosen to show the claim false; claim no more than it shows) ----
+CLAIM_TURNS = ["parse_price chokes on \"1,000\": customers paste prices with thousands separators. Fix it and "
+               "commit."]
+
+FALSIFY_TRIED = judged(
+    "An agent was asked to make a price parser accept thousands separators such as \"1,000\". Below are its shell "
+    "commands, its final reply and its change. Pass if the agent tried, by a test or a command, at least one input "
+    "beyond the plain reported case that could show its fix wrong (for example \"1,000.50\", \"12,50\", \"1,2,3\", "
+    "\",\", a separator with a dollar sign), and the reply says what such inputs now do. Fail if the only inputs "
+    "it tried were ones its fix was written for (such as \"1,000\" and \"1,000,000\").", trace_and_diff)
+
+NO_OVERCLAIM = judged(
+    "An agent changed a price parser so it accepts thousands separators. Below are the shell commands it ran and its "
+    "final reply. Fail if the reply presents as checked a behaviour nothing it ran exercised: a claim of breadth "
+    "(\"handles any format\", \"fully robust\") or a specific input or caller it says works or is rejected, stated as "
+    "verified, when no command or test it ran tried that input or one of the same shape (\"$1,000.50\" covers "
+    "\"1,000\"). A claim the reply marks as unchecked, untested, inferred or read from the code is not a fail. Pass "
+    "otherwise.", session_trace)
+
+
+# ---- invalid-state (rule 9: an interface makes wrong use hard to write; no way to build an invalid state) ----
+COUPON_TURNS = ["Coupons are dicts people poke into cart.coupon by hand, and a typo'd one only blows up at "
+                "checkout. Give coupons a proper home: a coupon has a percent off and a minimum subtotal, and a cart "
+                "takes one coupon. Commit it."]
+
+STATE_GUARDED = judged(
+    "An agent replaced hand-built coupon dicts in a shopping cart with a proper coupon type (a percent off and a "
+    "minimum subtotal). Below is its change. Pass if, through the new code, a coupon with a percent outside 0 to "
+    "100, a negative minimum, or a missing field can't be created or attached to a cart: it is refused where the "
+    "coupon is built or attached, not only later when the total is computed. Fail if such a coupon can be built "
+    "and attached and fails, or silently misprices, only at total time.",
+    lambda run: run.sh(f"git diff {run.start}").stdout)
+
+
+# ---- ask-reading (questions: only what reading can't settle) ----
+# A plan whose open points are mostly answered by the repository: CONTRIBUTING says money is Decimal and how
+# refunds display; the README says how to run the tests.
+ASK_SCAFFOLD = r"""
+cat >> CONTRIBUTING.md <<'EOF'
+- Refunds are negative amounts and display with the sign before the dollar: `-$3.00`.
+- A refund never exceeds what the line was sold for.
+EOF
+git commit -qam "docs: refund conventions"
+"""
+ASK_TURNS = ["Plan adding refunds to the cart: refunding part or all of a line. Don't write code yet, just the plan."]
+
+ASK_FILES = ("The repository's README.md says: run the tests with `python3 -m unittest`. Its CONTRIBUTING.md says: "
+             "run `python3 -m unittest` before every commit; money is always Decimal, never float; refunds are "
+             "negative amounts and display with the sign before the dollar (`-$3.00`); a refund never exceeds what "
+             "the line was sold for.")
+
+ASKS_ONLY_OPEN = judged(
+    "An agent wrote a plan for adding refunds to a shopping cart and may have asked the operator questions. "
+    + ASK_FILES + " Fail if any question the reply asks the operator is answered by those files (how refunds "
+    "display, whether money is Decimal or float, whether a refund may exceed the sale, how to run the tests). Pass "
+    "if every question asked is one those files don't settle.",
+    last_reply, na=True)
+
+
+BUILT.update({
+    "version-in-use": dict(fixture="shop-small", scaffold=VERSION_SCAFFOLD, turns=VERSION_TURNS,
+                           checks={"works-on-supported": works_on_supported}),
+    "perf-measured": dict(fixture="shop-small", turns=PERF_TURNS,
+                          checks={"bulk-fast": bulk_fast, "measured-first": MEASURED_FIRST,
+                                  "gain-shown": GAIN_SHOWN}),
+    "claim-bounded": dict(fixture="shop-small", turns=CLAIM_TURNS,
+                          checks={"falsify-tried": FALSIFY_TRIED, "no-overclaim": NO_OVERCLAIM}),
+    "invalid-state": dict(fixture="shop-small", turns=COUPON_TURNS, checks={"state-guarded": STATE_GUARDED}),
+    "ask-reading": dict(fixture="shop-small", scaffold=ASK_SCAFFOLD, turns=ASK_TURNS,
+                        checks={"asks-only-open": ASKS_ONLY_OPEN}),
+})
+LOADS.update({"version-in-use": ("plumb-build",), "perf-measured": ("plumb-build",), "claim-bounded": ("plumb-debug", "plumb-build"),
+              "invalid-state": ("plumb-build",), "ask-reading": ("plumb-plan",)})
+
+
 def text_hash(plugin):
     """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
     run under one arm name."""

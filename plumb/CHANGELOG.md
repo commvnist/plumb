@@ -2,6 +2,15 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## Unreleased
+
+### Added
+- Performance has a stance: no optimization without a present need, which for speed is a measurement that names the slow part and then shows the gain (charter rule 7).
+- Knowledge from outside the repository is checked like any other premise: what the agent recalls about a library, tool or language, and what a subagent reports, is a claim until the code or a run confirms it, at the versions the project supports (rule 14).
+- Verification looks for the run that would prove a claim false, and a report claims no more than its runs show (rule 13).
+- An interface makes wrong use hard to write, with no way to build an invalid state (rule 9).
+- Questions to the operator are only what reading the repository can't settle.
+
 ## 0.34.0
 
 ### Added
