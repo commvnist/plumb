@@ -1111,6 +1111,109 @@ so the subtotal undercharged."
 git branch -f pr-12 fix/repeat-add-price
 """
 
+def created_by_type(run, kind):
+    return {k: i for k, i in created(run).items() if i["type"].lower().replace("-", "") == kind}
+
+
+def typed_issue(kind):
+    def material(run):
+        return "\n\n".join(f"Summary: {i['summary']}\nType: {i['type']}\n\nDescription:\n{i['description']}"
+                             for i in created_by_type(run, kind).values())
+    return material
+
+
+TASK_SUMMARY = judged(
+    "This is a Jira task an agent filed for giving the cart a way to be emptied, so checkout can clear it after "
+    "payment. Pass if the summary states the change as an instruction, naming what changes where, by its effect "
+    "or by the mechanism (such as 'Let checkout empty the cart after payment' or 'Add a clear method to Cart'). "
+    "Fail if it is worded as a user story "
+    "('As a ...', 'Customers can ...'), as a symptom or problem ('Cart cannot be emptied'), or carries a commit "
+    "prefix such as 'feat(cart):'.", typed_issue("task"))
+def task_type(run):
+    """Asked for a task, the session filed a Task, not a story or another type."""
+    return None if not created(run) else bool(created_by_type(run, "task"))
+
+
+TASK_DONE = judged(
+    "This is a Jira task an agent filed. Pass if its description says why the work is needed and what shows it "
+    "done, each criterion one someone else could check. Fail if either is missing.", typed_issue("task"))
+STORY_NO_PLACEHOLDER = judged(
+    "This is a Jira story an agent filed. Pass if every section of the description says something. Fail if any "
+    "section only holds its place, such as 'TBD', 'None', 'Not yet agreed' or 'to be decided by the team'.",
+    typed_issue("story"))
+SPIKE_DONE = judged(
+    "This is a Jira spike an agent filed to find out whether prices should move from Decimal to integer cents; "
+    "nobody gave it a time limit. Pass if its description says what evidence would settle the question and that "
+    "done means an answer recorded (on the issue or a linked record), not code shipped. Fail if either is "
+    "missing.", typed_issue("spike"))
+
+
+QUESTION = re.compile(r"\?\s*$|^\s*(decide|find out|check|determine|establish|learn|confirm)\s+(whether|if)\b"
+                      r"|^\s*(what|which|why|how|when|where|who)\b", re.I)
+
+
+def spike_question(run):
+    """A spike's summary is the question it answers, asked directly or as "whether ...", never a bare topic or answer."""
+    spikes = created_by_type(run, "spike") or {k: i for k, i in created(run).items() if "spike" in
+                                               (i["summary"] + i["type"]).lower()}
+    return None if not spikes else all(QUESTION.search(i["summary"]) for i in spikes.values())
+
+
+def epic_children(run):
+    """The epic's work is at least two issues filed under it, by parent or link, not a list in its text."""
+    epics = created_by_type(run, "epic")
+    if not epics:
+        return None
+    issues = jira_issues(run)
+    for k in epics:
+        children = [c for c, i in issues.items() if c != k and (i.get("parent") == k
+                    or any(k in " ".join(l) for l in i.get("links", [])))]
+        children += [c for l in issues[k].get("links", []) for c in l if c in issues and c != k]
+        if len(set(children)) >= 2:
+            return True
+    return False
+
+
+def epic_no_list(run):
+    """The epic's description doesn't repeat its children's summaries as a list in its text."""
+    epics = created_by_type(run, "epic")
+    if not epics:
+        return None
+    others = [i["summary"].strip().lower() for k, i in created(run).items() if k not in epics and i["summary"]]
+    if len(others) < 2:
+        return None
+
+    def listed(text):  # list lines only: prose that names the same outcomes is no list
+        lines = [l.strip(" *#-").lower() for l in text.splitlines() if re.match(r"\s*([*#-]+|\d+\.)\s", l)]
+        return sum(any(o[:40] in l or l[:40] in o for l in lines if l) for o in others)
+    return all(listed(i["description"]) < 2 for i in epics.values())
+
+
+def no_duplicate(run):
+    """Asked to file a bug that SHOP-57 already tracks, the session created no new issue and pointed to SHOP-57,
+    whether it then added to it or asked first."""
+    return not created(run) and "SHOP-57" in run.replies[-1]
+
+
+def close_record(run):
+    calls = [" ".join(c["args"]) + ("\n" + c["body"] if c.get("body") else "") for c in jira_writes(run)]
+    issue = jira_issues(run).get("SHOP-57", {})
+    comments = "\n\n".join(c["body"] for c in issue.get("comments", []) if c["body"])
+    return "" if not calls else f"--- jira calls ---\n" + "\n".join(calls) + f"\n\n--- comments now ---\n{comments}"
+
+
+CLOSE_WHY = judged(
+    "Below is everything an agent sent to Jira when asked to close SHOP-57, a bug fixed by pull request 12 "
+    "(Cart.add now keeps the newest unit price). Pass if what it sent closes the issue with a resolution (a "
+    "Done/Fixed state or resolution value) and, on the issue, says what resolved it (the change or pull request) "
+    "and the evidence that the fix works (a test or a run). Fail if the issue is closed with no such reason, or not "
+    "closed at all.", close_record)
+TEST_STEPS = judged(
+    "This is a Jira test case an agent filed for: adding an item already in the cart at a new price updates the "
+    "price. Pass if it gives the state the test starts from and numbered steps, each paired with its own "
+    "expected result. Fail if expected results are missing or given only once at the end.", typed_issue("test"))
+
+
 # ---------------- issues, pull request updates and merges, through the gh stand-in ----------------
 
 GH_SCAFFOLD = """
@@ -1444,6 +1547,31 @@ BUILT = {
         "The fix for SHOP-57 is up for review at https://github.example/acme/shop/pull/12. Post an update on the "
         "ticket."], checks={"no-move": no_move, "whole": JIRA_UPDATE, "markup": jira_markup,
                                     "neutral": jira_neutral}),
+    "jira-task": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Create a task in Jira, project SHOP: the cart needs a way to be emptied, so checkout can clear it after "
+        "payment."], checks={"summary": TASK_SUMMARY, "done": TASK_DONE, "type": task_type}),
+    "jira-story": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Create a story in Jira, project SHOP: customers want to save their cart and come back to it later."],
+        checks={"no-placeholder": STORY_NO_PLACEHOLDER}),
+    "jira-epic": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Set up an epic in Jira, project SHOP, for gift cards: customers buy them, redeem them at checkout and check "
+        "their balance. Create the issues under it too."], checks={"children": epic_children, "no-list": epic_no_list}),
+    "jira-spike": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Open a spike in Jira, project SHOP: should prices move from Decimal to integer cents?"],
+        checks={"question": spike_question, "done": SPIKE_DONE}),
+    "jira-dup": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD,
+                     sim_files={"jira.json": json.dumps(SHOP_57)}, turns=[
+        "File a bug in Jira, project SHOP: when you add an item that's already in the cart at a different price, "
+        "the cart keeps the first price."], checks={"no-duplicate": no_duplicate}),
+    "jira-close": dict(fixture="shop-small", sim=("jira", "gh"),
+                       scaffold=UPDATE_SCAFFOLD + "git checkout -q main\ngit merge -q --no-ff -m 'Merge pull request #12' "
+                                                  "fix/repeat-add-price\n",
+                       sim_files={"jira.json": json.dumps(SHOP_57),
+                                  "pr-state.json": json.dumps({"state": "MERGED"})}, turns=[
+        "PR 12 fixed SHOP-57 and it's merged. Close the ticket."], checks={"resolved-why": CLOSE_WHY}),
+    "jira-test": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Write a test case in Jira, project SHOP, issue type Test: adding an item that's already in the cart at a "
+        "new price updates its price."], checks={"steps": TEST_STEPS}),
     "gh-issue": dict(fixture="shop-small", sim=("gh",), scaffold=GH_SCAFFOLD, turns=[
         "Cart.add ignores the new unit price when the same item is added again. Open a GitHub issue for it."],
         checks={"repro": GH_REPRO, "summary": GH_SUMMARY, "neutral": gh_neutral}),
@@ -1486,7 +1614,9 @@ LOADS = {
     "review-render": ("plumb-review",), "debug-base": ("plumb-debug",), "review-voice": ("plumb-review",),
     "review-post": ("plumb-review",),
     # Added after those runs, named from their requests:
-    "review-voice-asked": ("plumb-review",), "jira-bug": ("plumb-jira",), "jira-edit": ("plumb-jira",),
+    "review-voice-asked": ("plumb-review",), "jira-bug": ("plumb-jira",), "jira-edit": ("plumb-jira",), "jira-task": ("plumb-jira",),
+    "jira-story": ("plumb-jira",), "jira-epic": ("plumb-jira",), "jira-spike": ("plumb-jira",),
+    "jira-dup": ("plumb-jira",), "jira-close": ("plumb-jira",), "jira-test": ("plumb-jira",),
     "jira-update": ("plumb-jira",), "gh-issue": ("plumb-jira",), "gh-vuln": ("plumb-jira",),
     "pr-update": ("plumb-jira",), "merge-squash": ("plumb-ship",),
 }
