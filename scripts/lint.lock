@@ -1,0 +1,35 @@
+{
+ "words": {
+  "skills/plumb/SKILL.md": 1483,
+  "skills/plumb-audit/SKILL.md": 238,
+  "skills/plumb-auto/SKILL.md": 460,
+  "skills/plumb-build/SKILL.md": 153,
+  "skills/plumb-debug/SKILL.md": 187,
+  "skills/plumb-explain/SKILL.md": 141,
+  "skills/plumb-plan/SKILL.md": 314,
+  "skills/plumb-refactor/SKILL.md": 139,
+  "skills/plumb-review/SKILL.md": 259,
+  "skills/plumb-ship/SKILL.md": 508,
+  "skills/plumb-test/SKILL.md": 182,
+  "agents/plumb-auditor.md": 87,
+  "agents/plumb-reviewer.md": 86,
+  "agents/plumb-scout.md": 75,
+  "hooks/session-start.md": 82,
+  "hooks/user-prompt.md": 28,
+  "always loaded": 670
+ },
+ "repeats": {
+  "- **verified ** <command> <result> unchecked <what the": [
+   "skills/plumb-audit/SKILL.md",
+   "skills/plumb-review/SKILL.md"
+  ],
+  "the search that shows it unused and what that search can't": [
+   "skills/plumb-audit/SKILL.md",
+   "skills/plumb/SKILL.md"
+  ],
+  "unchecked <what the change touches that nothing run exercised>": [
+   "skills/plumb-review/SKILL.md",
+   "skills/plumb/SKILL.md"
+  ]
+ }
+}

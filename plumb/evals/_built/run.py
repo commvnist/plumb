@@ -1128,6 +1128,32 @@ BUILT = {
 }
 
 
+# The plumb skills and agents each case's sessions load besides the charter, so _fast/affected.py can pick the cases
+# a change to one of them needs: each one a quarter or more of the 2026-11-26 guard runs loaded (Sonnet 5.5 and
+# Haiku 5.5, 24 runs a case). A case without an entry here fails affected.py.
+LOADS = {
+    "carrier": ("plumb-build",), "retitle": ("plumb-build",), "edit-title": ("plumb-build",),
+    "flaky-commit": ("plumb-debug", "plumb-ship"), "inline-commit": ("plumb-refactor", "plumb-build", "plumb-ship"),
+    "export": ("plumb-build",), "bound-tests": ("plumb-test",), "order-filter": ("plumb-build",),
+    "plan-rename": ("plumb-plan", "plumb-refactor"), "review-cap": ("plumb-review",),
+    "audit-billing": ("plumb-audit",), "pr-squash": ("plumb-ship",), "consumer": ("plumb-build",),
+    "auto-commits": ("plumb-auto", "plumb-build", "plumb-ship", "plumb-review", "plumb-reviewer"),
+    "auto-off": ("plumb-auto", "plumb-build", "plumb-ship"), "api-record": ("plumb-build",),
+    "doc-then-pr": ("plumb-build", "plumb-ship"), "one-branch": ("plumb-build", "plumb-ship"),
+    "one-branch-apart": ("plumb-build", "plumb-ship"), "one-branch-trunk": ("plumb-build", "plumb-ship"),
+    "two-diffs": ("plumb-build", "plumb-ship"), "review-scope": ("plumb-review",),
+    "deploy-record": ("plumb-build", "plumb-ship"), "plan-steps": ("plumb-plan", "plumb-refactor"),
+    "filter-report": ("plumb-build",), "false-cause": ("plumb-debug",), "refund-assumed": ("plumb-build",),
+    "audit-scope": ("plumb-audit",), "audit-delete": ("plumb-audit",), "pr-template": ("plumb-ship",),
+    "decided-where": ("plumb-build",), "plan-seam": ("plumb-plan", "plumb-refactor"),
+    "retries-rename": ("plumb-build", "plumb-ship"), "pr-rename": ("plumb-build", "plumb-ship"),
+    "review-timeout": ("plumb-review",),
+    "carry-on": ("plumb-plan", "plumb-auto", "plumb-build", "plumb-ship", "plumb-refactor", "plumb-review", "plumb-reviewer"),
+    "review-render": ("plumb-review",), "debug-base": ("plumb-debug",), "review-voice": ("plumb-review",),
+    "review-post": ("plumb-review",),
+}
+
+
 def text_hash(plugin):
     """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
     run under one arm name."""
