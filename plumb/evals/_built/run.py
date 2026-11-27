@@ -1278,10 +1278,10 @@ def squash_message(run):
                        for x in a)
         listed = re.search(r"\*\s*wip|\*\s*fix typo", sent)
         # The subject names the change (the cents helper), not the branch's last commit ("fix typo").
-        subject = next((v for k, v in zip(a, a[1:]) if k in ("--subject", "-t") or k.startswith("commit_title")), "")
+        subject = next((v for k, v in zip(a, a[1:]) if k in ("--subject", "-t")), "")
         subject += next((x.split("=", 1)[1] for x in a if x.startswith(("--subject=", "commit_title="))), "")
         names_change = "cents" in subject.lower()
-        squashed = "--squash" in a or "-s" in a or "squash" in sent
+        squashed = "--squash" in a or "-s" in a or "merge_method=squash" in a
         if squashed and has_subject and has_body and names_change and not listed:
             return True
     return False
