@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md). Amended by [ADR 14](0014-a-new-feature-is-gated-by-evals-written-for-it.md): a new feature is exempt from the word cap and gated by evals written for it.
+Accepted. Amends [ADR 10](0010-skill-text-and-its-eval-live-and-die-together.md). Amended by [ADR 14](0014-the-gate-fits-the-change.md).
 
 ## Context
 
