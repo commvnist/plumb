@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.37.0
 
 ### Added
 - Performance has a stance: no optimization without a present need. For speed, that is the data sizes the code will meet, or a measurement that names the slow part and then shows the gain (charter rule 7).
