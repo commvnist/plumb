@@ -10,7 +10,7 @@ ADR 11 made a comment on a pull request the one artifact written in the operator
 
 ## Decision
 
-A comment on a pull request (a review, a line comment, a reply) is in the neutral technical voice of ADR 9: impersonal, no first person, nothing on how it was produced. Where the operator asks for their own voice for a given text, that text is written so, and still mentions nothing of how it was produced. `hooks/check-commit.sh` flags first person in a pull request comment again, with the note it gives any post: reword it unless the operator asked for or approved that wording.
+A comment on a pull request (a review, a line comment, a reply) is in the neutral technical voice of ADR 9: impersonal, no first person, nothing on how it was produced. Charter rule 19 carries no exception for them. Where the operator asks for their own voice for a given text, the charter's precedence line (the operator's request outranks the charter) already gives it to them, and nothing they did not ask for changes: the text still mentions nothing of how it was produced. `hooks/check-commit.sh` flags first person in a pull request comment again, with the note it gives any post: reword it unless the operator asked for or approved that wording.
 
 ## Consequences
 

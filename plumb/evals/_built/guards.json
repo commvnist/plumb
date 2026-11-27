@@ -196,7 +196,7 @@
  "review-voice-asked": [
   [
    "plumb",
-   "only for text they ask it of",
+   "The operator's request outranks the project's rules",
    "human-voice"
   ]
  ]
