@@ -348,6 +348,21 @@ class StandIns(unittest.TestCase):
             self.assertEqual([c["args"][:2] for c in sim.writes(root)], [["pr", "comment"]])
             self.assertEqual(sim.writes(root)[0]["stdin"], "looks wrong\n")
 
+    def test_a_pull_request_shows_the_state_a_case_sets_in_plain_and_json_views(self):
+        with tempfile.TemporaryDirectory() as root:
+            repo = os.path.join(root, "repo")
+            run = built.Run(repo, None, [], "shop-small", None, None, root)
+            os.makedirs(repo)
+            run.sh("git init -q -b main && git commit -q --allow-empty -m start && git checkout -q -b pr-12 && "
+                   "git commit -q --allow-empty -m 'fix: the thing' && git checkout -q main")
+            env = sim.install(root, ["gh"])
+            with open(os.path.join(env["SIM_DIR"], "pr-state.json"), "w") as f:
+                json.dump({"state": "MERGED"}, f)
+            plain = run.sh("gh pr view 12", env=env)
+            self.assertEqual(plain.returncode, 0, plain.stderr)
+            self.assertIn("Merged •", plain.stdout)
+            self.assertEqual(json.loads(run.sh("gh pr view 12 --json state", env=env).stdout)["state"], "MERGED")
+
     def test_a_posted_review_is_judged_on_the_state_it_carries(self):
         def scored(command, verdict="Request changes: the cap test is deleted."):
             with tempfile.TemporaryDirectory() as root:

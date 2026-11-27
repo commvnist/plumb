@@ -97,7 +97,7 @@ elif pair == ("pr", "view"):
         keys = args[args.index("--json") + 1].split(",")
         print(json.dumps({k: data.get(k) for k in keys}))
     else:
-        print(f"{title} #{n}\n{state.title()} • sam wants to merge into main from {branch}\n\n{body}\n")
+        print(f"{title} #{n}\n{data['state'].title()} • sam wants to merge into main from {branch}\n\n{body}\n")
         if "--comments" in args or "-c" in args:
             for c in comments():
                 print(f"{c['author']['login']} commented on {c.get('path', '')}:{c.get('line', '')}\n{c['body']}\n")
