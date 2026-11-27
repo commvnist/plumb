@@ -82,6 +82,22 @@ class BuiltChecks(unittest.TestCase):
                      "||a||b||", "bq. quoted", "* item", "Plain sentence - with a dash."]:
             self.assertFalse(built.MARKDOWN.search(text), text)
 
+    def test_an_epic_fails_only_for_listing_its_children_in_its_text(self):
+        store = {"SHOP-200": {"type": "Epic", "summary": "Gift cards", "comments": [],
+                              "description": "Customers can buy gift cards, redeem gift cards at checkout and check "
+                                             "their gift card balance"},
+                 "SHOP-201": {"type": "Story", "summary": "Buy gift cards", "description": "", "comments": []},
+                 "SHOP-202": {"type": "Story", "summary": "Redeem gift cards at checkout", "description": "",
+                              "comments": []}}
+        real = built.jira_issues
+        built.jira_issues = lambda run: store
+        try:
+            self.assertTrue(built.epic_no_list(None))
+            store["SHOP-200"]["description"] = "h3. Work\n* Buy gift cards\n* Redeem gift cards at checkout"
+            self.assertFalse(built.epic_no_list(None))
+        finally:
+            built.jira_issues = real
+
     def test_first_person_is_told_from_neutral_text(self):
         for text in ["I fixed it.", "We should round later.", "my test", "Let us know", "Our branch", "I'll post it", "Ping me.", "Tell us."]:
             self.assertTrue(built.FIRST_PERSON.search(text), text)

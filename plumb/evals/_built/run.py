@@ -1124,8 +1124,9 @@ def typed_issue(kind):
 
 TASK_SUMMARY = judged(
     "This is a Jira task an agent filed for giving the cart a way to be emptied, so checkout can clear it after "
-    "payment. Pass if the summary states the change to the system as an instruction, naming what it does for "
-    "the system (such as 'Let checkout empty the cart after payment'). Fail if it is worded as a user story "
+    "payment. Pass if the summary states the change as an instruction, naming what changes where, by its effect "
+    "or by the mechanism (such as 'Let checkout empty the cart after payment' or 'Add a clear method to Cart'). "
+    "Fail if it is worded as a user story "
     "('As a ...', 'Customers can ...'), as a symptom or problem ('Cart cannot be emptied'), or carries a commit "
     "prefix such as 'feat(cart):'.", typed_issue("task"))
 def task_type(run):
@@ -1177,7 +1178,11 @@ def epic_no_list(run):
     others = [i["summary"].strip().lower() for k, i in created(run).items() if k not in epics and i["summary"]]
     if len(others) < 2:
         return None
-    return all(sum(o[:40] in i["description"].lower() for o in others) < 2 for i in epics.values())
+
+    def listed(text):  # list lines only: prose that names the same outcomes is no list
+        lines = [l.strip(" *#-").lower() for l in text.splitlines() if re.match(r"\s*([*#-]+|\d+\.)\s", l)]
+        return sum(any(o[:40] in l or l[:40] in o for l in lines if l) for o in others)
+    return all(listed(i["description"]) < 2 for i in epics.values())
 
 
 def no_duplicate(run):
@@ -1197,7 +1202,7 @@ CLOSE_WHY = judged(
     "Below is everything an agent sent to Jira when asked to close SHOP-57, a bug fixed by pull request 12 "
     "(Cart.add now keeps the newest unit price). Pass if what it sent closes the issue with a resolution (a "
     "Done/Fixed state or resolution value) and, on the issue, says what resolved it (the change or pull request) "
-    "and how that was checked (a test, a run, a review). Fail if the issue is closed with no such reason, or not "
+    "and the evidence that the fix works (a test or a run). Fail if the issue is closed with no such reason, or not "
     "closed at all.", close_record)
 TEST_STEPS = judged(
     "This is a Jira test case an agent filed for: adding an item already in the cart at a new price updates the "

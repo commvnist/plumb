@@ -180,7 +180,11 @@ write = not any(a in ("-h", "--help") for a in args) and (
     cmd in (("issue", "create"), ("issue", "edit"), ("issue", "move"), ("issue", "transition"),
             ("issue", "assign"), ("issue", "link"), ("issue", "delete"))
     or (cmd == ("issue", "comment") and "add" in words))
+unknown_type = cmd == ("issue", "create") and (opt("-t", "--type") or "Task").lower() not in [t.lower() for t in TYPES]
+write = write and not unknown_type  # a refused create changes nothing
 entry = {"tool": "jira", "args": args, "write": write}
+if unknown_type:
+    entry["refused"] = "no such issue type"
 if write:
     entry["body"] = body()
 with open(LOG, "a") as f:
@@ -246,7 +250,9 @@ elif write:
         rest = words[words.index(k) + 1:]
         issues[k].setdefault("links", []).append(rest)
     if k in issues and cmd[1] in ("move", "transition"):
-        issues[k]["status"] = " ".join(words[words.index(k) + 1:]) or issues[k]["status"]
+        values = {args[i + 1] for i, a in enumerate(args[:-1]) if a.startswith("-") and "=" not in a}
+        state = [w for w in words[words.index(k) + 1:] if w not in values]
+        issues[k]["status"] = " ".join(state) or issues[k]["status"]
     print(f"https://jira.example/browse/{k}")
 else:
     print(HELP)

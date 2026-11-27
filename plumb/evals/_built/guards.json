@@ -279,7 +279,7 @@
  "jira-close": [
   [
    "plumb-jira",
-   "sets the resolution and says why",
+   "the evidence it works",
    "resolved-why"
   ]
  ],
