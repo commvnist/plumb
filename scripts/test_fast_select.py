@@ -8,6 +8,8 @@ Usage: python3 scripts/test_fast_select.py
 """
 import importlib.util
 import os
+import subprocess
+import sys
 import unittest
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -15,13 +17,17 @@ _spec = importlib.util.spec_from_file_location("affected", os.path.join(ROOT, "p
 affected = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(affected)
 
-MAIN = affected.read_tree()
+# The replays edit the text as it stood when they were written, so a later rewording of a replayed phrase
+# leaves them standing; the selection rules and cases are today's.
+PINNED = "47181db"
+MAIN = affected.read_tree(PINNED)
+assert MAIN, f"commit {PINNED} is not in this clone: fetch the full history (actions/checkout with fetch-depth: 0)"
 CASES = affected.load_cases()
 PROBES = affected.routing_probes()
 
 
 def selection(*edits):
-    """The selection for today's text with each (file, old, new) edit applied; old must occur once."""
+    """The selection for the pinned text with each (file, old, new) edit applied; old must occur once."""
     new = dict(MAIN)
     for name, old, text in edits:
         assert new[name].count(old) == 1, f"{old!r} occurs {new[name].count(old)} times in {name}"
@@ -114,6 +120,17 @@ class Selection(unittest.TestCase):
 
     def test_every_built_case_says_what_it_loads(self):
         self.assertTrue(all(c["loads"] for c in CASES.values() if c["kind"] == "built"))
+
+
+class CaseHash(unittest.TestCase):
+    def test_same_in_two_processes(self):
+        # Runs are reused only when the hash matches the one recorded with them, in an earlier process.
+        code = ("import importlib.util as u; s = u.spec_from_file_location('r', 'plumb/evals/_fast/run.py'); "
+                "m = u.module_from_spec(s); s.loader.exec_module(m); "
+                "print(m.case_hash('_built/review-voice'), m.case_hash('bf-small-flaky'))")
+        runs = [subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, check=True)
+                .stdout for _ in range(2)]
+        self.assertEqual(runs[0], runs[1])
 
 
 class Units(unittest.TestCase):

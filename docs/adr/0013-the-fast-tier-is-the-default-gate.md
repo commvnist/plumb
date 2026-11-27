@@ -16,6 +16,6 @@ Each change to plumb's text is gated by `plumb/evals/_fast/run.py`: the static c
 
 ## Consequences
 
-- A gate costs the cases a change can reach, not the suite: a change to one skill's step asks one to two dozen cases instead of about a hundred, and a second wording on the same main pays only for its own arm.
+- A gate costs the cases a change can reach, not the suite: replayed over the 16 changes to the text before this record, the median selection was a quarter of the 101 cases (1 for a charter rule, 46 for plumb-build, which most cases load), and a second wording on the same main pays only for its own arm.
 - A regression in a case that neither guards linked text nor loads the changed file goes unseen until a full run. A charter change selects by its rule and the text pointing at it, never by loading, since every case loads the charter.
 - `scripts/test_fast_select.py` replays each regression past gates caught and fails when the selection would miss it; a regression found later that the selection missed is added there with the rule that catches it.

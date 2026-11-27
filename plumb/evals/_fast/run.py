@@ -16,7 +16,8 @@ to the earlier ones) where gate.py says to run on. The verdicts follow plumb/eva
 by the decision rule, guard cases by gate.py --guard. Nothing here changes the bar a wording must clear; it
 changes which cases are asked.
 
---dry-run prints the selection and the number of agent sessions it would start, and starts none.
+--dry-run prints the selection and the number of agent sessions it would start, and starts none; with --judge it
+also counts the earlier runs it would reuse.
 """
 import argparse
 import glob
@@ -81,18 +82,24 @@ def main_arm(base, into):
     return plugin
 
 
+# Code every case's runs depend on besides its own definition: the fixtures and the runners that grade them.
+SHARED = ["_fixtures/make.py", "_fixtures/seed.sh"]
+BUILT_CODE = ["_built/run.py", "_built/sim.py", "_built/probe_carrier.py", "_built/probe_framing.py", "_harm/run.py"]
+
+
 def case_hash(case):
-    """A hash of a case's definition, so a baseline recorded under another definition isn't reused."""
+    """A hash of what a case's runs depend on, so runs recorded under another definition aren't reused.
+
+    A built case's checks are functions that call helpers anywhere in the runner, so the runner's files stand
+    for its definition; a suite case is its generated folder."""
+    h = hashlib.sha256(case.encode() + b"\0")
     if case.startswith("_built/"):
-        name = case.split("/", 1)[1]
-        material = repr(sorted((k, repr(v)) for k, v in built.BUILT[name].items()))
+        paths = [os.path.join(EVALS, p) for p in BUILT_CODE]
     else:
-        h = hashlib.sha256()
-        for path in sorted(glob.glob(os.path.join(EVALS, case, "**", "*"), recursive=True)):
-            if os.path.isfile(path):
-                h.update(os.path.relpath(path, EVALS).encode() + b"\0" + open(path, "rb").read())
-        material = h.hexdigest()
-    return hashlib.sha256(material.encode()).hexdigest()[:12]
+        paths = sorted(p for p in glob.glob(os.path.join(EVALS, case, "**", "*"), recursive=True) if os.path.isfile(p))
+    for path in paths + [os.path.join(EVALS, p) for p in SHARED]:
+        h.update(os.path.relpath(path, EVALS).encode() + b"\0" + open(path, "rb").read())
+    return h.hexdigest()[:12]
 
 
 def suite_results(report, arm, text, model, first=1):
@@ -146,8 +153,8 @@ def log_cost(log):
     return cost
 
 
-def baseline_path(root, text, model, case):
-    return os.path.join(root, text, model, case.replace("/", "__") + ".json")
+def baseline_path(root, text, model, judge, case):
+    return os.path.join(root, text, f"{model}--{judge}", case.replace("/", "__") + ".json")
 
 
 def gate(records, as_guard):
@@ -184,7 +191,7 @@ def main():
         print(f"  {c:28} {s['why'][c]}")
     if s["full"]:
         print(f"full suite: {s['full_why']}: run every case (claude plugin eval and _built/run.py) instead")
-        return
+        sys.exit(1 if failed else 0)
     with tempfile.TemporaryDirectory(prefix="fast-main-") as tmp:
         main_plugin = main_arm(a.base, os.path.join(tmp, "main"))
         texts = {"main": built.text_hash(main_plugin), "new": built.text_hash(PLUGIN)}
@@ -194,11 +201,12 @@ def main():
         hashes = {c: case_hash(c) for c in selected}
         have = {}
         for r in earlier:
-            if r["case"] in hashes and r.get("case_hash") == hashes[r["case"]] and r["text"] == texts[r["arm"]]:
+            if r["case"] in hashes and r.get("case_hash") == hashes[r["case"]] and r["text"] == texts[r["arm"]] \
+                    and r.get("judge") == a.judge:
                 have.setdefault((r["arm"], r["model"], r["case"]), []).append(r)
         for m in models:
             for c in selected:
-                path = baseline_path(a.baseline, texts["main"], m, c)
+                path = baseline_path(a.baseline, texts["main"], m, a.judge, c)
                 if os.path.exists(path) and not have.get(("main", m, c)):
                     kept = json.load(open(path))
                     if kept["case_hash"] == hashes[c]:
@@ -231,12 +239,12 @@ def main():
                         if not c.startswith("_built/"):
                             got += run_suite_case(c, arm, plugin, model, a.judge, n, out, first)
                     for r in got:
-                        r["case_hash"] = hashes[r["case"]]
+                        r["case_hash"], r["judge"] = hashes[r["case"]], a.judge
                         spent += r.get("cost", 0)
                     records += got
                 if arm == "main":
                     for c in selected:
-                        path = baseline_path(a.baseline, texts["main"], model, c)
+                        path = baseline_path(a.baseline, texts["main"], model, a.judge, c)
                         os.makedirs(os.path.dirname(path), exist_ok=True)
                         with open(path, "w") as f:
                             json.dump({"case_hash": hashes[c], "records": [

@@ -151,6 +151,8 @@ def load_cases():
         for g in case["graders"].values():
             if g.get("type") == "tool_used" and g.get("tool") in ("Skill", "Agent") and g.get("input_match"):
                 loads |= set(re.findall(r"(plumb(?:-[a-z]+)?)\"", g["input_match"]))
+        # A tag that names a skill says the task is that skill's, whether or not a grader checks it loaded.
+        loads |= {f"plumb-{t}" for t in case["tags"] if os.path.isdir(os.path.join(PLUGIN, "skills", f"plumb-{t}"))}
         cases[name] = {"kind": "suite", "loads": loads, "tags": case["tags"], "guards": []}
     for name, entries in json.load(open(os.path.join(EVALS, "_fixtures", "guards.json"))).items():
         cases[name]["guards"] = [tuple(e[:2]) for e in entries]
@@ -158,6 +160,10 @@ def load_cases():
     built = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(built)
     built_guards = json.load(open(os.path.join(EVALS, "_built", "guards.json")))
+    missing = sorted(set(built.BUILT) - set(built.LOADS))
+    if missing:
+        raise SystemExit(f"_built/run.py: {', '.join(missing)} not in LOADS: add the plumb skills and agents its "
+                         "sessions load, so a change to them selects it")
     for name, case in built.BUILT.items():
         cases[f"_built/{name}"] = {"kind": "built", "loads": set(built.LOADS[name]), "tags": [],
                                    "guards": [tuple(e[:2]) for e in built_guards.get(name, [])]}
