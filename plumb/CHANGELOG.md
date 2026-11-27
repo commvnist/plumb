@@ -9,6 +9,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 - Knowledge from outside the repository is checked like any other premise: what the agent recalls about a library, tool or language, and what a subagent reports, is a claim until the code or a run confirms it, at the versions the project supports (rule 14).
 - Verification looks for the run that would prove a claim false, and a report claims no more than its runs show (rule 13).
 - An interface makes wrong use hard to write: its types and constructors can't express an invalid state (rule 9).
+
 ## 0.35.0
 
 ### Added
