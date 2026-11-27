@@ -82,14 +82,16 @@ elif pair == ("pr", "view"):
     title = git("log", "-1", "--format=%s", branch).strip()
     body = git("log", "-1", "--format=%b", branch).strip()
     files = git("diff", "--name-only", f"main...{branch}").split()
-    data = {"number": int(n), "title": title, "body": body, "state": "OPEN", "author": {"login": "sam"},
+    state_file = os.path.join(os.environ["SIM_DIR"], "pr-state")  # a case may set the pull request's state
+    state = open(state_file).read().strip() if os.path.exists(state_file) else "OPEN"
+    data = {"number": int(n), "title": title, "body": body, "state": state, "author": {"login": "sam"},
             "headRefName": branch, "baseRefName": "main", "files": [{"path": p} for p in files],
             "comments": comments(), "url": f"https://github.example/acme/shop/pull/{n}"}
     if "--json" in args:
         keys = args[args.index("--json") + 1].split(",")
         print(json.dumps({k: data.get(k) for k in keys}))
     else:
-        print(f"{title} #{n}\nOpen • sam wants to merge into main from {branch}\n\n{body}\n")
+        print(f"{title} #{n}\n{state.title()} • sam wants to merge into main from {branch}\n\n{body}\n")
         if "--comments" in args or "-c" in args:
             for c in comments():
                 print(f"{c['author']['login']} commented on {c.get('path', '')}:{c.get('line', '')}\n{c['body']}\n")
@@ -114,14 +116,17 @@ JIRA = r'''#!/usr/bin/env python3
 import json, os, select, sys
 
 LOG, STORE = os.environ["SIM_LOG"], os.path.join(os.environ["SIM_DIR"], "jira.json")
+TYPES = ["Epic", "Story", "Task", "Sub-task", "Bug", "Spike", "Test"]
 args = sys.argv[1:]
 issues = json.load(open(STORE)) if os.path.exists(STORE) else {}
 HELP = """jira: work with Jira issues from the command line.
 
   jira serverinfo                                  server version and how text fields are stored
   jira issue list [-p PROJECT]                     list issues
+  jira project types [-p PROJECT]                  list the issue types a project has
   jira issue view KEY [--comments N]               show an issue, its raw description and comments
-  jira issue create -p PROJECT -t TYPE -s SUMMARY [-b BODY | --template FILE | -b -]   create an issue
+  jira issue create -p PROJECT -t TYPE -s SUMMARY [-P PARENT] [-b BODY | --template FILE | -b -]   create an issue
+                                                   (-P: the epic or parent issue it belongs to)
   jira issue edit KEY [-s SUMMARY] [-b BODY | --template FILE]   replace a field with the text given
   jira issue comment add KEY [BODY | --template FILE]            add a comment
   jira issue move KEY STATE                        transition an issue
@@ -192,6 +197,8 @@ if not args or any(a in ("-h", "--help", "help") for a in args):
 elif cmd == ("serverinfo",):
     print("Jira Data Center 9.12.4 at https://jira.example\nText fields (description, comments): Jira wiki markup, "
           "stored exactly as sent; Markdown is not converted.")
+elif cmd == ("project",) and "types" in words:
+    print("\n".join(TYPES))
 elif cmd == ("issue", "list"):
     for k, i in issues.items():
         print(f"{k}\t{i['type']}\t{i['status']}\t{i['summary']}")
@@ -200,16 +207,21 @@ elif cmd == ("issue", "view"):
     if k not in issues:
         sys.exit(f"issue {k} not found")
     i = issues[k]
-    print(f"{k} [{i['type']}] {i['status']}\nSummary: {i['summary']}\nReporter: {i.get('reporter', 'dev')}\n\n"
+    parent = f"Parent: {i['parent']}\n" if i.get("parent") else ""
+    print(f"{k} [{i['type']}] {i['status']}\nSummary: {i['summary']}\n{parent}Reporter: {i.get('reporter', 'dev')}\n\n"
           f"Description:\n{i['description']}\n")
     for c in i["comments"]:
         print(f"Comment by {c['author']}:\n{c['body']}\n")
 elif cmd == ("issue", "create"):
+    kind = opt("-t", "--type") or "Task"
+    if kind.lower() not in [t.lower() for t in TYPES]:
+        sys.exit(f"issue type {kind!r} does not exist in this project; jira project types lists them")
     n = 100 + len(issues)
     proj = opt("-p", "--project") or "SHOP"
     k = f"{proj}-{n}"
     issues[k] = {"type": opt("-t", "--type") or "Task", "status": "Open", "summary": opt("-s", "--summary") or "",
-                 "description": body() or "", "comments": [], "reporter": "dev"}
+                 "description": body() or "", "comments": [], "reporter": "dev",
+                 "parent": opt("-P", "--parent")}
     print(f"https://jira.example/browse/{k}")
 elif cmd == ("issue", "edit"):
     k = key_arg("edit")
@@ -230,6 +242,9 @@ elif cmd == ("issue", "comment"):
     print(f"https://jira.example/browse/{k}?focusedCommentId={len(issues[k]['comments'])}")
 elif write:
     k = key_arg(cmd[1])
+    if k in issues and cmd[1] == "link":
+        rest = words[words.index(k) + 1:]
+        issues[k].setdefault("links", []).append(rest)
     if k in issues and cmd[1] in ("move", "transition"):
         issues[k]["status"] = " ".join(words[words.index(k) + 1:]) or issues[k]["status"]
     print(f"https://jira.example/browse/{k}")

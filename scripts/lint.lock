@@ -6,7 +6,7 @@
   "skills/plumb-build/SKILL.md": 153,
   "skills/plumb-debug/SKILL.md": 187,
   "skills/plumb-explain/SKILL.md": 141,
-  "skills/plumb-jira/SKILL.md": 443,
+  "skills/plumb-jira/SKILL.md": 992,
   "skills/plumb-plan/SKILL.md": 314,
   "skills/plumb-refactor/SKILL.md": 139,
   "skills/plumb-review/SKILL.md": 259,
@@ -17,7 +17,7 @@
   "agents/plumb-scout.md": 75,
   "hooks/session-start.md": 82,
   "hooks/user-prompt.md": 28,
-  "always loaded": 721
+  "always loaded": 731
  },
  "repeats": {
   "- **verified ** <command> <result> unchecked <what the": [

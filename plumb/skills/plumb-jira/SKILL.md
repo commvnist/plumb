@@ -1,25 +1,33 @@
 ---
 name: plumb-jira
-description: Writes to Jira in plumb's format: new issues, comments, progress updates, edits, links and transitions. Use for "file a ticket", "create a Jira issue", "open a bug for this", "comment on PROJ-123", "update the ticket", "post progress to Jira", "move it to done", or any write to a Jira work item.
+description: Writes to Jira in plumb's format: any issue type (bugs, stories, tasks, epics, spikes, tests, incidents, changes), comments of every kind, edits, links and transitions. Use for "file a ticket", "create a Jira issue", "open a bug for this", "comment on PROJ-123", "update the ticket", "post progress to Jira", "move it to done", or any write to a Jira work item.
 ---
 
 # Plumb: Jira
 
 An issue outlives the work that raised it: its reader arrives later with only the issue, so each one, and each comment, reads whole without the conversation that produced it.
 
-Writing to Jira notifies people. Create, comment, edit, link, assign, mention or transition only on an instruction to do that specific thing, on an issue whose key the operator's own words name or that this work created.
+Writing to Jira notifies people. Create, comment, edit, link, assign, mention or transition only on an instruction to do that specific thing, on an issue whose key the operator's own words name or that this work created. Before creating, search for the issue already filed and add to it instead; one problem per issue. A security weakness goes only where the project restricts who can see it. Fields that rank or schedule the work (priority, sprint, fix version, assignee, estimate) are the team's call: set them only when told, and state the impact that informs them.
 
-Before writing, read what the write depends on: the project's issue types, required fields, components and labels as they exist, never invented; for an edit, the field as it stands, since a write replaces the whole field, so carry over every part you weren't asked to change (another person's text, an embedded image, a link). Add to another person's description with a comment unless told to rewrite it.
+Before writing, read what the write depends on, never learning it by a trial write: the project's issue types, required fields, components and labels as they exist, never invented; for an edit, the field as it stands, since a write replaces the whole field, so carry over every part you weren't asked to change (another person's text, an embedded image, a link). Add to another person's description with a comment unless told to rewrite it.
 
 Write in the markup the channel renders, learned from the tool or the instance, never assumed (a tool that converts Markdown, ADF for the Cloud REST API v3, wiki markup for v2 and Data Center), and read the item back once to see it rendered.
 
 ## The format
 
-- **Summary:** the defect or need as someone searching would phrase it, naming where it happens and what goes wrong; never the fix, never a commit subject.
-- **Description,** under short headings, in this order, leaving out a part with nothing to say:
-  - for a defect: what happens and whom it affects; steps to reproduce from a clean start; expected against actual; the evidence (the command and its output, the version or commit it was seen on); a suspected cause only marked as unconfirmed, apart from what was observed.
-  - for a need: the problem and who has it, not a solution; what shows it done, each criterion checkable by someone else; what is out of scope.
-- **A comment or update:** what the work changed, read from the work itself (the commit, the diff, the run) rather than the request, its link, then what happens next or what is needed from whom.
+Each issue type is one of the kinds below. Use the type the operator names, else the one whose kind fits the work, and where it is missing, the project's nearest, keeping the kind's shape.
+
+- **Summary:** short, and what a person searching would type, naming where; never a commit subject. A defect names the symptom and what triggers it; a need, the outcome its users get; work, the change it makes, in the imperative, by its effect, naming the mechanism when the mechanism is the work ("Retry failed uploads in the nightly export"); a question, the question; an incident, the impact now.
+- **Description,** under short headings, in this order, leaving out a part with nothing known rather than holding its place:
+  - a defect (bug, a defect found in testing): what happens and whom it affects; how often, and where (version or commit, environment), with the last version without it when known; steps to reproduce from a clean start; expected against actual; the evidence (the command and its output); a cause, called confirmed only when a run proved it, kept apart from what was observed.
+  - a need (story, feature, improvement): the problem and who has it, not an implementation; what shows it done, specific to this item rather than the team's definition of done, each criterion checkable by someone else; what is out of scope. A story is one slice its users can use; one too large to finish soon is an epic.
+  - work (task, sub-task, technical debt): why it is needed, for debt the cost it carries now; what shows it done; what is out of scope. A sub-task says only what its parent doesn't.
+  - a container (epic, initiative): the outcome and the measure that shows it reached; what is out of scope; its work is its child issues, linked as children and each whole without it, not a list kept in its text.
+  - a question (spike, research): the question, why it matters, what is already known, and what would settle it; done is an answer recorded on the issue within the time the team allows, with its evidence and the work it implies, and its code is not shipped.
+  - a test (test case): the requirement it checks, linked; the state it starts from; steps, each with its expected result. A test run (execution, plan) names the build it ran on and each case's result, and links each failure's defect.
+  - operations (incident, problem, change): an incident, the impact now and since when, the current state and when the next update comes, then a timeline with times and their zone; a problem, the incidents it explains, the root cause and its evidence, the fix; a change, what changes and why, the risk, how it rolls out, the way back, and its window.
+- **A comment** reads whole for someone who missed the rest and does one job: an update, what the work changed, read from the work itself (the commit, the diff, the run) rather than the request, a link to that change, then what happens next; a blocker, what blocks, who can clear it and what is needed from them; a question, one question with what it takes to answer it; a handoff, the state, what is left and where the work is; a review or test result, the verdict, the build or commit it ran on, the evidence, and the defects it filed; a reopen, what is still wrong and where it was seen.
+- **A transition** that closes an issue sets the resolution and says why: the change that resolved it and the evidence it works (a test or run that shows it, run now if none is on record), or the reason it won't be done.
 - **Links:** a pull request or commit by its URL; a related issue as a Jira link whose kind says how they relate.
 
 Report each item written with its key and URL. When something can't be sent, give the complete text in the markup the instance renders, ready to paste.
