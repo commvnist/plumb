@@ -36,8 +36,8 @@ All three are told to change nothing, and Claude Code gives them no edit tools, 
 ## Flow
 
 ```
-plan → build → (test · debug · refactor as needed) → review → ship
-                 audit · explain any time · auto runs the whole line
+plan → build → (test · debug · refactor as needed) → review → ship (commit, pull request, merge, release, deploy)
+                 audit · explain · jira any time · auto runs the whole line
 ```
 
 Every phase that changes code ends with the same short report: what was done, what it is waiting on from you, why, what was decided, what was verified, and any suggestions. Plan, review and audit return their own formats. All of them are written to be skimmed: formatted text rather than code blocks, one item per line, numbered where you might answer by number.
