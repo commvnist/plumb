@@ -15,7 +15,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # scripts/test_fast_select.py replays edits on the text at a pinned commit.
+          fetch-depth: 0
       - run: python3 scripts/check_refs.py
+      - run: python3 scripts/lint_skills.py
+      - run: python3 scripts/test_lint_skills.py
+      - run: python3 scripts/test_fast_select.py
       - run: python3 _fixtures/write_cases.py --check
         working-directory: plumb/evals
       - run: python3 scripts/build_codex.py --check
