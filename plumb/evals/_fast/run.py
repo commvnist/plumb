@@ -101,7 +101,8 @@ def case_hash(case):
     else:
         paths = sorted(p for p in glob.glob(os.path.join(EVALS, case, "**", "*"), recursive=True) if os.path.isfile(p))
     for path in paths + [os.path.join(EVALS, p) for p in SHARED]:
-        h.update(os.path.relpath(path, EVALS).encode() + b"\0" + open(path, "rb").read())
+        with open(path, "rb") as f:
+            h.update(os.path.relpath(path, EVALS).encode() + b"\0" + f.read())
     return h.hexdigest()[:12]
 
 
