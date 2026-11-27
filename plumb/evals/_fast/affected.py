@@ -9,7 +9,7 @@ and reports, for every unit that changed:
 The gate fits the change. Each case guarding a phrase inside a changed unit (_fixtures/guards.json,
 _built/guards.json) answers the question that kind of change asks:
 
-- feature: the phrase is new, so the case was written for what the text adds. It shows the addition does what
+- feature: the case is new with the change (or its file is), so it was written for what the text adds. It shows the addition does what
   it promises, on the new text alone: there is no main behaviour to beat.
 - decide: the unit grew around a phrase main has. The case is the evidence for that text, so the addition must
   beat main on it by the decision rule in plumb/evals/README.md.
@@ -108,24 +108,29 @@ def unit_of(spans, lineno):
 
 def changed_units(old, new):
     """Labels of the units a change touched, from both sides of a line diff."""
+    return set(unit_deltas(old, new))
+
+
+def unit_deltas(old, new):
+    """{label: words the change added to that unit, net} for every unit it touched.
+
+    Counted on the diff's hunks, so a unit whose opening words were reworded (and so whose label differs on the
+    two sides) is still seen to have grown or shrunk by what its hunk added or removed."""
     old_lines, new_lines = old.splitlines(), new.splitlines()
     old_spans, new_spans = units(old), units(new)
-    touched = set()
+    deltas = {}
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False).get_opcodes():
         if tag == "equal":
             continue
-        # An insertion between units touches the unit it lands in, or the one just before it.
-        for spans, a, b in ((old_spans, i1, i2), (new_spans, j1, j2)):
+        delta = len(" ".join(new_lines[j1:j2]).split()) - len(" ".join(old_lines[i1:i2]).split())
+        # An insertion between units touches the unit it lands in, or the one just before it; its words count
+        # only for the units on the side that holds them.
+        for spans, a, b, counts in ((old_spans, i1, i2, i2 > i1), (new_spans, j1, j2, j2 > j1)):
             for n in range(a, max(b, a + 1)):
                 u = unit_of(spans, n) or unit_of(spans, n - 1)
                 if u and not u[0].startswith("heading"):
-                    touched.add(u[0])
-    return touched
-
-
-def unit_words(text, label):
-    lines = text.splitlines()
-    return sum(len(" ".join(lines[a:b + 1]).split()) for l, a, b in units(text) if l == label)
+                    deltas[u[0]] = deltas.get(u[0], 0) + (delta if counts else 0)
+    return deltas
 
 
 def rule_numbers(fragment):
@@ -186,6 +191,15 @@ def load_cases():
     return cases
 
 
+def case_names(rev):
+    """The cases a revision has, by the guard lists that name every case that guards text."""
+    names = set()
+    for path, prefix in (("evals/_fixtures/guards.json", ""), ("evals/_built/guards.json", "_built/")):
+        text = git_show(rev, path)
+        names |= {prefix + n for n in json.loads(text)} if text else set()
+    return names
+
+
 def git_show(rev, path):
     done = subprocess.run(["git", "show", f"{rev}:plumb/{path}"], cwd=ROOT, capture_output=True, text=True)
     return done.stdout if done.returncode == 0 else None
@@ -219,10 +233,14 @@ def locate(text, phrase):
     return found
 
 
-def select(old, new, cases, routing_probes=(), full=False):
-    """The selection for a change from texts `old` to texts `new` ({file name: text})."""
+def select(old, new, cases, routing_probes=(), full=False, old_cases=None):
+    """The selection for a change from texts `old` to texts `new` ({file name: text}). `old_cases` names the
+    cases the base already had (all of `cases` when not given): a case the change adds, guarding a changed
+    unit, was written for what the change adds."""
+    old_cases = set(cases) if old_cases is None else old_cases
     names = sorted(set(old) | set(new))
-    changed = {n: changed_units(old.get(n, ""), new.get(n, "")) for n in names if old.get(n) != new.get(n)}
+    deltas = {n: unit_deltas(old.get(n, ""), new.get(n, "")) for n in names if old.get(n) != new.get(n)}
+    changed = {n: set(d) for n, d in deltas.items()}
     added = sorted(n for n in changed if n not in old)
     removed = sorted(n for n in changed if n not in new)
     reasons = {}  # case -> (tier, reason)
@@ -238,7 +256,7 @@ def select(old, new, cases, routing_probes=(), full=False):
             reasons[case] = (tier, why)
 
     def grew(f, label):
-        return unit_words(new.get(f, ""), label) > unit_words(old.get(f, ""), label)
+        return deltas.get(f, {}).get(label, 0) > 0
 
     # Units the change points at, or that point at it, by number or section name.
     linked = set()
@@ -265,8 +283,8 @@ def select(old, new, cases, routing_probes=(), full=False):
             here = locate(old.get(f, ""), phrase) | locate(new.get(f, ""), phrase)
             hit = here & changed.get(f, set())
             where = f"{phrase!r} in {f} ({', '.join(sorted(hit)) or 'removed'})"
-            if hit and phrase not in old.get(f, ""):
-                pick(case, "feature", f"guards {where}, new text: it shows what the text adds")
+            if hit and (case not in old_cases or f in added):
+                pick(case, "feature", f"guards {where}, a case new with the change: it shows what the text adds")
             elif hit and any(grew(f, u) for u in hit):
                 pick(case, "decide", f"guards {where}, which grew: the addition must beat main here")
             elif hit or (phrase in old.get(f, "") and phrase not in new.get(f, "")):
@@ -286,10 +304,16 @@ def select(old, new, cases, routing_probes=(), full=False):
     # New or grown text that no case guards has nothing here to judge it: it is owed a case written for it.
     owed = []
     for f, labels in sorted(changed.items()):
+        if f == "README":  # the plugin's page for people; no session acts on it
+            continue
         guarded = {u for info in cases.values() for g, phrase in info["guards"] if g == f
                    for u in locate(new.get(f, ""), phrase)}
-        owed += [f"{f} {u}" for u in sorted(labels) if u in {l for l, _, _ in units(new.get(f, ""))}
-                 and grew(f, u) and u not in guarded]
+        bare = [u for u in sorted(labels) if u in {l for l, _, _ in units(new.get(f, ""))}
+                and grew(f, u) and u not in guarded]
+        if f in added and bare:
+            owed.append(f"{f} (new): {len(bare)} of its units")
+        else:
+            owed += [f"{f} {u}" for u in bare]
 
     routing = []
     described = {n for n in changed if "frontmatter" in changed[n]}
@@ -332,7 +356,7 @@ def main():
     ap.add_argument("--full", action="store_true", help="select the whole suite")
     ap.add_argument("--json", action="store_true", help="print the selection as JSON for _fast/run.py")
     a = ap.parse_args()
-    s = select(read_tree(a.base), read_tree(), load_cases(), routing_probes(), a.full)
+    s = select(read_tree(a.base), read_tree(), load_cases(), routing_probes(), a.full, case_names(a.base))
     if a.json:
         print(json.dumps(s, indent=1))
         return

@@ -128,10 +128,26 @@ class ChangeType(unittest.TestCase):
         new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].rstrip("\n") + "\n" + step + "\n"})
         cases = dict(CASES, **{"_built/record": {"kind": "built", "loads": {"plumb-debug"}, "tags": [],
                                                   "guards": [("plumb-debug", "where the team tracks defects")]}})
-        s = affected.select(MAIN, new, cases, PROBES)
+        s = affected.select(MAIN, new, cases, PROBES, old_cases=set(CASES))
         self.assertEqual(s["feature"], ["_built/record"])
         self.assertEqual(s["owed"], [])
         self.assertIn("bf-small-flaky", s["guard"])
+
+    def test_reworded_phrase_with_its_guard_updated_holds(self):
+        # check_refs makes a rewording of a guarded phrase update its guard; the case is still main's to hold.
+        old_phrase, new_phrase = "an intermittent one by forcing its cause", "an intermittent one by provoking its cause"
+        new = dict(MAIN, **{"plumb-debug": MAIN["plumb-debug"].replace(old_phrase, new_phrase)})
+        cases = {k: dict(v, guards=[(f, new_phrase if p == old_phrase else p) for f, p in v["guards"]])
+                 for k, v in CASES.items()}
+        s = affected.select(MAIN, new, cases, PROBES, old_cases=set(CASES))
+        self.assertIn("bf-small-flaky", s["hold"])
+        self.assertEqual(s["feature"], [])
+
+    def test_shorter_rewording_of_an_opening_holds(self):
+        s = selection(("plumb-review", "- **Verdict:** approve | approve with suggestions | request changes,",
+                       "- **Verdict:** approve, approve with suggestions or request changes,"))
+        self.assertIn("_built/review-scope", s["hold"])
+        self.assertEqual(s["decide"] + s["owed"], [])
 
     def test_new_text_without_a_case_is_owed_one(self):
         step = "8. **Record it** where the team tracks defects."
@@ -186,7 +202,7 @@ class FeatureBar(unittest.TestCase):
         run.__spec__.loader.exec_module(run)
         records = [{"case": "c", "arm": "new", "model": m, "checks": {"x": ok}}
                    for m, oks in runs.items() for ok in oks]
-        return run.accept(records)
+        return run.accept(records, ["h", "s"])
 
     def test_two_thirds_on_each_model_passes(self):
         self.assertIn("does what it promises", self.verdict(h=[True] * 4 + [False] * 2, s=[True] * 6))
@@ -195,7 +211,10 @@ class FeatureBar(unittest.TestCase):
         self.assertIn("falls short", self.verdict(h=[True] * 3 + [False] * 3, s=[True] * 6))
 
     def test_too_few_runs_asks_for_more(self):
-        self.assertIn("run each model to 6", self.verdict(h=[True] * 3))
+        self.assertIn("run each model to 6", self.verdict(h=[True] * 3, s=[True] * 6))
+
+    def test_a_model_with_no_measured_runs_is_short(self):
+        self.assertIn("run each model to 6", self.verdict(s=[True] * 6))
 
 
 class Units(unittest.TestCase):

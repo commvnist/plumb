@@ -160,7 +160,7 @@ def baseline_path(root, text, model, judge, case):
     return os.path.join(root, text, f"{model}--{judge}", case.replace("/", "__") + ".json")
 
 
-def accept(records):
+def accept(records, models):
     """Whether a feature does what it promises: each check passes in at least ACCEPT of measured runs on each
     model, with at least a first stage of runs."""
     rows = {}
@@ -171,8 +171,8 @@ def accept(records):
                     rows.setdefault((r["case"], check), {}).setdefault(r["model"], []).append(ok)
     lines = []
     for (case, check), by_model in sorted(rows.items()):
-        cells = [f"{m}: {sum(v)}/{len(v)}" for m, v in sorted(by_model.items())]
-        short = min(len(v) for v in by_model.values()) < FIRST_STAGE
+        cells = [f"{m}: {sum(by_model.get(m, []))}/{len(by_model.get(m, []))}" for m in models]
+        short = any(len(by_model.get(m, [])) < FIRST_STAGE for m in models)
         ok = all(sum(v) >= ACCEPT * len(v) for v in by_model.values())
         verdict = (f"run each model to {FIRST_STAGE}" if short else "does what it promises" if ok else
                    "falls short: below two thirds of runs")
@@ -207,7 +207,7 @@ def main():
 
     failed = static()
     s = affected.select(affected.read_tree(a.base), affected.read_tree(), affected.load_cases(),
-                        affected.routing_probes(), a.full)
+                        affected.routing_probes(), a.full, affected.case_names(a.base))
     selected = [c for tier in affected.RANK for c in s[tier]]
     print("\n" + ", ".join(f"{tier} {len(s[tier])}" for tier in affected.RANK)
           + f", routing {len(s['routing'])} ({s['routing_why']})")
@@ -282,7 +282,7 @@ def main():
             json.dump(records, f, indent=1)
         print(f"\nresults in {os.path.relpath(a.out, ROOT)}/results.json; the agent sessions this call ran cost "
               f"${spent:.2f}, judges not counted")
-        print("feature cases (new arm alone):\n" + accept([r for r in records if r["case"] in s["feature"]]))
+        print("feature cases (new arm alone):\n" + accept([r for r in records if r["case"] in s["feature"]], models))
         print("addition cases (must beat main):\n" + gate([r for r in records if r["case"] in s["decide"]], False))
         print("held cases (must hold against main):\n"
               + gate([r for r in records if r["case"] in s["hold"] + s["guard"]], True))
