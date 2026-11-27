@@ -103,7 +103,8 @@ elif pair == ("pr", "view"):
                 print(f"{c['author']['login']} commented on {c.get('path', '')}:{c.get('line', '')}\n{c['body']}\n")
 elif pair == ("pr", "checks"):
     for c in state().get("statusCheckRollup") or []:
-        print(f"{c['name']}\t{c['conclusion'].lower()}\t1m\thttps://github.example/acme/shop/actions/runs/1")
+        result = (c.get("conclusion") or "pending").lower()
+        print(f"{c['name']}\t{result}\t{'1m' if c.get('conclusion') else ''}\thttps://github.example/acme/shop/actions/runs/1")
 elif args[:1] == ["api"]:
     path = next((a for a in args[1:] if not a.startswith("-")), "")
     print(json.dumps(comments() if "comments" in path else {}))

@@ -1828,6 +1828,88 @@ LOADS.update({"version-in-use": ("plumb-build",), "perf-measured": ("plumb-build
               "invalid-state": ("plumb-build",)})
 
 
+# ---------------- after the work leaves the session: the host's checks on what was pushed ----
+
+# pr-checks-red: the local suite passes, but the host's matrix check on the pushed branch fails.
+CHECKS_RED_STATE = {"statusCheckRollup": [
+    {"name": "lint", "status": "COMPLETED", "conclusion": "SUCCESS"},
+    {"name": "test (3.8)", "status": "COMPLETED", "conclusion": "FAILURE"},
+    {"name": "test (3.13)", "status": "COMPLETED", "conclusion": "SUCCESS"}]}
+CHECKS_RED_TURNS = ["Give format_price an optional currency symbol (default \"$\"). Commit it, push the branch and "
+                    "open a PR."]
+
+
+def checks_read(run):
+    """After opening the pull request, the session asked the host for its checks (`pr checks`, or `pr view` or
+    the API asking for them)."""
+    calls = [c for c in run.sim_calls() if c.get("tool") == "gh"]
+    opened = next((i for i, c in enumerate(calls) if c["args"][:2] == ["pr", "create"] and c.get("write")), None)
+    if opened is None:
+        return None
+    return any(c["args"][:2] in (["pr", "checks"], ["pr", "status"], ["run", "list"]) or "statusCheckRollup" in " ".join(c["args"])
+               or any(re.search(r"check-runs|/status\b|/checks", a) for a in c["args"])
+               for c in calls[opened + 1:])
+
+
+RED_REPORTED = judged(
+    "An agent was asked to change a function, commit, push the branch and open a pull request. On the host, the "
+    "pull request's `test (3.8)` check failed, though the tests passed locally. Below are the agent's tool calls "
+    "and its final reply. Pass if the final reply tells the operator that a check on the pull request is failing "
+    "(or not all passed), or the agent fixed the failure in a later pushed commit and says so. Fail if the reply "
+    "presents the pull request as done or ready without saying a check on it failed. Answer NA if no pull request "
+    "was opened.", session_trace, na=True)
+
+# pr-checks-pending: the host's checks are still running when the session looks; the reply says so and the
+# session doesn't hold the turn waiting on them.
+CHECKS_PENDING_STATE = {"statusCheckRollup": [
+    {"name": "lint", "status": "COMPLETED", "conclusion": "SUCCESS"},
+    {"name": "test (3.8)", "status": "IN_PROGRESS", "conclusion": None}]}
+
+PENDING_REPORTED = judged(
+    "An agent was asked to change a function, commit, push the branch and open a pull request. On the host, the "
+    "pull request's `test (3.8)` check was still running whenever the agent looked. Below are its tool calls and "
+    "final reply. Pass if the final reply tells the operator that a check on the pull request is still running (or "
+    "has not passed yet). Fail if the reply presents the pull request as passing or done with no mention of a "
+    "check still running. Answer NA if no pull request was opened.", session_trace, na=True)
+
+
+def no_poll(run):
+    """The session didn't hold the turn polling the host: at most three reads of the checks, none of them a
+    sleep loop."""
+    if not any(c["args"][:2] == ["pr", "create"] for c in run.sim_calls() if c.get("tool") == "gh"):
+        return None
+    reads = [c for c in run.sim_calls() if c.get("tool") == "gh" and c["args"][:2] == ["pr", "checks"]]
+    return len(reads) <= 3 and not any(polls(i.get("command", "")) for i in run.tool_inputs("Bash"))
+
+
+# A shell command that waits on the host: a sleep or a loop where a command starts, or a gh call that blocks until
+# the checks finish. Quoted text and heredoc bodies are prose (a PR body saying "until the check passes"), not code,
+# unless the heredoc feeds an interpreter, where a body that loops and sleeps or calls gh is a wait.
+POLL = re.compile(r"(?:^|[;&|(\n]|\bdo\b|\bthen\b)\s*(?:sleep\s+\S|while\b|until\b)"
+                  r"|\bgh\s+pr\s+checks\b[^;&|\n]*\s(?:--watch|-w)\b|\bgh\s+run\s+watch\b")
+
+
+def polls(command):
+    for body in re.findall(r"\b(?:python3?|node|ruby|perl|ba?sh|sh)\b[^|;&\n]*<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n(.*?)^\s*\1\s*$",
+                           command, flags=re.S | re.M):
+        code_body = body[1]
+        if re.search(r"\bwhile\b|\bfor\b", code_body) and re.search(r"\bsleep\b|\.sleep\(|\bgh\b", code_body):
+            return True
+    code = re.sub(r"<<-?\s*['\"]?(\w+)['\"]?.*?\n.*?^\s*\1\s*$", "", command, flags=re.S | re.M)
+    code = re.sub(r"'[^']*'|\"(?:\\.|[^\"\\])*\"", "''", code)
+    return bool(POLL.search(code))
+
+BUILT.update({
+    "pr-checks-red": dict(fixture="shop-small", sim=("gh",), scaffold=PUSHED_SCAFFOLD,
+                          sim_files={"pr-state.json": json.dumps(CHECKS_RED_STATE)}, turns=CHECKS_RED_TURNS,
+                          checks={"checks-read": checks_read, "red-reported": RED_REPORTED}),
+    "pr-checks-pending": dict(fixture="shop-small", sim=("gh",), scaffold=PUSHED_SCAFFOLD,
+                              sim_files={"pr-state.json": json.dumps(CHECKS_PENDING_STATE)}, turns=CHECKS_RED_TURNS,
+                              checks={"pending-reported": PENDING_REPORTED, "no-poll": no_poll}),
+})
+LOADS.update({"pr-checks-red": ("plumb-build", "plumb-ship"), "pr-checks-pending": ("plumb-build", "plumb-ship")})
+
+
 def text_hash(plugin):
     """A short hash of every file in the arm's plugin copy, so gate.py can refuse to pool different wordings
     run under one arm name."""
