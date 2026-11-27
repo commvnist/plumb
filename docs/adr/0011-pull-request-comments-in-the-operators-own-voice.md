@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amends [ADR 9](0009-artifacts-in-the-operators-voice.md).
+Superseded by [ADR 13](0013-pull-request-comments-in-the-neutral-voice.md). Amended [ADR 9](0009-artifacts-in-the-operators-voice.md).
 
 ## Context
 

@@ -189,7 +189,14 @@
  "review-voice": [
   [
    "plumb",
-   "is the one place for a person's voice",
+   "no first person",
+   "neutral-voice"
+  ]
+ ],
+ "review-voice-asked": [
+  [
+   "plumb",
+   "The operator's request outranks the project's rules",
    "human-voice"
   ]
  ]
