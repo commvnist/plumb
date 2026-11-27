@@ -84,7 +84,8 @@ def main_arm(base, into):
 
 # Code every case's runs depend on besides its own definition: the fixtures and the runners that grade them.
 SHARED = ["_fixtures/make.py", "_fixtures/seed.sh"]
-BUILT_CODE = ["_built/run.py", "_built/sim.py", "_built/probe_carrier.py", "_built/probe_framing.py", "_harm/run.py"]
+BUILT_CODE = ["_built/run.py", "_built/sim.py", "_built/probe_carrier.py", "_built/probe_framing.py", "_harm/run.py",
+              "_fixtures/write_cases.py"]  # many built cases take their prompts and scaffolds from the suite table
 
 
 def case_hash(case):

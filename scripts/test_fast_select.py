@@ -8,8 +8,10 @@ Usage: python3 scripts/test_fast_select.py
 """
 import importlib.util
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -131,6 +133,20 @@ class CaseHash(unittest.TestCase):
         runs = [subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, check=True)
                 .stdout for _ in range(2)]
         self.assertEqual(runs[0], runs[1])
+
+    def test_changes_with_what_a_built_case_reads(self):
+        # A built case's prompt can live in the suite table; a run on the old prompt must not be reused.
+        run = importlib.util.module_from_spec(importlib.util.spec_from_file_location(
+            "fast_run", os.path.join(ROOT, "plumb", "evals", "_fast", "run.py")))
+        run.__spec__.loader.exec_module(run)
+        before = run.case_hash("_built/carrier")
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = os.path.join(tmp, "evals")
+            shutil.copytree(run.EVALS, copy, ignore=shutil.ignore_patterns("results", "__pycache__"))
+            with open(os.path.join(copy, "_fixtures", "write_cases.py"), "a") as f:
+                f.write("\n# edited\n")
+            run.EVALS = copy
+            self.assertNotEqual(run.case_hash("_built/carrier"), before)
 
 
 class Units(unittest.TestCase):
