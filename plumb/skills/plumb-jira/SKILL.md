@@ -1,13 +1,13 @@
 ---
 name: plumb-jira
-description: Writes to Jira in plumb's format: any issue type (bugs, stories, tasks, epics, spikes, tests, incidents, changes), comments of every kind, edits, links and transitions. Use for "file a ticket", "create a Jira issue", "open a bug for this", "comment on PROJ-123", "update the ticket", "post progress to Jira", "move it to done", or any write to a Jira work item.
+description: Writes issues and comments in plumb's format, in Jira or any tracker: any issue type (bugs, stories, tasks, epics, spikes, tests, incidents, changes), comments of every kind, edits, links and transitions. Use for "file a ticket", "create a Jira issue", "open a GitHub issue", "open a bug for this", "comment on PROJ-123", "update the ticket", "post progress to Jira", "post an update on the PR", "move it to done", or any write to a work item.
 ---
 
-# Plumb: Jira
+# Plumb: Jira and other trackers
 
 An issue outlives the work that raised it: its reader arrives later with only the issue, so each one, and each comment, reads whole without the conversation that produced it.
 
-Writing to Jira notifies people. Create, comment, edit, link, assign, mention or transition only on an instruction to do that specific thing, on an issue whose key the operator's own words name or that this work created. Before creating, search for the issue already filed and add to it instead; one problem per issue. A security weakness goes only where the project restricts who can see it. Fields that rank or schedule the work (priority, sprint, fix version, assignee, estimate) are the team's call: set them only when told, and state the impact that informs them.
+Writing to a tracker notifies people. Create, comment, edit, link, assign, mention or transition only on an instruction to do that specific thing, on an item the operator's own words name or that this work created. Before creating, search for the issue already filed and add to it instead; one problem per issue. A vulnerability goes where the project takes private reports, never into a public issue unless the operator, told that it discloses the hole, still asks. Fields that rank or schedule the work (priority, sprint, fix version, assignee, estimate) are the team's call: set them only when told, and state the impact that informs them.
 
 Before writing, read what the write depends on, never learning it by a trial write: the project's issue types, required fields, components and labels as they exist, never invented; for an edit, the field as it stands, since a write replaces the whole field, so carry over every part you weren't asked to change (another person's text, an embedded image, a link). Add to another person's description with a comment unless told to rewrite it.
 
@@ -28,6 +28,6 @@ Each issue type is one of the kinds below. Use the type the operator names, in p
   - operations (incident, problem, change): an incident, the impact now and since when, the current state, any workaround, and when the next update comes, then a timeline with times and their zone; a problem, the incidents it explains, the root cause and its evidence, the workaround until the fix, the fix; a change, what changes and why, the risk, how it rolls out, what shows it worked, the way back, and its window.
 - **A comment** reads whole for someone who missed the rest and does one job: an update, what the work changed, read from the work itself (the commit, the diff, the run) rather than the request, a link to that change, then what happens next, ending with its last fact; a blocker, what blocks, who can clear it and what is needed from them; a question, one question with what it takes to answer it; a handoff, the state, what is left and where the work is; a review or test result, the verdict, the build or commit it ran on, the evidence, and the defects it filed; a decision reached elsewhere, what was decided, by whom and what it changes here; a reopen, what is still wrong and where it was seen.
 - **A transition** that closes an issue sets the resolution and says why: the change that resolved it and the evidence it works (a test or run that shows it, run now if none is on record), or the reason it won't be done.
-- **Links:** a pull request or commit by its URL; a related issue as a Jira link whose kind says how they relate.
+- **Links:** a pull request or commit by its URL; a related issue as the tracker's own link, in Jira one whose kind says how they relate.
 
 Report each item written with its key and URL. When something can't be sent, give the complete text in the markup the instance renders, ready to paste.

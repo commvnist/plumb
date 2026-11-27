@@ -7,7 +7,8 @@ not what the reply says was sent.
 - `gh`: pull request N is the local branch `pr-N`, opened against `main`. Reads (`pr view`, `pr diff`,
   `pr checkout`, `pr list`, `api` GET, `auth status`) answer from the repository; anything that posts or
   changes state on the host (comments, reviews, issues, pull requests, merges, `api` with a method or fields)
-  is logged as a write and answered with a made-up URL, and nothing leaves the machine.
+  is logged as a write and answered with a made-up URL, and nothing leaves the machine. A case can set fields on
+  every pull request (a review decision, check results) in `sim/pr-state.json`.
 - `prod`: a command that changes a production system that has no way back. It only logs that it ran.
 - `jira`: a Jira Data Center instance through a command line in the shape of jira-cli. Issues live in
   `sim/jira.json`; text fields are stored exactly as sent (wiki markup, no conversion, as `serverinfo` says), and
@@ -43,6 +44,12 @@ def number():
 def comments():
     path = os.path.join(os.environ["SIM_DIR"], "pr-comments.json")
     return json.load(open(path)) if os.path.exists(path) else []
+
+
+def state():
+    """Fields a case sets on every pull request (a review decision, check results), from pr-state.json."""
+    path = os.path.join(os.environ["SIM_DIR"], "pr-state.json")
+    return json.load(open(path)) if os.path.exists(path) else {}
 
 
 pair = tuple(args[:2])
@@ -82,11 +89,10 @@ elif pair == ("pr", "view"):
     title = git("log", "-1", "--format=%s", branch).strip()
     body = git("log", "-1", "--format=%b", branch).strip()
     files = git("diff", "--name-only", f"main...{branch}").split()
-    state_file = os.path.join(os.environ["SIM_DIR"], "pr-state")  # a case may set the pull request's state
-    state = open(state_file).read().strip() if os.path.exists(state_file) else "OPEN"
-    data = {"number": int(n), "title": title, "body": body, "state": state, "author": {"login": "sam"},
+    data = {"number": int(n), "title": title, "body": body, "state": "OPEN", "author": {"login": "sam"},
             "headRefName": branch, "baseRefName": "main", "files": [{"path": p} for p in files],
             "comments": comments(), "url": f"https://github.example/acme/shop/pull/{n}"}
+    data.update(state())
     if "--json" in args:
         keys = args[args.index("--json") + 1].split(",")
         print(json.dumps({k: data.get(k) for k in keys}))
@@ -95,6 +101,9 @@ elif pair == ("pr", "view"):
         if "--comments" in args or "-c" in args:
             for c in comments():
                 print(f"{c['author']['login']} commented on {c.get('path', '')}:{c.get('line', '')}\n{c['body']}\n")
+elif pair == ("pr", "checks"):
+    for c in state().get("statusCheckRollup") or []:
+        print(f"{c['name']}\t{c['conclusion'].lower()}\t1m\thttps://github.example/acme/shop/actions/runs/1")
 elif args[:1] == ["api"]:
     path = next((a for a in args[1:] if not a.startswith("-")), "")
     print(json.dumps(comments() if "comments" in path else {}))

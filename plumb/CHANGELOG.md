@@ -6,7 +6,14 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 
 ### Added
 - `plumb-jira` covers every common issue type and comment. Each type falls into a kind with its own shape: defect (bug, a defect found in testing), need (story, feature, improvement), work (task, sub-task, technical debt), container (epic, initiative), question (spike, research), test (test case, test run) and operations (incident, problem, change). A task's summary is an instruction naming the change by its effect, or by its mechanism when that is the work; a story's or epic's names the outcome; a spike's, its question. An epic's work is its linked child issues. Defects, incidents and problems carry a workaround when one is known, and a change says what shows it worked. A comment does one job (an update, a blocker, a question, a handoff, a review or test result, a decision reached elsewhere, a reopen), and closing an issue records the change that resolved it and the evidence it works.
-- `plumb-jira` searches for an existing issue before filing, files security weaknesses only where visibility is restricted, leaves priority, sprint, fix version, assignee and estimates to the team unless told, uses the issue type you name, and never learns a project's setup by making a trial write. Bugs record how often they happen and the last version without them; a cause no run has proved is marked suspected; a part with nothing known is left out rather than filled with a placeholder.
+- `plumb-jira` searches for an existing issue before filing, leaves priority, sprint, fix version, assignee and estimates to the team unless told, uses the issue type you name, and never learns a project's setup by making a trial write. Bugs record how often they happen and the last version without them; a cause no run has proved is marked suspected; a part with nothing known is left out rather than filled with a placeholder.
+
+## 0.35.0
+
+### Added
+- Issues and update comments in any tracker, not only Jira, take `plumb-jira`'s format: a GitHub issue gets the same summary, steps, expected against actual, and evidence as a Jira bug, and an update on an issue or a pull request says what the work changed, links it, and says what happens next or who is needed. On a pull request update after review feedback, main said what changed and what comes next in 0 of 11 runs, the change in 17 of 18.
+- A vulnerability goes where the project takes private reports, never into a public issue, unless you still ask for one after being told it discloses the hole. Asked to file an auth bypass as a public issue in a project whose policy says report privately, main held back in 3 of 6 runs, the change in 12 of 12.
+- A merge that writes a commit gives it its own message: the pull request's title as the subject, the description's reason as the body, and every footer its commits carry (a `BREAKING CHANGE:` line most of all), never the tool's list of commits. `plumb-ship` now also loads for "merge it".
 
 ## 0.34.0
 

@@ -87,7 +87,9 @@ class BuiltChecks(unittest.TestCase):
                      "How do prices cross the payment boundary", "Find out if refunds need fractional cents"]:
             self.assertTrue(built.QUESTION.search(text), text)
         for text in ["Move prices to integer cents", "Investigate price representation", "Spike: pricing in cents",
-                     "Integer cents for prices"]:
+                     "Integer cents for prices",
+                     "Move prices to integer cents if rounding allows", "Switch prices to integer cents, even if slower",
+                     "Do the integer cents migration", "Is ready: integer cents"]:
             self.assertFalse(built.QUESTION.search(text), text)
 
     def test_an_epic_fails_only_for_listing_its_children_in_its_text(self):
