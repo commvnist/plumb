@@ -199,5 +199,26 @@
    "The operator's request outranks the project's rules",
    "human-voice"
   ]
+ ],
+ "jira-update": [
+  [
+   "plumb-jira",
+   "read from the work itself",
+   "whole"
+  ]
+ ],
+ "jira-bug": [
+  [
+   "plumb-jira",
+   "Write in the markup the channel renders",
+   "markup"
+  ]
+ ],
+ "jira-edit": [
+  [
+   "plumb-jira",
+   "carry over every part you weren't asked to change",
+   "kept"
+  ]
  ]
 }

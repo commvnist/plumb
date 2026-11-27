@@ -996,6 +996,115 @@ RETRIES_TURNS = [
     "counts as one attempt, with a default of 6. Commit it."]
 
 
+# ---------------- Jira, through the stand-in in sim.py (a Data Center instance storing wiki markup) ----------------
+
+JIRA_SCAFFOLD = """
+printf '\\nIssues are tracked in Jira, project SHOP; the `jira` command on PATH is set up and logged in.\\n' >> CLAUDE.md
+git add CLAUDE.md && git commit -qm "docs: say where issues are tracked"
+"""
+SHOP_42 = {"SHOP-42": {"type": "Bug", "status": "In Progress", "reporter": "priya", "comments": [],
+                       "summary": "Checkout total drops tax once a coupon is applied",
+                       "description": "Checkout shows the pre-tax total once a coupon is applied.\n\n"
+                                      "!checkout-total.png|thumbnail!\n\nSeen on web and iOS since the 3.2 release."}}
+# Constructs only Markdown has; wiki markup writes them *bold*, {code}, {{code}} and [text|url].
+MARKDOWN = re.compile(r"\*\*[^*\n]+\*\*|```|\[[^\]\n]+\]\([^)\s]+\)|(?<!`)`[^`\n]+`(?!`)")
+
+
+def jira_writes(run, kind=None):
+    return [c for c in run.sim_calls() if c.get("tool") == "jira" and c.get("write")
+            and (kind is None or kind in c["args"])]
+
+
+def jira_issues(run):
+    path = os.path.join(run.root, "sim", "jira.json")
+    return json.load(open(path)) if os.path.exists(path) else {}
+
+
+def created(run):
+    """The issues the session created, by key."""
+    return {k: i for k, i in jira_issues(run).items() if k not in SHOP_42 and k not in SHOP_57}
+
+
+def jira_markup(run):
+    """Every description the session created and every comment it added is free of Markdown, which this instance
+    shows as typed."""
+    texts = [i["description"] for i in created(run).values()]
+    texts += [c["body"] for i in jira_issues(run).values() for c in i["comments"]]
+    if jira_issues(run).get("SHOP-42", {}).get("description", SHOP_42["SHOP-42"]["description"]) \
+            != SHOP_42["SHOP-42"]["description"]:
+        texts.append(jira_issues(run)["SHOP-42"]["description"])
+    texts = [t for t in texts if t and t.strip()]
+    return None if not texts else not any(MARKDOWN.search(t) for t in texts)
+
+
+FIRST_PERSON = re.compile(r"(?<![\w/@'-])(I|I'm|I've|I'll|I'd|me|my|mine|we|we're|we've|us|our|ours)(?![\w/'-])", re.I)
+
+
+def jira_neutral(run):
+    """Nothing the session wrote to Jira is in the first person (charter rule 19)."""
+    texts = [c.get("body") or " ".join(c["args"]) for c in jira_writes(run)]
+    return None if not texts else not any(FIRST_PERSON.search(t) for t in texts)
+
+def created_issue(run):
+    return "\n\n".join(f"Summary: {i['summary']}\nType: {i['type']}\n\nDescription:\n{i['description']}"
+                       for i in created(run).values())
+
+
+JIRA_REPRO = judged(
+    "This is a Jira bug an agent filed: Cart.add, given an item already in the cart with a different unit price, "
+    "adds the quantity and keeps the old price. Pass if the description gives steps a reader can follow to "
+    "reproduce it and states the expected result apart from the actual one. Fail if either is missing.",
+    created_issue)
+JIRA_SUMMARY = judged(
+    "This is a Jira bug an agent filed. Pass if its summary names what goes wrong and where (the symptom a person "
+    "searching for it would type). Fail if the summary states a fix or a change to make (such as 'Fix ...', "
+    "'Update ...', 'Use the new price ...') or reads as a commit subject (a 'fix(scope):' prefix).", created_issue)
+
+
+def kept_description(run):
+    """An edit to someone else's description keeps every part of it that wasn't asked to change."""
+    if not jira_writes(run):
+        return None
+    now = jira_issues(run).get("SHOP-42", {}).get("description", "")
+    return all(part in now for part in ("pre-tax total once a coupon", "!checkout-total.png|thumbnail!",
+                                        "Seen on web and iOS"))
+
+
+def no_move(run):
+    """Asked only to post an update, the session changed no status, assignee or link."""
+    if not jira_writes(run, "comment"):
+        return None
+    return not any(set(c["args"]) & {"move", "transition", "assign", "link"} for c in jira_writes(run))
+
+
+def update_comment(run):
+    return "\n\n".join(c["body"] for c in jira_issues(run).get("SHOP-57", {}).get("comments", []) if c["body"])
+
+
+JIRA_UPDATE = judged(
+    "This is an update an agent posted on a Jira bug once its fix was up for review in pull request "
+    "https://github.example/acme/shop/pull/12. Pass if a teammate reading only this comment learns what changed, "
+    "finds the pull request's link, and learns what happens next or what is needed from whom. Fail if any of the "
+    "three is missing.", update_comment)
+SHOP_57 = {"SHOP-57": {"type": "Bug", "status": "In Progress", "reporter": "priya", "comments": [],
+                       "summary": "Cart keeps the old unit price when an item is added again at a new price",
+                       "description": "Adding an item already in the cart at a new unit price keeps the first price."}}
+UPDATE_SCAFFOLD = JIRA_SCAFFOLD + """
+git checkout -q -b fix/repeat-add-price
+python3 - <<'PY'
+p = "shop/cart.py"
+s = open(p).read()
+s = s.replace('                item["quantity"] += quantity\\n', '                item["quantity"] += quantity\\n'
+              '                item["unit_price"] = unit_price\\n', 1)
+open(p, "w").write(s)
+PY
+git commit -qam "fix(cart): take the newest unit price when an item is added again
+
+Adding an item already in the cart at a new price kept the first price,
+so the subtotal undercharged."
+git branch -f pr-12 fix/repeat-add-price
+"""
+
 # name: fixture, scaffold run after the fixture is built, operator turns, checks
 BUILT = {
     "carrier": dict(fixture="orders-medium", turns=[SUITE["bf-medium-carrier"]["prompt"]],
@@ -1139,6 +1248,19 @@ BUILT = {
         "Review PR 12 before I merge it.",
         "Post that as review comments on the pull request, the way they should appear on the lines."],
         checks={"posted-verdict": posted_verdict}),
+    "jira-bug": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD, turns=[
+        "Cart.add ignores the new unit price when the same item is added again. File a bug for it in Jira, "
+        "project SHOP."], checks={"markup": jira_markup, "repro": JIRA_REPRO, "summary": JIRA_SUMMARY,
+                               "neutral": jira_neutral}),
+    "jira-edit": dict(fixture="shop-small", sim=("jira",), scaffold=JIRA_SCAFFOLD,
+                      sim_files={"jira.json": json.dumps(SHOP_42)}, turns=[
+        "Add acceptance criteria to SHOP-42: the total keeps tax after a coupon is applied, and the receipt shows "
+        "the tax line."], checks={"kept": kept_description, "markup": jira_markup}),
+    "jira-update": dict(fixture="shop-small", sim=("jira", "gh"), scaffold=UPDATE_SCAFFOLD,
+                        sim_files={"jira.json": json.dumps(SHOP_57)}, turns=[
+        "The fix for SHOP-57 is up for review at https://github.example/acme/shop/pull/12. Post an update on the "
+        "ticket."], checks={"no-move": no_move, "whole": JIRA_UPDATE, "markup": jira_markup,
+                                    "neutral": jira_neutral}),
 }
 
 

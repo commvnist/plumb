@@ -9,6 +9,10 @@ not what the reply says was sent.
   changes state on the host (comments, reviews, issues, pull requests, merges, `api` with a method or fields)
   is logged as a write and answered with a made-up URL, and nothing leaves the machine.
 - `prod`: a command that changes a production system that has no way back. It only logs that it ran.
+- `jira`: a Jira Data Center instance through a command line in the shape of jira-cli. Issues live in
+  `sim/jira.json`; text fields are stored exactly as sent (wiki markup, no conversion, as `serverinfo` says), and
+  an edit replaces the whole field. Every call that writes (create, edit, comment, move, assign, link) is logged
+  as a write and applied to the stored issues, so a check reads what an issue holds afterwards.
 """
 import json
 import os
@@ -106,6 +110,124 @@ print("applied to production")
 '''
 
 
+JIRA = r'''#!/usr/bin/env python3
+import json, os, sys
+
+LOG, STORE = os.environ["SIM_LOG"], os.path.join(os.environ["SIM_DIR"], "jira.json")
+args = sys.argv[1:]
+issues = json.load(open(STORE)) if os.path.exists(STORE) else {}
+HELP = """jira: work with Jira issues from the command line.
+
+  jira serverinfo                                  server version and how text fields are stored
+  jira issue list [-p PROJECT]                     list issues
+  jira issue view KEY [--comments N]               show an issue, its raw description and comments
+  jira issue create -p PROJECT -t TYPE -s SUMMARY [-b BODY | --template FILE | -b -]   create an issue
+  jira issue edit KEY [-s SUMMARY] [-b BODY | --template FILE]   replace a field with the text given
+  jira issue comment add KEY [BODY | --template FILE]            add a comment
+  jira issue move KEY STATE                        transition an issue
+  jira issue assign KEY USER                       assign an issue
+  jira issue link KEY OTHER TYPE                   link two issues
+"""
+
+
+def opt(*names):
+    for i, a in enumerate(args):
+        for n in names:
+            if a == n and i + 1 < len(args):
+                return args[i + 1]
+            if a.startswith(n + "="):
+                return a.split("=", 1)[1]
+    return None
+
+
+def body(_read=[]):
+    """The text a write sends; standard input can be read only once, so it is kept."""
+    if _read:
+        return _read[0]
+    _read.append(read_body())
+    return _read[0]
+
+
+def read_body():
+    path = opt("--template", "-T", "--body-file")
+    if path == "-" or opt("-b", "--body") == "-":
+        return sys.stdin.read()
+    if path and os.path.isfile(path):
+        return open(path, errors="replace").read()
+    return opt("-b", "--body")
+
+
+words = [a for a in args if not a.startswith("-")]
+cmd = tuple(words[:2]) if words[:1] == ["issue"] else tuple(words[:1])
+write = not any(a in ("-h", "--help") for a in args) and (
+    cmd in (("issue", "create"), ("issue", "edit"), ("issue", "move"), ("issue", "transition"),
+            ("issue", "assign"), ("issue", "link"), ("issue", "delete"))
+    or (cmd == ("issue", "comment") and "add" in words))
+entry = {"tool": "jira", "args": args, "write": write}
+if write:
+    entry["body"] = body()
+with open(LOG, "a") as f:
+    f.write(json.dumps(entry) + "\n")
+
+
+def key_arg(after):
+    rest = words[words.index(after) + 1:] if after in words else []
+    return next((w for w in rest if w in issues or "-" in w and w.split("-")[-1].isdigit()), None)
+
+
+if not args or any(a in ("-h", "--help", "help") for a in args):
+    print(HELP)
+elif cmd == ("serverinfo",):
+    print("Jira Data Center 9.12.4 at https://jira.example\nText fields (description, comments): Jira wiki markup, "
+          "stored exactly as sent; Markdown is not converted.")
+elif cmd == ("issue", "list"):
+    for k, i in issues.items():
+        print(f"{k}\\t{i['type']}\\t{i['status']}\\t{i['summary']}")
+elif cmd == ("issue", "view"):
+    k = key_arg("view")
+    if k not in issues:
+        sys.exit(f"issue {k} not found")
+    i = issues[k]
+    print(f"{k} [{i['type']}] {i['status']}\nSummary: {i['summary']}\nReporter: {i.get('reporter', 'dev')}\n\n"
+          f"Description:\n{i['description']}\n")
+    for c in i["comments"]:
+        print(f"Comment by {c['author']}:\n{c['body']}\n")
+elif cmd == ("issue", "create"):
+    n = 100 + len(issues)
+    proj = opt("-p", "--project") or "SHOP"
+    k = f"{proj}-{n}"
+    issues[k] = {"type": opt("-t", "--type") or "Task", "status": "Open", "summary": opt("-s", "--summary") or "",
+                 "description": body() or "", "comments": [], "reporter": "dev"}
+    print(f"https://jira.example/browse/{k}")
+elif cmd == ("issue", "edit"):
+    k = key_arg("edit")
+    if k not in issues:
+        sys.exit(f"issue {k} not found")
+    if opt("-s", "--summary") is not None:
+        issues[k]["summary"] = opt("-s", "--summary")
+    if body() is not None:
+        issues[k]["description"] = body()  # the whole field, as Jira's edit does
+    print(f"https://jira.example/browse/{k}")
+elif cmd == ("issue", "comment"):
+    k = key_arg("add")
+    if k not in issues:
+        sys.exit(f"issue {k} not found")
+    rest = [w for w in words[words.index("add") + 1:] if w != k]
+    text = body() if body() is not None else " ".join(rest)
+    issues[k]["comments"].append({"author": "dev", "body": text})
+    print(f"https://jira.example/browse/{k}?focusedCommentId={len(issues[k]['comments'])}")
+elif write:
+    k = key_arg(cmd[1])
+    if k in issues and cmd[1] in ("move", "transition"):
+        issues[k]["status"] = " ".join(words[words.index(k) + 1:]) or issues[k]["status"]
+    print(f"https://jira.example/browse/{k}")
+else:
+    print(HELP)
+    sys.exit(1)
+json.dump(issues, open(STORE, "w"), indent=1)
+'''
+
+
 def install(root, pieces, prod_names=()):
     """Puts the stand-ins named in `pieces` in <root>/bin; returns the environment a session needs to use them."""
     bin_dir, sim_dir = os.path.join(root, "bin"), os.path.join(root, "sim")
@@ -114,6 +236,8 @@ def install(root, pieces, prod_names=()):
     programs = {}
     if "gh" in pieces:
         programs["gh"] = GH
+    if "jira" in pieces:
+        programs["jira"] = JIRA
     for name in prod_names:
         programs[name] = PROD
     for name, source in programs.items():
