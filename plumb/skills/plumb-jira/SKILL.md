@@ -15,7 +15,7 @@ Write in the markup the channel renders, learned from the tool or the instance, 
 
 ## The format
 
-Each issue type is one of the kinds below. Use the type the operator names, else the one whose kind fits the work, and where it is missing, the project's nearest, keeping the kind's shape.
+Each issue type is one of the kinds below. Use the type the operator names, in plain words too ("a task" is a Task), over the one whose kind seems to fit better; else the one whose kind fits the work, and where it is missing, the project's nearest, keeping the kind's shape.
 
 - **Summary:** short, and what a person searching would type, naming where; never a commit subject. A defect names the symptom and what triggers it; a need, the outcome its users get; work, the change it makes, in the imperative, by its effect, naming the mechanism when the mechanism is the work ("Retry failed uploads in the nightly export"); a container, its outcome; a test, the behaviour it checks; a question, the question; an incident, the impact now; a problem, the recurring failure; a change, what changes where.
 - **Description,** under short headings, in this order, leaving out a part with nothing known rather than holding its place:

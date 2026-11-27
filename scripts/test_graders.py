@@ -82,6 +82,14 @@ class BuiltChecks(unittest.TestCase):
                      "||a||b||", "bq. quoted", "* item", "Plain sentence - with a dash."]:
             self.assertFalse(built.MARKDOWN.search(text), text)
 
+    def test_a_spike_summary_passes_only_when_it_states_the_question(self):
+        for text in ["Should prices move from Decimal to integer cents?", "Decide whether prices move to integer cents",
+                     "How do prices cross the payment boundary", "Find out if refunds need fractional cents"]:
+            self.assertTrue(built.QUESTION.search(text), text)
+        for text in ["Move prices to integer cents", "Investigate price representation", "Spike: pricing in cents",
+                     "Integer cents for prices"]:
+            self.assertFalse(built.QUESTION.search(text), text)
+
     def test_an_epic_fails_only_for_listing_its_children_in_its_text(self):
         store = {"SHOP-200": {"type": "Epic", "summary": "Gift cards", "comments": [],
                               "description": "Customers can buy gift cards, redeem gift cards at checkout and check "

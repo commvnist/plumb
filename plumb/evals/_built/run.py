@@ -1148,11 +1148,15 @@ SPIKE_DONE = judged(
     "missing.", typed_issue("spike"))
 
 
+QUESTION = re.compile(r"\?\s*$|\b(whether|if)\b|^\s*(what|which|why|how|when|where|who|should|can|does|do|is|are)\b",
+                      re.I)
+
+
 def spike_question(run):
-    """A spike's summary is the question it answers."""
+    """A spike's summary is the question it answers, asked directly or as "whether ...", never a bare topic or answer."""
     spikes = created_by_type(run, "spike") or {k: i for k, i in created(run).items() if "spike" in
                                                (i["summary"] + i["type"]).lower()}
-    return None if not spikes else all(i["summary"].strip().endswith("?") for i in spikes.values())
+    return None if not spikes else all(QUESTION.search(i["summary"]) for i in spikes.values())
 
 
 def epic_children(run):
