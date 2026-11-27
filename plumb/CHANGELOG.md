@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.36.0
 
 ### Added
 - `plumb-jira` covers every common issue type and comment. Each type falls into a kind with its own shape: defect (bug, a defect found in testing), need (story, feature, improvement), work (task, sub-task, technical debt), container (epic, initiative), question (spike, research), test (test case, test run) and operations (incident, problem, change). A task's summary is an instruction naming the change by its effect, or by its mechanism when that is the work; a story's or epic's names the outcome; a spike's, its question. An epic's work is its linked child issues. Defects, incidents and problems carry a workaround when one is known, and a change says what shows it worked. A comment does one job (an update, a blocker, a question, a handoff, a review or test result, a decision reached elsewhere, a reopen), and closing an issue records the change that resolved it and the evidence it works.
