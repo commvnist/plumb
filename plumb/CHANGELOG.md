@@ -2,7 +2,7 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
-## Unreleased
+## 0.35.0
 
 ### Added
 - Issues and update comments in any tracker, not only Jira, take `plumb-jira`'s format: a GitHub issue gets the same summary, steps, expected against actual, and evidence as a Jira bug, and an update on an issue or a pull request says what the work changed, links it, and says what happens next or who is needed. On a pull request update after review feedback, main said what changed and what comes next in 0 of 11 runs, the change in 17 of 18.
