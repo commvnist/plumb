@@ -2,6 +2,16 @@
 
 What changes for people using plumb. Versions follow semantic versioning; in Claude Code, run `/plugin marketplace update plumb-marketplace`, then `claude plugin update plumb@plumb-marketplace` in a terminal, to pick up a new one.
 
+## 0.34.0
+
+### Added
+- `plumb-jira` writes Jira issues, comments and progress updates in one format. A summary names the symptom and where it happens, never the fix. A defect's description gives what happens, steps to reproduce, expected against actual, the evidence and any suspected cause marked unconfirmed; a need's gives the problem, acceptance criteria someone else can check, and what is out of scope. An update says what the work changed, read from the commit or diff rather than the request, links it, and says what happens next. It writes only on an instruction for that step, keeps the parts of a field an edit wasn't asked to change, and writes in the markup the instance renders (Markdown, ADF or wiki markup) instead of assuming one. On Haiku, updates that said what changed went from 9 of 18 to 18 of 18.
+
+## 0.33.2
+
+### Changed
+- A comment on a pull request (a review, a line comment, a reply) is back in the neutral technical voice, like everything else plumb commits or posts. Ask for your own voice, first person, when you want a given comment worded that way. The posted-text check flags first person in a pull request comment again.
+
 ## 0.33.1
 
 ### Changed

@@ -19,6 +19,7 @@ Plumb is not for vibe coding. It is a way of working between an agent and its op
 | `plumb-review` | review | Verdict plus concrete, ranked findings; changes nothing |
 | `plumb-ship` | release | Commits and pull requests, only when asked |
 | `plumb-audit` | maintain | Read-only repository or test-suite audit, ranked |
+| `plumb-jira` | track | Jira issues, comments and updates in one format, written only when asked |
 | `plumb-explain` | any | Walks you through code, a diff or a decision, traced through one real case; changes nothing |
 | `plumb-auto` | all | Runs a whole task without stopping, checks pinned first and an independent review last, then one report of every commit, choice and assumption |
 
@@ -61,7 +62,7 @@ Each of these is on purpose:
 - **It writes fewer tests than you asked for.** A general "add tests" gets the tests that would catch a realistic break, plus a line naming what it left untested and why. Name a test and you get it.
 - **It stops after each diff.** A multi-step plan waits for you after each step: commit it yourself or tell it to, then say to go on, so you review one purpose at a time. Ask for `plumb-auto` and it runs to the end instead, one commit per diff on a new branch, and reports every assumption it made in place of asking.
 - **It offers instead of fixing.** Cleanups, refactors and hardening come as suggestions, each with the failure it prevents. None lands until you pick it.
-- **Nothing it writes says an AI wrote it.** Code, comments, commits and pull requests are written in a neutral technical voice, never "I" or "we" (a comment on a pull request is the exception: it reads as you wrote it, in your own voice), never mention AI help or the agents, models or sessions behind the work (unless the work is itself about AI), carry no co-author or generated-by lines, and are committed under your own git identity.
+- **Nothing it writes says an AI wrote it.** Code, comments, commits and pull requests are written in a neutral technical voice, never "I" or "we" unless you ask for your own voice on a given text, never mention AI help or the agents, models or sessions behind the work (unless the work is itself about AI), carry no co-author or generated-by lines, and are committed under your own git identity.
 - **It won't commit, push or deploy unasked,** and won't add a dependency without a yes.
 - **It asks before starting `docs/adr/`** in a project that keeps no decision records.
 - **It doesn't fold when you push back.** Question a choice and it checks again: if you're right it says what was wrong and where else the same mistake appears. If what you ask rests on a fact about the code that isn't true, it shows you the line and waits. Ask for something it can see failing and it follows you, naming the risk once.

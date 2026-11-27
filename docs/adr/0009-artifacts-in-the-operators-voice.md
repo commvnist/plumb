@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted. Amended by [ADR 11](0011-pull-request-comments-in-the-operators-own-voice.md): comments on a pull request speak in the operator's own voice.
+Accepted. [ADR 11](0011-pull-request-comments-in-the-operators-own-voice.md) made comments on a pull request an exception; [ADR 13](0013-pull-request-comments-in-the-neutral-voice.md) superseded it, so this record holds for them too, with the operator's own voice only where they ask for it.
 
 ## Context
 
