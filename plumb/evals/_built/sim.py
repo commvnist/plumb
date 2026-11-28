@@ -105,7 +105,7 @@ if write and pair in (("pr", "create"), ("pr", "edit")):
               "body": git("log", "-1", "--format=%b", scaffolded).strip()}
     else:
         head = git("rev-parse", "--abbrev-ref", "HEAD").strip()
-        fill = any(a.startswith("--fill") for a in args)  # as gh does, from the head's last commit
+        fill = any(a.startswith("--fill") for a in args)  # as gh does for a one-commit branch
         pr = {"head": head, "title": git("log", "-1", "--format=%s", head).strip() if fill else "",
               "body": git("log", "-1", "--format=%b", head).strip() if fill else ""}
     for field, flags in (("title", ("--title", "-t")), ("body", ("--body", "-b", "--body-file", "-F"))):
