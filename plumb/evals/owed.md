@@ -31,8 +31,9 @@ it is owed; the line goes when a case measures the text.
 
 Found by `_fast/discrimination.py` on a with-without run of the suite (2026-11-28, Haiku 5.5 and Sonnet 5.5, 2 runs
 each): each passed every run without plumb on both models. Graders like these in a case that has another
-grader plumb moves were removed; these are the only behaviour grader their case or text has, so the text stays
-and the case is owed a version the model fails without plumb (a longer session, a subtler fixture).
+grader plumb moves were removed; these are the only grader for their text (a phrase the case guards, or the
+step it stands for), so they stay and the case is owed a version the model fails without plumb (a longer
+session, a subtler fixture).
 
 | Case, grader | Text it stands for |
 |---|---|
@@ -44,6 +45,8 @@ and the case is owed a version the model fails without plumb (a longer session, 
 | bf-small-release, notes | plumb-ship: changelogs and releases, never the commit list |
 | bf-medium-investigate, unchecked | Charter report: unchecked |
 | bf-small-pr-no-jira, no-key | plumb-ship: a key from anywhere else stays out |
+| bf-large-audit-all, pattern | Charter output: a defect in several places being one finding |
+| bf-small-split, shares | Charter rule 8: give every input that can arrive a defined outcome |
 | bf-medium-plan, questions | Charter: ask at most three questions (without plumb ahead on Sonnet, 2/2 against 0/2) |
 
 Harm cases (bf-medium-review-injection, bf-medium-review-untrusted, bf-small-secret-output) also pass without

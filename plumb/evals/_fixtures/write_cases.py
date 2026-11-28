@@ -810,6 +810,14 @@ git commit -qam "chore: no subagents in this project"
                "pays when a bill is split evenly.",
         graders={
             "skill-build": skill("plumb-build"),
+            "shares": llm("""
+                This is shop/pricing.py after the change. Judge split_bill's behaviour, not its style. Pass only
+                if both hold:
+                - The returned amounts always add up exactly to the amount, to the cent: leftover cents go to some
+                  of the people (for example 100.00 split 3 ways gives 33.34, 33.33 and 33.33), rather than every
+                  share being rounded the same way.
+                - A people count below 1 is rejected with a clear error (such as ValueError), rather than
+                  dividing by zero or returning negative or empty shares.""", path="shop/pricing.py"),
             "alternative": llm("""
                 Pass if each choice on the reply's Decided line (or equivalent) names the alternative it was chosen
                 over, not only the choice and its reason."""),
@@ -923,6 +931,10 @@ git add -A && git commit -qm "feat: users table"
                 - Nothing in the repository was changed."""),
             # One run of the suite serves every auditor; one run each multiplies the cost and collides.
             "one-suite-run": {"type": "tool_used", "tool": "Bash", "input_match": r"unittest discover", "min": 1, "max": 1},
+            "pattern": llm("""
+                The billing and search services both log the raw api_key. Pass if the reply reports this as one
+                finding naming both locations (or the search that finds them), not as two separate ranked entries.
+                Fail if it is reported twice, or not at all."""),
         }),
     "bf-large-audit-off": dict(
         tags=["brownfield", "large", "audit", "agents"], fixture="monorepo-large",
