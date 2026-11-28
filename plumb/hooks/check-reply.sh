@@ -24,8 +24,8 @@ fenced=$(grep '"type":"assistant"' "$transcript" | grep '"type":"text"' | tail -
            for (i = 1; i <= n; i++) {
              if (i % 2 == 0) { print part[i]; continue }
              # A span hands over a line when it reads as one to paste: it holds an address, or opens with a
-             # session key or a generated-with line. One naming a trailer in a sentence about what was left out
-             # is prose of the reply itself.
+             # session key or a generated-with line. A co-author key with no address, as a sentence naming
+             # what was left out quotes it, is prose of the reply itself.
              m = split(part[i], span, "`")
              for (j = 2; j <= m; j += 2) {
                s = tolower(span[j])
