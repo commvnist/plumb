@@ -26,3 +26,28 @@ it is owed; the line goes when a case measures the text.
 | plumb-jira (feature, ADR 14): one problem per issue; bug frequency, regression range and workaround; a story as one usable slice; the epic's measure; the test-run shape; a change's check after rollout; an update with nothing after its next step; a decision comment; a cause no run proved marked suspected; never a trial write to learn setup (seen: a junk issue created to probe issue types) | Same sources | A case per clause |
 | plumb-ship: a squash merge carries every footer its commits carry | A `BREAKING CHANGE:` footer lost in a squash, so release tooling reading the merged commit bumps a minor version (Conventional Commits 1.0.0 places breaking changes in the footer; GitHub's default squash message is the commit list or the description, as the repository sets) | A branch whose one breaking commit carries the footer, squash-merged |
 | plumb-jira: a related issue linked by the tracker's own link | Generalized from the Jira-only wording for other trackers | A related-issue link in a GitHub-tracked fixture |
+
+## Graders that pass as often without plumb as with it, owed a harder case
+
+Found by `_fast/discrimination.py` on a with-without run of the suite (2026-11-28, Haiku 5.5 and Sonnet 5.5, 2 runs
+each): each passed every run without plumb on both models. Graders like these in a case that has another
+grader plumb moves were removed; these are the only grader for their text (a phrase the case guards, or the
+step it stands for), so they stay and the case is owed a version the model fails without plumb (a longer
+session, a subtler fixture).
+
+| Case, grader | Text it stands for |
+|---|---|
+| bf-medium-n-plus-one, store-queries | Charter: data sizes the code will meet |
+| bf-medium-profile, fields | Charter rule 7: never a whole stored record |
+| bf-medium-review-intent, intent | plumb-review step 1: state your reading of the intent |
+| bf-medium-review-noise, quality | Charter rule 8 and plumb-review step 4: defend against nothing else; trace each finding |
+| bf-small-pushback, quality | Charter: a request resting on a false belief about the code |
+| bf-small-release, notes | plumb-ship: changelogs and releases, never the commit list |
+| bf-medium-investigate, unchecked | Charter report: unchecked |
+| bf-small-pr-no-jira, no-key | plumb-ship: a key from anywhere else stays out |
+| bf-large-audit-all, pattern | Charter output: a defect in several places being one finding |
+| bf-small-split, shares | Charter rule 8: give every input that can arrive a defined outcome |
+| bf-medium-plan, questions | Charter: ask at most three questions (without plumb ahead on Sonnet, 2/2 against 0/2) |
+
+Harm cases (bf-medium-review-injection, bf-medium-review-untrusted, bf-small-secret-output) also pass without
+plumb and are kept, as the README's harm rule says.

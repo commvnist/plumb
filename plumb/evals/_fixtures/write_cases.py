@@ -93,10 +93,6 @@ CASES = {
         prompt="Customers who type a price like 1,200.50 get a crash from parse_price. Fix it.",
         graders={
             "skill-debug": skill("plumb-debug"),
-            "no-swallow": llm("""
-                This is shop/pricing.py after the change. Pass if parse_price never hides a bad input: it doesn't
-                catch an error to return a default value or None. Catching an error only to raise a clearer one
-                (with the input and the original error chained) is fine.""", "shop/pricing.py"),
             "red-run": red_run(),
             "regression-test": regex_file("tests/test_pricing.py", r"1,200"),
             "quality": llm(f"""
@@ -134,11 +130,6 @@ git commit -qam "Document when a coupon applies"
                 at exactly the minimum as settled correct behaviour without mentioning the mismatch."""),
             "test-file": {"type": "file_exists", "path": "tests/test_cart.py"},
             "red-run": red_run(),
-            "covers-decisions": llm("""
-                This is the test file the agent wrote for shop/cart.py. Pass if its tests cover merging a repeated
-                item, rejecting a quantity below 1, and the coupon applying on one side of its minimum and not the
-                other, calling Cart's public methods and asserting outcomes. A test at exactly the minimum is not
-                required: the docstring and the code disagree there.""", "tests/test_cart.py"),
             "lean": llm("""
                 This is the test file the agent wrote for shop/cart.py. Pass if it has at most about eight tests,
                 with no test of a trivial accessor on its own and no two tests that would catch the same break
@@ -509,10 +500,6 @@ git commit -qam "Add bill splitting and unit prices"
             # Asking for a change is not asking for a commit (charter rule 2); an attempt counts, even if the sandbox refuses it.
             "not-committed": no_tool("Bash", r"git\b[^;&|]*\scommit\b"),
             "red-run": red_run(),
-            "handler": llm("""
-                Pass if the new single-invoice handler checks that the invoice belongs to the caller,
-                returns not-found for a missing id, and logs an event the way the neighbouring handlers do.""",
-                path="app/handlers/invoices.py"),
             "quality": llm(f"""
                 Pass only if all hold:
                 - The reply says a test shows another user is refused, and that the tests were run and passed.
@@ -536,7 +523,6 @@ git commit -qam "Add bill splitting and unit prices"
         tags=["brownfield", "medium", "plan", "readable"], fixture="orders-medium",
         prompt="Rename the order status field to state everywhere, including the database column.",
         graders={
-            "readable": READABLE,
             "skill-plan": skill("plumb-plan"),
             "no-edit": no_tool("Edit"),
             "no-write": no_tool("Write"),
@@ -907,10 +893,6 @@ git add -A && git commit -qm "feat: users table"
             "reuses-throttle": regex_file("services/billing/api.py", r"common\.throttle"),
             "red-run": red_run(),
             "no-new-deps": regex_file("requirements.txt", r"^[A-Za-z]", "not_contains", "m"),
-            "limiter": llm("""
-                Pass if the billing API reuses common.throttle.RateLimiter rather than a new limiter, applies it
-                to every public billing handler, and on the limit returns 429 and logs a rate_limited outcome.""",
-                path="services/billing/api.py"),
             "quality": llm(f"""
                 Pass only if all hold:
                 - The reply says a test proves the limit and was seen failing when the limit is wrong, and that the tests were run and passed.
@@ -1018,17 +1000,6 @@ git add -A && git commit -qm "test: coupon minimum"
                 "{\"order_id\": ..., \"total_cents\": ...}; it answers {\"price_cents\": ...}. Use the standard library."),
         graders={
             "skill-build": skill("plumb-build"),
-            "timeout": llm("""
-                Below is the reply; the code it describes is in the repository. Judge the code that calls the
-                carrier, which the reply should show or describe. Pass only if the request to the carrier sets
-                an explicit timeout (for example urlopen(..., timeout=...)). Fail if the call has no timeout or
-                the reply doesn't make clear it has one."""),
-            "caller-terms": llm("""
-                Below is the reply; judge what it says the handler does when the carrier is down, slow, or
-                answers with an error or malformed body. Pass if those failures reach the handler's caller as a
-                defined response or as an error type of the project's own (such as a 502, or a new exception
-                beside the project's NotFound and Forbidden), never as a raw urllib, socket or JSON exception.
-                Fail if the reply doesn't say how carrier failures are handled."""),
             "failure-logged": llm("""
                 This is app/handlers/shipping.py after the change. Pass if, when the carrier call fails, the
                 handler logs an event that carries the order id and the cause of the failure (the exception, its
@@ -1047,9 +1018,6 @@ git add -A && git commit -qm "test: coupon minimum"
                 finance to pick up: for example it writes to a temporary file and renames it into place, or
                 removes the partial file on failure. Fail if it opens the given path for writing and writes the
                 rows straight into it.""", path="app/exports.py"),
-            "closed": llm("""
-                This is app/exports.py after the change. Pass if every file it opens is closed even when
-                writing fails (a with block or try/finally).""", path="app/exports.py"),
         }),
     # ---------------- outside the diff, unreproducible bugs, suggestions ----------------
     "bf-medium-live-db": dict(
@@ -1167,9 +1135,6 @@ git add -A && git commit -qm "feat: list the names in a cart"
                 a payment, or recording who cancelled. Fail if there are no suggestions, if they are only style,
                 naming or more tests of the same code, or if such a change was made in the diff without being
                 asked for."""),
-            "in-scope": llm("""
-                Pass if the change only adds the cancel handler (with its ownership check, status check, event and
-                tests) and leaves invoices, payments and the schema unchanged."""),
         }),
     # ---------------- greenfield ----------------
     "gf-small-cli": dict(
@@ -1234,16 +1199,6 @@ git add -A && git commit -qm "feat: list the names in a cart"
         prompt="Add a way to delete a todo from the list page.",
         graders={
             "skill-build": skill("plumb-build"),
-            "control": llm("""
-                This is web/app.js after the change. Pass if each todo's delete control is a real button (a
-                <button> element, or an element with a button role that also works from the keyboard) whose
-                accessible name says what it does (visible text such as "Delete", or an aria-label naming the
-                todo). Fail if it is a clickable span, div or icon with no accessible name.""", "web/app.js"),
-            "states": llm("""
-                This is web/app.js after the change. Pass only if both hold:
-                - When the delete request fails (a non-ok response or a network error), the todo is not silently
-                  dropped: it stays or comes back, and the status area tells the user it wasn't deleted.
-                - Deleting the last todo leaves the empty-list message showing.""", "web/app.js"),
             "decided": llm("""
                 Pass if the reply's Decided line (or equivalent) names at least one choice the user will see, with
                 its reason: for example whether deleting asks for confirmation or offers undo, where the control
