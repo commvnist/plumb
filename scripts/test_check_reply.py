@@ -30,6 +30,8 @@ class CheckReply(unittest.TestCase):
             "Commit message:\n\n```\nfeat(pricing): add total_with_tax\n\nWhy.\n\nCo-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>\n```",
             "PR body:\n```markdown\n## Summary\nAdds tax.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n```",
             "Add the trailer `Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>` to the commit.",
+            "Add `Claude-Session: https://claude.ai/code/session_01X` as the last trailer.",
+            "End the PR body with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.",
         ]:
             with self.subTest(reply=reply[:40]):
                 answer = stop(reply)

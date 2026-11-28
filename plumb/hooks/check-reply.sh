@@ -23,9 +23,14 @@ fenced=$(grep '"type":"assistant"' "$transcript" | grep '"type":"text"' | tail -
   | awk '{ n = split($0, part, "```")
            for (i = 1; i <= n; i++) {
              if (i % 2 == 0) { print part[i]; continue }
-             # A span hands over a line only when it holds an address, as a trailer to paste does; one that
-             # names a trailer in a sentence reporting what was left out is prose of the reply itself.
-             m = split(part[i], span, "`"); for (j = 2; j <= m; j += 2) if (span[j] ~ /<[^>]*@[^>]*>/) print span[j]
+             # A span hands over a line when it reads as one to paste: it holds an address, or opens with a
+             # session key or a generated-with line. One naming a trailer in a sentence about what was left out
+             # is prose of the reply itself.
+             m = split(part[i], span, "`")
+             for (j = 2; j <= m; j += 2) {
+               s = tolower(span[j])
+               if (s ~ /<[^>]*@[^>]*>/ || s ~ /^[^[:alnum:]]*([a-z]+-session:|(generated|written|created) (with|by) )/) print span[j]
+             }
            } }')
 printf '%s\n' "$fenced" | grep -Eiq "$CREDIT" || exit 0
 

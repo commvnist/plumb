@@ -196,6 +196,9 @@ class CheckCommit(unittest.TestCase):
         body = os.path.join(self.repo, "body.md")
         with open(body, "w") as f:
             f.write("Adds tax.\n\nGenerated with Claude Code\n")
+        human = os.path.join(self.repo, "human.md")
+        with open(human, "w") as f:
+            f.write("Closes the cursor.\n\nCo-Authored-By: Jane <jane@example.org>\n\nFixes the db cursor leak.\n")
         cases = [
             ("gh api repos/o/r/pulls -f title='feat: tax' -f body='I added tax.'", "first person"),
             ('gh pr review 4 --comment --body "We should round later."', "first person"),
@@ -213,6 +216,8 @@ class CheckCommit(unittest.TestCase):
             ('gh pr create --title "feat: tax" --body "Adds tax.\n\nI checked the rounding."', "first person"),
             ('gh pr create --assignee @me --title "feat: tax" --body "Adds tax."', None),
             ("gh api repos/o/r/commits/abc", None),
+            # A credit word on a later line than a human trailer credits no AI.
+            ("gh pr create --title 'fix: close the cursor' --body-file human.md", None),
         ]
         for command, flag in cases:
             with self.subTest(command=command):
