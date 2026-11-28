@@ -1492,10 +1492,12 @@ BUILT = {
                           checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
     "plan-seam": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]], checks={"seam": SEAM}),
     # A setting redefined a turn after it was added: every statement of the delivery policy follows the code.
-    # Open: no wording tried yet moves it (the misses are CLI help still saying "retried up to 3 times").
+    # The misses were CLI help still saying "retried up to 3 times". At 0.38.0 the case didn't reproduce (main
+    # 6/6 on both models), so it is owed a harder one: a longer session, or a compaction part way.
     "retries-rename": dict(fixture="notifier", turns=RETRIES_TURNS, checks={
         "no-stale": no_stale, "no-stale-name": no_stale_name, "generated-current": generated_current}),
-    # The same two turns with a pull request open: its description follows the branch. Open, as above.
+    # The same two turns with a pull request open: its description follows the branch. Main at 0.38.0 keeps it
+    # true in 25 of 28 Haiku runs and 23 of 25 Sonnet runs.
     "pr-rename": dict(fixture="notifier", scaffold=PUSHED_SCAFFOLD, sim=("gh",), turns=[
         RETRIES_TURNS[0].replace("Commit it.", "Commit it on a branch, push it and open a pull request."),
         RETRIES_TURNS[1].replace("Commit it.", "Commit it and push it to the same pull request.")],

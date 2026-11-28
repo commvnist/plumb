@@ -38,7 +38,8 @@ MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5"]
 STATIC = [["python3", "scripts/lint_skills.py"], ["python3", "scripts/check_refs.py"],
           ["python3", "plumb/evals/_fixtures/write_cases.py", "--check"], ["python3", "scripts/test_lint_skills.py"],
           ["python3", "scripts/test_fast_select.py"],
-          ["python3", "scripts/test_graders.py"]]
+          ["python3", "scripts/test_graders.py"], ["python3", "scripts/test_discrimination.py"],
+          ["python3", "scripts/test_sim.py"]]
 # A feature's case passes in at least this share of runs on each model, from the first stage of runs (ADR 14).
 ACCEPT, FIRST_STAGE = 2 / 3, 6
 SUITE_TOOLS = ["Bash", "Read", "Write", "Edit", "Glob", "Grep", "Skill"]

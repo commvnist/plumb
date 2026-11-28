@@ -5,7 +5,8 @@ calls a case needs and writes every call to a log beside the run's repository, s
 not what the reply says was sent.
 
 - `gh`: pull request N is the local branch `pr-N`, opened against `main`. Reads (`pr view`, `pr diff`,
-  `pr checkout`, `pr list`, `api` GET, `auth status`) answer from the repository; anything that posts or
+  `pr checkout`, `pr list`, `api` GET, `auth status`) answer from the repository, and a pull request the session
+  opened answers with its own branch and the title and body last sent for it; anything that posts or
   changes state on the host (comments, reviews, issues, pull requests, merges, `api` with a method or fields)
   is logged as a write and answered with a made-up URL, and nothing leaves the machine. A case can set fields on
   every pull request (a review decision, check results) in `sim/pr-state.json`.
@@ -71,11 +72,54 @@ def sent_files():
 
 with open(LOG, "a") as f:
     f.write(json.dumps({"tool": "gh", "args": args, "stdin": stdin, "files": sent_files(), "write": write}) + "\n")
+
+
+def opened():
+    """Pull requests the session opened, by number: their branch and the title and body last sent for them."""
+    path = os.path.join(os.environ["SIM_DIR"], "prs.json")
+    return json.load(open(path)) if os.path.exists(path) else {}
+
+
+def sent(flags):
+    """The value a call sends under any of `flags`, read from its file or stdin where it names one."""
+    for i, arg in enumerate(args):
+        flag, eq, value = arg.partition("=")
+        if flag not in flags:
+            continue
+        value = value if eq else (args[i + 1] if i + 1 < len(args) else "")
+        if flag in ("--body-file", "-F"):
+            return stdin if value == "-" else open(value, errors="replace").read() if os.path.isfile(value) else ""
+        return value
+    return None
+
+
+if write and pair in (("pr", "create"), ("pr", "edit")):
+    # One number serves every pull request, so a create replaces any pull request 12 the scaffold made.
+    prs, key = opened(), number()
+    scaffolded = f"pr-{key}"
+    if key in prs:
+        pr = prs[key]
+    elif pair == ("pr", "edit") and git("rev-parse", "--verify", "--quiet", scaffolded).strip():
+        # An edit to the scaffold's pull request starts from it as served, so it keeps what wasn't sent.
+        pr = {"head": scaffolded, "title": git("log", "-1", "--format=%s", scaffolded).strip(),
+              "body": git("log", "-1", "--format=%b", scaffolded).strip()}
+    else:
+        head = git("rev-parse", "--abbrev-ref", "HEAD").strip()
+        fill = any(a.startswith("--fill") for a in args)  # as gh does for a one-commit branch
+        pr = {"head": head, "title": git("log", "-1", "--format=%s", head).strip() if fill else "",
+              "body": git("log", "-1", "--format=%b", head).strip() if fill else ""}
+    for field, flags in (("title", ("--title", "-t")), ("body", ("--body", "-b", "--body-file", "-F"))):
+        value = sent(flags)
+        if value is not None:
+            pr[field] = value
+    prs[key] = pr
+    json.dump(prs, open(os.path.join(os.environ["SIM_DIR"], "prs.json"), "w"))
 if write:
     print(f"https://github.example/acme/shop/pull/{number()}#posted")
     sys.exit(0)
 n = number()
-branch = f"pr-{n}"
+mine = opened().get(n)
+branch = mine["head"] if mine else f"pr-{n}"
 if pair == ("auth", "status"):
     print("github.example\n  Logged in to github.example as dev")
 elif pair == ("pr", "diff"):
@@ -86,8 +130,8 @@ elif pair == ("pr", "checkout"):
 elif pair == ("pr", "list"):
     print(f"{n}\t{git('log', '-1', '--format=%s', branch).strip()}\t{branch}\tOPEN")
 elif pair == ("pr", "view"):
-    title = git("log", "-1", "--format=%s", branch).strip()
-    body = git("log", "-1", "--format=%b", branch).strip()
+    title = mine["title"] if mine else git("log", "-1", "--format=%s", branch).strip()
+    body = mine["body"] if mine else git("log", "-1", "--format=%b", branch).strip()
     files = git("diff", "--name-only", f"main...{branch}").split()
     data = {"number": int(n), "title": title, "body": body, "state": "OPEN", "author": {"login": "sam"},
             "headRefName": branch, "baseRefName": "main", "files": [{"path": p} for p in files],
