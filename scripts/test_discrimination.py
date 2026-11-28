@@ -18,8 +18,9 @@ def run_file(arms):
     graders = [{"name": "judged", "type": "llm"}, {"name": "no-edit", "type": "tool_used", "config": {"max": 0}},
                {"name": "skill-x", "type": "tool_used", "config": {"min": 1}}]
     case = {"name": "c", "graders": graders, "arms": {
-        arm: [{"graders": [{"name": n, "passed": p, "scored": n != "skill-x"} for n, p in run.items()]}
-              for run in runs] for arm, runs in arms.items()}}
+        arm: [{"error": run.pop("error", None),
+               "graders": [{"name": n, "passed": p, "scored": n != "skill-x"} for n, p in run.items()]}
+              for run in (dict(r) for r in runs)] for arm, runs in arms.items()}}
     f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
     json.dump({"cases": [case]}, f)
     f.close()
@@ -54,6 +55,16 @@ class Discrimination(unittest.TestCase):
     def test_names_a_grader_both_arms_fail(self):
         out = listed({"with": [{"judged": False}], "without": [{"judged": False}]})
         self.assertIn("both fail", out)
+
+
+    def test_calls_equal_rates_a_tie_and_leaves_out_runs_that_errored(self):
+        tie = listed({"with": [{"judged": True}, {"judged": False}], "without": [{"judged": False}, {"judged": True}]})
+        self.assertIn("tied", tie)
+        self.assertNotIn("no plumb ahead", tie)
+        # Counted, the errored run would tie the arms at 1/2; left out, plumb passes 1/1 against 1/2.
+        out = listed({"with": [{"judged": True}, {"judged": False, "error": "sandbox refused"}],
+                      "without": [{"judged": True}, {"judged": False}]})
+        self.assertIn("every grader passes more often with plumb", out)
 
 
 if __name__ == "__main__":

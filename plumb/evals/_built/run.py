@@ -1492,7 +1492,8 @@ BUILT = {
                           checks={"decided-where": DECIDED_WHERE, "one-home": ONE_HOME}),
     "plan-seam": dict(fixture="orders-medium", turns=[SUITE["bf-medium-plan"]["prompt"]], checks={"seam": SEAM}),
     # A setting redefined a turn after it was added: every statement of the delivery policy follows the code.
-    # The misses were CLI help still saying "retried up to 3 times"; main at 0.38.0 passes 6/6 on both models.
+    # The misses were CLI help still saying "retried up to 3 times". At 0.38.0 the case didn't reproduce (main
+    # 6/6 on both models), so it is owed a harder one: a longer session, or a compaction part way.
     "retries-rename": dict(fixture="notifier", turns=RETRIES_TURNS, checks={
         "no-stale": no_stale, "no-stale-name": no_stale_name, "generated-current": generated_current}),
     # The same two turns with a pull request open: its description follows the branch. Main at 0.38.0 keeps it

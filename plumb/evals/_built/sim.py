@@ -94,8 +94,20 @@ def sent(flags):
 
 
 if write and pair in (("pr", "create"), ("pr", "edit")):
+    # One number serves every pull request, so a create replaces any pull request 12 the scaffold made.
     prs, key = opened(), number()
-    pr = prs.get(key) or {"head": git("rev-parse", "--abbrev-ref", "HEAD").strip(), "title": "", "body": ""}
+    scaffolded = f"pr-{key}"
+    if key in prs:
+        pr = prs[key]
+    elif pair == ("pr", "edit") and git("rev-parse", "--verify", "--quiet", scaffolded).strip():
+        # An edit to the scaffold's pull request starts from it as served, so it keeps what wasn't sent.
+        pr = {"head": scaffolded, "title": git("log", "-1", "--format=%s", scaffolded).strip(),
+              "body": git("log", "-1", "--format=%b", scaffolded).strip()}
+    else:
+        head = git("rev-parse", "--abbrev-ref", "HEAD").strip()
+        fill = any(a.startswith("--fill") for a in args)  # as gh does, from the head's last commit
+        pr = {"head": head, "title": git("log", "-1", "--format=%s", head).strip() if fill else "",
+              "body": git("log", "-1", "--format=%b", head).strip() if fill else ""}
     for field, flags in (("title", ("--title", "-t")), ("body", ("--body", "-b", "--body-file", "-F"))):
         value = sent(flags)
         if value is not None:
