@@ -5,7 +5,7 @@ What changes for people using plumb. Versions follow semantic versioning; in Cla
 ## Unreleased
 
 ### Added
-- A commit message or pull request body that plumb hands over for you to commit or post no longer carries a co-author or generated-with line crediting an AI tool: when a reply ends with one, the agent sends it again without it.
+- A commit message or pull request body that plumb hands over for you to commit or post is checked for a co-author or generated-with line crediting an AI tool: when a reply ends with one, the agent is asked once to send the reply again without it.
 
 ## 0.38.0
 
